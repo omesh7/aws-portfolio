@@ -36,7 +36,6 @@ jobs:
           VITE_APP_EMAILJS_PUBLIC_KEY: ${{ secrets.VITE_APP_EMAILJS_PUBLIC_KEY }}
 
       - name: Deploy to S3
-        environment: production-deployment
         uses: jakejarvis/s3-sync-action@master
         with:
           args: --delete
