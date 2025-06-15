@@ -1,0 +1,16 @@
+node_modules/
+
+# Local environment variables
+.env
+.env.local
+# AWS SAM build artifacts
+.aws-sam/
+# AWS SAM build artifacts
+# AWS Lambda deployment package
+package.zip
+# Python bytecode files
+__pycache__/
+# Python cache files
+*.py[cod]
+# Python egg files
+*.egg

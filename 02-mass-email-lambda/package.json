@@ -1,0 +1,33 @@
+{
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.149",
+    "@types/csv-parse": "^1.1.12",
+    "@types/dotenv": "^6.1.1",
+    "@types/node": "^22.15.29",
+    "aws-ses-v2-local": "^2.5.1",
+    "dotenv": "^16.5.0",
+    "ts-node": "^10.9.2",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.821.0",
+    "@aws-sdk/client-sesv2": "^3.821.0",
+    "aws-sdk": "^2.1692.0",
+    "aws-sdk-mock": "^6.2.1",
+    "chalk": "^5.4.1",
+    "csv-parse": "^5.6.0"
+  },
+  "name": "lambda",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+ 
+}
