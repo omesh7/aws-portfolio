@@ -8,7 +8,7 @@ import { Readable } from "node:stream";
 const { S3_BUCKET, CSV_FILE } = process.env;
 
 export const getEmails = async (): Promise<string[]> => {
-  try 
+  try {
     log.info(`Fetching CSV from S3: ${S3_BUCKET}/${CSV_FILE}`);
     const data = await s3.send(
       new GetObjectCommand({
