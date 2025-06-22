@@ -41,7 +41,7 @@ jobs:
           aws --version
 
       - name: Zip code
-        run: zip -r ../../lambda4.zip .
+        run: zip -r lambda4.zip .
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
