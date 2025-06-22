@@ -33,15 +33,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Zip code
-        run: zip -r ../../lambda4.zip .
-
       - name: Install AWS Client
         run: |
           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
           unzip awscliv2.zip
           sudo ./aws/install || true
           aws --version
+
+      - name: Zip code
+        run: zip -r ../../lambda4.zip .
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -56,6 +56,5 @@ jobs:
           aws --version
 
       - name: Deploy to Lambda
-        run: aws lambda update-function-code \
-          --function-name arn:aws:lambda:ap-south-1:982534384941:function:04-polly-text-to-speech \
-          --zip-file fileb://lambda4.zip
+        run: |
+          aws lambda update-function-code --function-name arn:aws:lambda:ap-south-1:982534384941:function:04-polly-text-to-speech  --zip-file fileb://lambda4.zip
