@@ -73,3 +73,4 @@ exports.handler = async (event) => {
   }
 };
 // File: 04-text-to-speech-polly/lambda/package.json
+// --- a/file:///d%3A/PROJECTS/AWS/portfolio/final/aws-portfolio/04-text-to-speech-polly/lambda/package.json?%7B%22path%22%3A%22d%3A%5C%5CPROJECTS%5C%5CAWS%5C%5Cportfolio%5C%5Cfinal%5C%5Caws-portfolio%5C%5C04-text-to-speech-polly%5C%5Clambda%22%2C%22ref%22%3A%22HEAD%22%7D
