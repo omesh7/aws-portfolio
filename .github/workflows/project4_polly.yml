@@ -56,5 +56,5 @@ jobs:
 
       - name: Deploy to Lambda
         run: aws lambda update-function-code \
-          --function-name 04-polly-text-to-speech \
+          --function-name arn:aws:lambda:ap-south-1:982534384941:function:04-polly-text-to-speech \
           --zip-file fileb://lambda4.zip
