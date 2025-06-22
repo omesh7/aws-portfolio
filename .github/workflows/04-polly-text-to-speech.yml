@@ -54,8 +54,7 @@ jobs:
 
       - name: Zip code
         run: |
-          cd ..
-          zip -r lambda4.zip lambda/index.js lambda/package.json
+          zip -r lambda4.zip index.js package.json
 
       - name: Deploy to Lambda
         run: |
