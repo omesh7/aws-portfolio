@@ -38,10 +38,7 @@ jobs:
           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
           unzip awscliv2.zip
           sudo ./aws/install || true
-
-
-      - name: Zip code
-        run: zip -r lambda4.zip index.js package.json
+          aws --version
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
@@ -54,6 +51,11 @@ jobs:
         run: |
           aws sts get-caller-identity
           aws --version
+
+      - name: Zip code
+        run: |
+          cd ..
+          zip -r lambda4.zip lambda/index.js lambda/package.json
 
       - name: Deploy to Lambda
         run: |
