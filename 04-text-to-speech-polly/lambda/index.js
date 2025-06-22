@@ -73,4 +73,3 @@ exports.handler = async (event) => {
   }
 };
 // File: 04-text-to-speech-polly/lambda/package.json
-// --- a/file:///d%3A/PROJECTS/AWS/portfolio/final/aws
