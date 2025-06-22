@@ -1,4 +1,4 @@
-name: Deploy Polly TTS Lambda
+name: Deploy Project 3 - Polly TTS Lambda
 
 on:
   push:
