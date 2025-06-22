@@ -25,8 +25,8 @@ coverage/
 *.local
 
 # Optional: lock files if you don’t want to track them
-**/package-lock.json
-**/yarn.lock
+# **/package-lock.json
+# **/yarn.lock
 
 # Ignore AWS SAM build artifacts
 .aws-sam/
