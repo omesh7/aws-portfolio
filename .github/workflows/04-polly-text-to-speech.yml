@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - "04-text-to-speech-polly/lambda/**"
-      - ".github/workflows/project4_polly.yml"
+      - ".github/workflows/04-text-to-speech-polly.yml"
 
 jobs:
   deploy:
