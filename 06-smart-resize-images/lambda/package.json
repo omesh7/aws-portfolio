@@ -1,0 +1,19 @@
+{
+  "name": "lambda-upload-resize-images",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@aws-sdk/client-lambda": "^3.835.0",
+    "@aws-sdk/client-s3": "^3.837.0",
+    "busboy": "^1.6.0",
+    "sharp": "^0.34.2"
+  }
+}

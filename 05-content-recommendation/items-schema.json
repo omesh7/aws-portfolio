@@ -1,0 +1,23 @@
+{
+  "type": "record",
+  "name": "Items",
+  "namespace": "com.amazonaws.personalize.schema",
+  "fields": [
+    {"name": "ITEM_ID",         "type": "string"},
+    {"name": "ARTISTS",         "type": ["null","string"], "categorical": true},
+    {"name": "DESCRIPTION",     "type": ["null","string"], "textual": true},
+    {"name": "DURATION_MS",     "type": ["null","long"]},
+    {"name": "EMOTION",         "type": ["null","string"], "categorical": true},
+    {"name": "GENRE",           "type": ["null","string"], "categorical": true},
+    {"name": "ALBUM",           "type": ["null","string"], "categorical": true},
+    {"name": "MUSICAL_KEY",     "type": ["null","string"], "categorical": true},
+    {"name": "EXPLICIT_CONTENT","type": ["null","int"]},
+    {"name": "POPULARITY_SCORE","type": ["null","long"]},
+    {"name": "ENERGY",          "type": ["null","long"]},
+    {"name": "DANCEABILITY",    "type": ["null","long"]},
+    {"name": "POSITIVENESS",    "type": ["null","long"]},
+    {"name": "SPEECHINESS",     "type": ["null","long"]},
+    {"name": "LIVENESS",        "type": ["null","long"]}
+  ],
+  "version": "1.0"
+}
