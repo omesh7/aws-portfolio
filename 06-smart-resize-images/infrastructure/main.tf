@@ -27,6 +27,7 @@ resource "aws_s3_bucket_policy" "public_policy" {
       Resource  = "${aws_s3_bucket.resized_bucket.arn}/*"
     }]
   })
+  depends_on = [aws_s3_bucket_public_access_block.block]
 }
 
 resource "aws_iam_role" "lambda_exec" {

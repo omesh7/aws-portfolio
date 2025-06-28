@@ -4,7 +4,7 @@ import busboy from "busboy";
 import { v4 as uuidv4 } from "uuid";
 
 const s3 = new S3Client({ region: "ap-south-1" });
-const BUCKET_NAME = "05-resized-images-bucket-aws-portfolio";
+const BUCKET_NAME = process.env.BUCKET_NAME;
 
 export const handler = async (event) => {
   if (event.requestContext.http.method !== "POST") {
