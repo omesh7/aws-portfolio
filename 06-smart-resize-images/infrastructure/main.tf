@@ -61,13 +61,20 @@ data "archive_file" "lambda_zip" {
 resource "aws_lambda_function" "resize_upload" {
   function_name    = "05-resize-upload-aws-portfolio"
   description      = "Lambda function to resize uploaded images"
-  runtime          = "nodejs18.x"
+  runtime          = "nodejs20.x"
   handler          = "index.handler"
   filename         = data.archive_file.lambda_zip.output_path
   source_code_hash = filebase64sha256(data.archive_file.lambda_zip.output_path)
   role             = aws_iam_role.lambda_exec.arn
+
+  # layers = [
+  #   "arn:aws:lambda:ap-south-1:982534384941:layer:sharp:1"
+  # ]
   environment {
-    variables = {}
+    variables = {
+      BUCKET_NAME = aws_s3_bucket.resized_bucket.bucket
+      REGION      = "ap-south-1"
+    }
   }
   depends_on = [aws_iam_role_policy_attachment.s3_full_access]
 }
@@ -77,10 +84,9 @@ resource "aws_apigatewayv2_api" "api" {
   description   = "API for resizing uploaded images"
   protocol_type = "HTTP"
   cors_configuration {
-    allow_methods = ["POST"]
+    allow_methods = ["GET", "POST"]
     allow_origins = ["*"]
     allow_headers = ["Content-Type"]
-    max_age       = 3600
   }
   tags = {
     Name        = "resize-upload-api"
@@ -119,6 +125,13 @@ resource "aws_apigatewayv2_integration" "lambda_integration" {
 resource "aws_apigatewayv2_route" "upload_route" {
   api_id     = aws_apigatewayv2_api.api.id
   route_key  = "POST /upload"
+  target     = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
+  depends_on = [aws_apigatewayv2_integration.lambda_integration]
+}
+
+resource "aws_apigatewayv2_route" "hello_route" {
+  api_id     = aws_apigatewayv2_api.api.id
+  route_key  = "GET /hello"
   target     = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
   depends_on = [aws_apigatewayv2_integration.lambda_integration]
 }
