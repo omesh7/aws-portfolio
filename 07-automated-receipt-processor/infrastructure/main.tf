@@ -1,5 +1,5 @@
 provider "aws" {
-  region = "ap-south-1" # or your region
+  region = var.region # or your region
 }
 
 resource "aws_sns_topic" "reciept_notifications" {
@@ -31,7 +31,7 @@ resource "aws_sns_topic" "reciept_notifications" {
       Principal = {
         AWS = "*"
       }
-      Resource = "arn:aws:sns:ap-south-1:982534384941:ReceiptNotifications"
+      Resource = var.sns_topic_arn
       Sid      = "__default_statement_ID"
     }]
     Version = "2008-10-17"
@@ -57,7 +57,7 @@ resource "aws_lambda_function" "process_receipt" {
   package_type                   = "Zip"
   region                         = "ap-south-1"
   reserved_concurrent_executions = -1
-  role                           = "arn:aws:iam::982534384941:role/lambda-receipt-processor-role-07-aws-portfolio"
+  role                           = var.role_arn
   runtime                        = "python3.11"
   skip_destroy                   = false
   tags = {
@@ -67,9 +67,9 @@ resource "aws_lambda_function" "process_receipt" {
   timeout = 183
   environment {
     variables = {
-      DYNAMODB_TABLE          = "Receipts"
-      NOTIFICATION_LOG_BUCKET = "07-receipt-processor-aws-portfolio"
-      SNS_TOPIC_ARN           = "arn:aws:sns:ap-south-1:982534384941:ReceiptNotifications"
+      DYNAMODB_TABLE          = var.dynamodb_table
+      NOTIFICATION_LOG_BUCKET = var.bucket_name
+      SNS_TOPIC_ARN           = var.sns_topic_arn
     }
   }
   ephemeral_storage {

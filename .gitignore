@@ -72,5 +72,4 @@ terraform.rc
 *.tfplan
 .envrc
 *.tfstate.*.backup
-
-*.zip
+secrets.auto.tfvars
