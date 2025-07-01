@@ -71,5 +71,6 @@ terraform.rc
 *.override.tf
 *.tfplan
 .envrc
+*.tfstate.*.backup
 
 *.zip
