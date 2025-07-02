@@ -7,3 +7,4 @@ export default function Home() {
     </div>
   )
 }
+// This is the main page of the application where the ImageResizer component is rendered.
