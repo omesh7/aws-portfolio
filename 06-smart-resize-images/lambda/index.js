@@ -26,8 +26,8 @@ export const handler = async (event) => {
       return jsonResponse({ message: "Lambda is alive 🚀" });
     }
 
-    // Route: POST /upload
-    if (method === "POST" && pathName === "/upload") {
+    // Route: POST /resize
+    if (method === "POST" && pathName === "/resize") {
       const width = parseInt(event.queryStringParameters?.width);
       const height = parseInt(event.queryStringParameters?.height);
       const formatParam = event.queryStringParameters?.format || "webp";

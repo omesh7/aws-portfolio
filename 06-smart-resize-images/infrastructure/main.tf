@@ -84,7 +84,7 @@ resource "aws_apigatewayv2_api" "api" {
   description   = "API for resizing uploaded images"
   protocol_type = "HTTP"
   cors_configuration {
-    allow_methods = ["GET", "POST"]
+    allow_methods = ["GET", "POST", "OPTIONS"]
     allow_origins = ["*"]
     allow_headers = ["Content-Type"]
   }
@@ -122,12 +122,13 @@ resource "aws_apigatewayv2_integration" "lambda_integration" {
   depends_on             = [aws_lambda_permission.apigw]
 }
 
-resource "aws_apigatewayv2_route" "upload_route" {
+resource "aws_apigatewayv2_route" "resize_route" {
   api_id     = aws_apigatewayv2_api.api.id
-  route_key  = "POST /upload"
+  route_key  = "POST /resize"
   target     = "integrations/${aws_apigatewayv2_integration.lambda_integration.id}"
   depends_on = [aws_apigatewayv2_integration.lambda_integration]
 }
+
 
 resource "aws_apigatewayv2_route" "hello_route" {
   api_id     = aws_apigatewayv2_api.api.id
@@ -136,7 +137,8 @@ resource "aws_apigatewayv2_route" "hello_route" {
   depends_on = [aws_apigatewayv2_integration.lambda_integration]
 }
 
-output "upload_url" {
-  value       = "${aws_apigatewayv2_api.api.api_endpoint}/upload"
-  description = "URL to upload images for resizing"
+output "resize_url" {
+  value       = "${aws_apigatewayv2_api.api.api_endpoint}/resize"
+  description = "URL to resize images"
 }
+
