@@ -36,7 +36,7 @@ resource "aws_sns_topic" "reciept_notifications" {
     }]
     Version = "2008-10-17"
   })
-  region = "ap-south-1"
+
 
   tracing_config = "PassThrough"
   tags = {
@@ -51,11 +51,11 @@ resource "aws_lambda_function" "process_receipt" {
   filename         = data.archive_file.lambda_zip.output_path
   source_code_hash = data.archive_file.lambda_zip.output_base64sha256
 
-  function_name                  = "07-automated-receipt-processor"
-  handler                        = "lambda_function.lambda_handler"
-  memory_size                    = 128
-  package_type                   = "Zip"
-  region                         = "ap-south-1"
+  function_name = "07-automated-receipt-processor"
+  handler       = "lambda_function.lambda_handler"
+  memory_size   = 128
+  package_type  = "Zip"
+
   reserved_concurrent_executions = -1
   role                           = var.role_arn
   runtime                        = "python3.11"
@@ -94,9 +94,9 @@ resource "aws_dynamodb_table" "receipts_table" {
   name                        = "Receipts"
   range_key                   = "date"
   read_capacity               = 0
-  region                      = "ap-south-1"
-  stream_enabled              = false
-  table_class                 = "STANDARD"
+
+  stream_enabled = false
+  table_class    = "STANDARD"
   tags = {
     "project-no" = "7"
   }
