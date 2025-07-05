@@ -32,8 +32,6 @@ coverage/
 .aws-sam/
 **/lambda.zip/**
 
-
-
 # Logs
 logs
 *.log
@@ -60,7 +58,6 @@ dist-ssr
 *.sw?
 *.csv
 
-
 .terraform/
 *.tfstate
 *.tfstate.backup
@@ -73,3 +70,16 @@ terraform.rc
 .envrc
 *.tfstate.*.backup
 secrets.auto.tfvars
+
+#python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
+# Ignore Jupyter Notebook checkpoints
+.venv/
+*.venv
+.*/venv/
+venv/
