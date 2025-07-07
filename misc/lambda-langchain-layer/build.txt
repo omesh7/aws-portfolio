@@ -1,0 +1,21 @@
+===DOCKER BUILD LAYER===
+
+docker build -t lambda-langchain-layer . && docker run --name temp-layer lambda-langchain-layer && docker cp temp-layer:/var/task/lambda_langchain_08_layer.zip . && docker rm temp-layer 
+
+
+
+==COPY FILE TO S3 BUCKET== 
+
+aws s3 cp lambda_langchain_08_layer.zip s3://your-bucket/lambda_langchain_08_layer.zip
+
+
+===PUBLISH LANGCHAIN LAYER VIA s3====
+
+aws lambda publish-layer-version --layer-name lambda_langchain_layer --content S3Bucket=lambda-layers-aws-portfolio,S3Key=lambda_langchain_layer.zip --compatible-runtimes python3.12
+
+
+
+==>PUBLISH LAYER DIRECTLY== 
+
+aws lambda publish-layer-version --layer-name lambda_langchain_layer --zip-file fileb://lambda_langchain_08_layer.zip --compatible-runtimes python3.12
+

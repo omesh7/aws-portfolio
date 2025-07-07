@@ -1,15 +1,7 @@
-output "s3_bucket" {
-  value = aws_s3_bucket.kb.id
+output "s3_bucket_name" {
+  value = module.s3.bucket_name
 }
 
-output "aurora_cluster_arn" {
-  value = module.aurora.cluster_arn
-
-}
-
-output "lambda_chat_url" {
-  value = aws_lambda_function_url.chat_url.function_url
-}
-output "lambda_ingest_function_name" {
-  value = aws_lambda_function.ingest.function_name
+output "lambda_function_url" {
+  value = module.lambda.lambda_url
 }

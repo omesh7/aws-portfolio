@@ -83,3 +83,6 @@ __pycache__/
 *.venv
 .*/venv/
 venv/
+
+
+**/*.zip
