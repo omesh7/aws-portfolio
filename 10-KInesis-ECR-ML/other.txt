@@ -1,0 +1,72 @@
+aws ecr create-repository --repository-name project-10-fastapi --region ap-south-1
+
+REGISTRY ID : 982534384941
+
+POWERSHELL : aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 982534384941.dkr.ecr.ap-south-1.amazonaws.com
+
+TAG DOCKER IMAGE : docker tag fastapi-app:latest 982534384941.dkr.ecr.ap-south-1.amazonaws.com/project-10-fastapi:latest
+
+DOCKER PUSH : docker push 982534384941.dkr.ecr.ap-south-1.amazonaws.com/project-10-fastapi:latest
+
+
+aws ecr get-login-password --region ap-south-1 
+
+
+//---------------------
+
+ 1. Push Your Docker Image to ECR
+Make sure you've already created the ECR repo manually in AWS Console named fastapi-app-test.
+
+Then run this:
+
+bash
+
+# Authenticate Docker to ECR
+aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 982534384941.dkr.ecr.ap-south-1.amazonaws.com
+
+# Build your Docker image
+docker build -t fastapi-app-test .
+
+# Tag image for ECR
+docker tag fastapi-app-test:latest 982534384941.dkr.ecr.ap-south-1.amazonaws.com/fastapi-app-test:latest
+
+# Push it
+docker push 982534384941.dkr.ecr.ap-south-1.amazonaws.com/fastapi-app-test:latest
+✅ 2. Update Your Terraform Variables
+In secrets.auto.tfvars or terraform.tfvars:
+
+hcl
+
+project_name         = "fastapi-app-test"
+aws_region           = "ap-south-1"
+vpc_cidr             = "10.0.0.0/16"
+public_subnets_cidr  = ["10.0.1.0/24", "10.0.2.0/24"]
+app_port             = 80
+min_tasks            = 1
+max_tasks            = 2
+ecr_repository_url   = "982534384941.dkr.ecr.ap-south-1.amazonaws.com/fastapi-app-test"
+✅ 3. Deploy Terraform
+bash
+
+cd infrastructure/
+terraform init
+terraform apply --auto-approve
+✅ 4. Access Your App
+After apply, run:
+
+bash
+
+terraform output alb_dns
+Open:
+
+
+cpp
+
+http://<alb_dns_output>/
+
+
+You should see:
+
+json
+
+{"message": "Hello from FastAPI"}
