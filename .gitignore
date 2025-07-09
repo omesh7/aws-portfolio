@@ -70,6 +70,7 @@ terraform.rc
 .envrc
 *.tfstate.*.backup
 secrets.auto.tfvars
+*.terraform.tfstate.lock.info
 
 #python
 __pycache__/
@@ -85,6 +86,6 @@ __pycache__/
 venv/
 *.pyc
 
-
+**/other.txt
 
 **/*.zip

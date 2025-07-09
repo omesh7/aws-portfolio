@@ -8,10 +8,10 @@ terraform {
       source  = "hashicorp/aws"
       version = "~>6.0"
     }
-    cloudflare = {
-      source  = "cloudflare/cloudflare"
-      version = "~>5.0"
-    }
+    # cloudflare = {
+    #   source  = "cloudflare/cloudflare"
+    #   version = "~>5.0"
+    # }
   }
 
   backend "local" {}
@@ -21,11 +21,11 @@ provider "aws" {
   region = var.aws_region
 }
 
-provider "cloudflare" {
-  # email     = var.cloudflare_email
-  api_token = var.cloudflare_api_key
+# provider "cloudflare" {
+#   # email     = var.cloudflare_email
+#   api_token = var.cloudflare_api_key
 
-}
+# }
 
 ######################################################################
 # VPC & Networking
@@ -285,64 +285,65 @@ resource "aws_cloudwatch_log_group" "log" {
   retention_in_days = 1
 }
 
-######################################################################
-# Cloudflare Integration & HTTPS Setup
-######################################################################
+# ######################################################################
+# # Cloudflare Integration & HTTPS Setup
+# ######################################################################
 
-# # ACM Certificate (in us-east-1, required for CloudFront/ALB HTTPS)
+# # # ACM Certificate (in us-east-1, required for CloudFront/ALB HTTPS)
 provider "aws" {
   alias  = "us_east"
   region = "us-east-1"
 }
 
+# -----OPTIONAL: NOT WORKING YET-----
+# # Uncomment the following section if you want to set up ACM certificate validation with Cloudflare DNS records.
+# # 1. Request ACM certificate in us-east-1
+# resource "aws_acm_certificate" "cert" {
+#   provider          = aws.us_east
+#   domain_name       = var.domain_name
+#   validation_method = "DNS"
 
-# 1. Request ACM certificate in us-east-1
-resource "aws_acm_certificate" "cert" {
-  provider          = aws.us_east
-  domain_name       = var.domain_name
-  validation_method = "DNS"
+#   lifecycle {
+#     create_before_destroy = true
+#   }
+# }
 
-  lifecycle {
-    create_before_destroy = true
-  }
-}
+# output "acm_certificate_arn" {
+#   value     = aws_acm_certificate.cert
+#   sensitive = true
+# }
 
-output "acm_certificate_arn" {
-  value     = aws_acm_certificate.cert
-  sensitive = true
-}
-
-# 2. Create Cloudflare DNS records for ACM validation
-resource "cloudflare_dns_record" "acm_validation" {
-  zone_id = var.cloudflare_zone_id
-  name    = tolist(aws_acm_certificate.cert.domain_validation_options)[0].resource_record_name
-  type    = tolist(aws_acm_certificate.cert.domain_validation_options)[0].resource_record_type
-  content = tolist(aws_acm_certificate.cert.domain_validation_options)[0].resource_record_value
-  ttl     = 60
-  proxied = false
-}
-
-
-resource "aws_acm_certificate_validation" "cert_valid" {
-  provider                = aws.us_east
-  certificate_arn         = aws_acm_certificate.cert.arn
-  validation_record_fqdns = [cloudflare_dns_record.acm_validation.name]
-  depends_on              = [cloudflare_dns_record.acm_validation]
-
-}
+# # 2. Create Cloudflare DNS records for ACM validation
+# resource "cloudflare_dns_record" "acm_validation" {
+#   zone_id = var.cloudflare_zone_id
+#   name    = tolist(aws_acm_certificate.cert.domain_validation_options)[0].resource_record_name
+#   type    = tolist(aws_acm_certificate.cert.domain_validation_options)[0].resource_record_type
+#   content = tolist(aws_acm_certificate.cert.domain_validation_options)[0].resource_record_value
+#   ttl     = 60
+#   proxied = false
+# }
 
 
-resource "aws_lb_listener" "https" {
-  load_balancer_arn = aws_lb.alb.arn
-  port              = 443
-  protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-2016-08"
-  certificate_arn   = aws_acm_certificate_validation.cert_valid.certificate_arn
+# resource "aws_acm_certificate_validation" "cert_valid" {
+#   provider                = aws.us_east
+#   certificate_arn         = aws_acm_certificate.cert.arn
+#   validation_record_fqdns = [cloudflare_dns_record.acm_validation.name]
+#   depends_on              = [cloudflare_dns_record.acm_validation]
 
-  default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.tg.arn
-  }
+# }
 
-  depends_on = [aws_acm_certificate_validation.cert_valid]
-}
+
+# resource "aws_lb_listener" "https" {
+#   load_balancer_arn = aws_lb.alb.arn
+#   port              = 443
+#   protocol          = "HTTPS"
+#   ssl_policy        = "ELBSecurityPolicy-2016-08"
+#   certificate_arn   = aws_acm_certificate_validation.cert_valid.certificate_arn
+
+#   default_action {
+#     type             = "forward"
+#     target_group_arn = aws_lb_target_group.tg.arn
+#   }
+
+#   depends_on = [aws_acm_certificate_validation.cert_valid]
+# }
