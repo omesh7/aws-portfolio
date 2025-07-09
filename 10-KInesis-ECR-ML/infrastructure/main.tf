@@ -254,52 +254,9 @@ resource "aws_cloudwatch_metric_alarm" "cpu_high" {
 resource "aws_cloudwatch_log_group" "log" {
   name              = "/ecs/${var.project_name}"
   retention_in_days = 1
+  lifecycle {
+    ignore_changes = [retention_in_days]
+  }
 }
 
 ######################################################################
-# Remote S3 Backend for State
-######################################################################
-resource "aws_s3_bucket" "tf_state" {
-  bucket        = "${var.project_name}-tf-state"
-  force_destroy = true
-}
-
-
-
-resource "aws_s3_bucket_acl" "tf_state_acl" {
-  bucket = aws_s3_bucket.tf_state.id
-  acl    = "private"
-
-
-}
-
-resource "aws_s3_bucket_versioning" "tf_state_versioning" {
-  bucket = aws_s3_bucket.tf_state.id
-  versioning_configuration {
-    status = "Enabled"
-  }
-}
-
-
-
-resource "aws_s3_bucket_server_side_encryption_configuration" "example" {
-  bucket = aws_s3_bucket.tf_state.id
-
-  rule {
-    apply_server_side_encryption_by_default {
-
-      sse_algorithm = "AES256"
-    }
-  }
-}
-
-resource "aws_dynamodb_table" "tf_lock" {
-  name         = "${var.project_name}-tf-lock"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "LockID"
-
-  attribute {
-    name = "LockID"
-    type = "S"
-  }
-}
