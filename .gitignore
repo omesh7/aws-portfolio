@@ -61,7 +61,7 @@ dist-ssr
 .terraform/
 *.tfstate
 *.tfstate.backup
-*.tfvars
+# *.tfvars
 *.tfvars.json
 .terraformrc
 terraform.rc
