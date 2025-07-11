@@ -89,3 +89,4 @@ venv/
 **/other.txt
 **/**/other.txt
 **/*.zip
+10-KInesis-ECR-ML/other.txt

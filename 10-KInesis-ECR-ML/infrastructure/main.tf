@@ -123,8 +123,23 @@ resource "aws_lb_listener" "listener" {
 }
 
 ######################################################################
-# IAM Roles for ECS Task Execution
+# IAM Roles for ECS Task Execution & Kinesis
 ######################################################################
+
+resource "aws_iam_policy" "ecs_kinesis_write" {
+  name        = "ecs-kinesis-write"
+  description = "Allow ECS task to put records to Kinesis stream"
+
+  policy = jsonencode({
+    Version = "2012-10-17",
+    Statement = [{
+      Effect   = "Allow",
+      Action   = ["kinesis:PutRecord", "kinesis:PutRecords"],
+      Resource = aws_kinesis_stream.anomaly_stream.arn
+    }]
+  })
+}
+
 data "aws_iam_policy_document" "assume_for_ecs" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -146,6 +161,12 @@ resource "aws_iam_role_policy_attachment" "exec_attach" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
+
+resource "aws_iam_role_policy_attachment" "ecs_attach_kinesis_write" {
+  role       = aws_iam_role.ecs_task_execution.name
+  policy_arn = aws_iam_policy.ecs_kinesis_write.arn
+}
+
 ######################################################################
 # ECS Cluster, Task Definition, and Service
 ######################################################################
@@ -163,7 +184,7 @@ resource "aws_ecs_task_definition" "task" {
 
   container_definitions = jsonencode([{
     name  = "app"
-    image = "${var.ecr_repository_url}:latest"
+    image = "${var.ecr_repository_url}:${var.image_version}"
     portMappings = [{
       containerPort = var.app_port
       protocol      = "tcp"
@@ -180,7 +201,7 @@ resource "aws_ecs_task_definition" "task" {
 }
 
 resource "aws_ecs_service" "service" {
-  name            = var.project_name
+  name            = "${var.project_name}-ecs-service"
   cluster         = aws_ecs_cluster.cluster.id
   task_definition = aws_ecs_task_definition.task.arn
   launch_type     = "FARGATE"
@@ -201,62 +222,3 @@ resource "aws_ecs_service" "service" {
 
   depends_on = [aws_lb_listener.listener]
 }
-
-######################################################################
-# Auto Scaling for ECS Service
-######################################################################
-resource "aws_appautoscaling_target" "ecs_target" {
-  max_capacity       = var.max_tasks
-  min_capacity       = var.min_tasks
-  resource_id        = "service/${aws_ecs_cluster.cluster.name}/${aws_ecs_service.service.name}"
-  scalable_dimension = "ecs:service:DesiredCount"
-  service_namespace  = "ecs"
-  role_arn           = aws_iam_role.ecs_task_execution.arn
-}
-
-resource "aws_appautoscaling_policy" "scale_up" {
-  name               = "scale-up"
-  policy_type        = "StepScaling"
-  resource_id        = aws_appautoscaling_target.ecs_target.resource_id
-  scalable_dimension = aws_appautoscaling_target.ecs_target.scalable_dimension
-  service_namespace  = "ecs"
-
-  step_scaling_policy_configuration {
-    adjustment_type = "ChangeInCapacity"
-    step_adjustment {
-      scaling_adjustment          = 1
-      metric_interval_lower_bound = 0
-    }
-    cooldown                = 60
-    metric_aggregation_type = "Maximum"
-  }
-}
-
-######################################################################
-# CloudWatch Alarms & Log Group
-######################################################################
-resource "aws_cloudwatch_metric_alarm" "cpu_high" {
-  alarm_name          = "${var.project_name}-cpu-high"
-  comparison_operator = "GreaterThanOrEqualToThreshold"
-  evaluation_periods  = 2
-  metric_name         = "CPUUtilization"
-  namespace           = "AWS/ECS"
-  period              = 60
-  statistic           = "Average"
-  threshold           = 75
-  dimensions = {
-    ClusterName = aws_ecs_cluster.cluster.name
-    ServiceName = aws_ecs_service.service.name
-  }
-  alarm_actions = [aws_appautoscaling_policy.scale_up.arn]
-}
-
-resource "aws_cloudwatch_log_group" "log" {
-  name              = "/ecs/${var.project_name}"
-  retention_in_days = 1
-  lifecycle {
-    ignore_changes = [retention_in_days]
-  }
-}
-
-######################################################################
