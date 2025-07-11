@@ -17,3 +17,21 @@ variable "ecr_repository_url" {
   type        = string
 
 }
+variable "image_version" {
+  description = "Version of the Docker image to be used in ECS"
+  type        = string
+  default     = "v1"
+
+}
+
+variable "tags" {
+
+
+  default = {
+    Environment = "Portfolio"
+    Owner       = "Omesh"
+    Project     = "kinesis-ecr-10-app"
+    project-no  = "10"
+  }
+  type = map(string)
+}
