@@ -1,95 +1,97 @@
-name: "10 - Kinesis ECR ML Deployment Workflow"
+# name: "10 - Kinesis ECR ML Deployment Workflow"
 
-on:
-  push:
-    branches:
-      - main
-    paths:
-      - "10-KInesis-ECR-ML/**"
-      - ".github/workflows/10-kinesis-ECR-ML.yml"
+# on:
+#   push:
+#     branches:
+#       - main
+#     paths:
+#       - "10-KInesis-ECR-ML/**"
+#       - ".github/workflows/10-kinesis-ECR-ML.yml"
 
-jobs:
-  docker_image:
-    name: Build and Push Docker to ECR
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: 10-KInesis-ECR-ML
+# jobs:
 
-    outputs:
-      image_url: ${{ steps.set-image-url.outputs.image_url }}
+   
+#   docker_image:
+#     name: Build and Push Docker to ECR
+#     runs-on: ubuntu-latest
+#     defaults:
+#       run:
+#         working-directory: 10-KInesis-ECR-ML
 
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+#     outputs:
+#       image_url: ${{ steps.set-image-url.outputs.image_url }}
 
-      - name: Install AWS Client
-        run: |
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          unzip awscliv2.zip
-          sudo ./aws/install || true
-          aws --version
+#     steps:
+#       - name: Checkout Code
+#         uses: actions/checkout@v3
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+#       - name: Install AWS Client
+#         run: |
+#           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+#           unzip awscliv2.zip
+#           sudo ./aws/install || true
+#           aws --version
 
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
+#       - name: Configure AWS Credentials
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Build & Push Docker Image
-        env:
-          IMAGE_TAG: ${{ github.sha }}
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          # Replace the value below with your actual ECR repository name if the secret does not exist
-          ECR_REPO: ${{ secrets.ECR_REPO_NAME_PROJECT_10 }}
-        run: |
-          docker build -t $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG .
-          docker push $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG
-          echo "IMAGE_URL=$ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG" >> $GITHUB_ENV
+#       - name: Login to Amazon ECR
+#         id: login-ecr
+#         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Set Output Image URL
-        id: set-image-url
-        run: echo "image_url=${{ env.IMAGE_URL }}" >> "$GITHUB_OUTPUT"
+#       - name: Build & Push Docker Image
+#         env:
+#           IMAGE_TAG: ${{ github.sha }}
+#           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+#           # Replace the value below with your actual ECR repository name if the secret does not exist
+#           ECR_REPO: ${{ secrets.ECR_REPO_NAME_PROJECT_10 }}
+#         run: |
+#           docker build -t $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG .
+#           docker push $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG
+#           echo "IMAGE_URL=$ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG" >> $GITHUB_ENV
 
-  terraform_apply:
-    name: Terraform Deploy (Infra + ECS)
-    runs-on: ubuntu-latest
-    needs: docker_image
+#       - name: Set Output Image URL
+#         id: set-image-url
+#         run: echo "image_url=${{ env.IMAGE_URL }}" >> "$GITHUB_OUTPUT"
 
-    defaults:
-      run:
-        working-directory: 10-KInesis-ECR-ML/infrastructure
+#   terraform_apply:
+#     name: Terraform Deploy (Infra + ECS)
+#     runs-on: ubuntu-latest
+#     needs: docker_image
 
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
+#     defaults:
+#       run:
+#         working-directory: 10-KInesis-ECR-ML/infrastructure
 
-      - name: Install AWS Client
-        run: |
-          curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          unzip awscliv2.zip
-          sudo ./aws/install || true
-          aws --version
+#     steps:
+#       - name: Checkout Code
+#         uses: actions/checkout@v3
 
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
+#       - name: Install AWS Client
+#         run: |
+#           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+#           unzip awscliv2.zip
+#           sudo ./aws/install || true
+#           aws --version
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v3.1.2
+#       - name: Configure AWS Credentials
+#         uses: aws-actions/configure-aws-credentials@v4
+#         with:
+#           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Terraform Init
-        run: terraform init
+#       - name: Setup Terraform
+#         uses: hashicorp/setup-terraform@v3.1.2
+
+#       - name: Terraform Init
+#         run: terraform init
         
-      - name: Terraform Apply with ECR Image
-        env:
-          TF_VAR_ecr_repository_url: ${{ needs.docker_image.outputs.image_url }}
-        run: terraform apply -auto-approve
+#       - name: Terraform Apply with ECR Image
+#         env:
+#           TF_VAR_ecr_repository_url: ${{ needs.docker_image.outputs.image_url }}
+#         run: terraform apply -auto-approve

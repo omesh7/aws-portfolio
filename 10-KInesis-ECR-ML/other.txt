@@ -4,10 +4,12 @@ REGISTRY ID : 982534384941
 
 POWERSHELL : aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 982534384941.dkr.ecr.ap-south-1.amazonaws.com
 
-TAG DOCKER IMAGE : docker tag fastapi-app:latest 982534384941.dkr.ecr.ap-south-1.amazonaws.com/project-10-fastapi:latest
+TAG DOCKER IMAGE : docker tag kinesis-ecr-10-app:latest 982534384941.dkr.ecr.ap-south-1.amazonaws.com/kinesis-ecr-10-app-repository:v1
 
-DOCKER PUSH : docker push 982534384941.dkr.ecr.ap-south-1.amazonaws.com/project-10-fastapi:latest
+DOCKER PUSH : docker push 982534384941.dkr.ecr.ap-south-1.amazonaws.com/kinesis-ecr-10-app-repository:v1
 
+
+982534384941.dkr.ecr.ap-south-1.amazonaws.com/kinesis-ecr-10-app-repository
 
 aws ecr get-login-password --region ap-south-1 
 
@@ -28,10 +30,10 @@ aws ecr get-login-password --region ap-south-1 | docker login --username AWS --p
 docker build -t fastapi-app-test .
 
 # Tag image for ECR
-docker tag fastapi-app-test:latest 982534384941.dkr.ecr.ap-south-1.amazonaws.com/fastapi-app-test:latest
+docker tag fastapi-app-test:v1 982534384941.dkr.ecr.ap-south-1.amazonaws.com/fastapi-app-test:v1
 
 # Push it
-docker push 982534384941.dkr.ecr.ap-south-1.amazonaws.com/fastapi-app-test:latest
+docker push 982534384941.dkr.ecr.ap-south-1.amazonaws.com/fastapi-app-test:v1
 ✅ 2. Update Your Terraform Variables
 In secrets.auto.tfvars or terraform.tfvars:
 
@@ -70,3 +72,40 @@ You should see:
 json
 
 {"message": "Hello from FastAPI"}
+
+//----------------------
+
+kinesis --test--
+
+
+docker build -t fastapi-kinesis-app .
+
+
+docker run -p 80:80 -e AWS_ACCESS_KEY_ID=AKIA6JQ445UW62RIRL6S -e AWS_SECRET_ACCESS_KEY=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 -e AWS_DEFAULT_REGION=ap-south-1 fastapi-kinesis-app uvicorn main:app --host 0.0.0.0 --port 80
+//---------
+
+
+# Authenticate Docker to ECR (PowerShell)
+
+# Set variables
+# Authenticate Docker to ECR (PowerShell)
+
+# Set variables
+$AWS_REGION = "ap-south-1"
+$ACCOUNT_ID = "982534384941"  # Replace with your actual AWS account ID
+$REPO_NAME = "kinesis-ecr-10-app"
+$IMAGE_TAG = "v1"
+
+
+# Authenticate Docker to ECR
+aws ecr get-login-password --region $AWS_REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com
+
+# Build Docker image
+docker build -t $REPO_NAME .
+
+# Tag image
+docker tag "$REPO_NAME:latest" "${ECR_URI}/${REPO_NAME}:${IMAGE_TAG}"
+
+# Push to ECR
+docker push "${ECR_URI}/${REPO_NAME}:${IMAGE_TAG}"
+
