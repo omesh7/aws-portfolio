@@ -1,0 +1,13 @@
+fastapi
+uvicorn[standard]
+python-dotenv
+websockets
+boto3
+
+yt-dlp
+youtube-transcript-api
+openai
+google-generativeai
+groq
+SpeechRecognition
+pydub
