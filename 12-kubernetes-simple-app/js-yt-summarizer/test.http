@@ -1,0 +1,34 @@
+### Health Check
+GET http://localhost:3000/health
+
+### Basic Info
+GET http://localhost:3000/
+
+### Test Summarize with Gemini
+POST http://localhost:3000/summarize
+Content-Type: application/json
+
+{
+  "url": "https://www.youtube.com/watch?v=PziYflu8cB8&t=3s",
+  "language": "English",
+  "mode": "video",
+  "aiModel": "gemini"
+}
+
+### Test with Groq
+POST http://localhost:3000/summarize
+Content-Type: application/json
+
+{
+  "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  "aiModel": "groq"
+}
+
+### Test with GPT-4
+POST http://localhost:3000/summarize
+Content-Type: application/json
+
+{
+  "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  "aiModel": "gpt4"
+}
