@@ -1,0 +1,25 @@
+{
+  "name": "app",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts --env-file=.env",
+    "build": "tsc",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@hono/node-server": "^1.17.1",
+    "dotenv": "^17.2.1",
+    "form-data": "^4.0.4",
+    "groq-sdk": "^0.29.0",
+    "hono": "^4.8.9",
+    "openai": "^5.10.2",
+    "youtube-transcript": "^1.2.1"
+  },
+  "devDependencies": {
+    "@types/fluent-ffmpeg": "^2.1.27",
+    "@types/node": "^20.11.17",
+    "tsx": "^4.7.1",
+    "typescript": "^5.8.3"
+  }
+}
