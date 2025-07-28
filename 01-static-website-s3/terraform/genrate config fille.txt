@@ -1,0 +1,9 @@
+step 1:
+import {
+  to = aws_s3_bucket.bucket
+  id = "01-project-omesh7-aws-portfolio"
+}
+
+
+step 2:
+terraform plan -generate-config-out="generated.tf"
