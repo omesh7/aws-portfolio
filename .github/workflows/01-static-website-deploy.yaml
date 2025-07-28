@@ -7,6 +7,7 @@ on:
     paths:
       - '01-static-website-s3/site/**'
       - '.github/workflows/project1_staticwebsite.yml'
+  workflow_dispatch:
 
 jobs:
   deploy:
