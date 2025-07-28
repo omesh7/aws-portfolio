@@ -36,10 +36,10 @@ resource "aws_lambda_function" "controller" {
   ]
   environment {
     variables = {
-      GITHUB_TOKEN     = var.github_token
-      GITHUB_USERNAME  = var.github_username
-      TFC_API_TOKEN    = var.tfc_api_token
-      TFC_ORGANIZATION = var.tfc_organization
+      GITHUB_TOKEN    = var.github_token
+      GITHUB_USERNAME = var.github_username
+      TFC_API_TOKEN   = var.tfc_api_token
+      TFC_ORG_NAME    = var.tfc_organization
     }
   }
 }
