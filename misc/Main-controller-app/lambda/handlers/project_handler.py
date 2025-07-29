@@ -72,11 +72,14 @@ def destroy_project(project: str) -> Dict[str, Any]:
     
     try:
         # Step 1: Stop application deployment
-        actions_service.trigger_destroy_workflow(project)
+        workflow_result = actions_service.trigger_destroy_workflow(project)
         
         # Step 2: Destroy infrastructure
         terraform_service.trigger_destroy(project)
         
-        return success_response({"message": f"Started destroying {project}: deployment + infrastructure"})
+        return success_response({
+            "message": f"Started destroying {project}: deployment + infrastructure",
+            "workflow_status": workflow_result.get("status")
+        })
     except Exception as e:
         return error_response(str(e), 500)
