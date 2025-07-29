@@ -8,6 +8,7 @@ on:
       - '01-static-website-s3/site/**'
       - '.github/workflows/project1_staticwebsite.yml'
   workflow_dispatch:
+      
 
 jobs:
   deploy:
@@ -45,4 +46,4 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
-          SOURCE_DIR: 01-static-website-s3/site/dist
+          SOURCE_DIR: dist
