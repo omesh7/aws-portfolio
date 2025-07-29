@@ -14,10 +14,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    defaults:
-      run:
-        working-directory: 01-static-website-s3/site
-
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
@@ -29,13 +25,18 @@ jobs:
 
       - name: Install dependencies
         run: npm install
+        working-directory: 01-static-website-s3/site
 
       - name: Build Vite site
         run: npm run build
+        working-directory: 01-static-website-s3/site
         env:
           VITE_APP_EMAILJS_SERVICE_ID: ${{ secrets.VITE_APP_EMAILJS_SERVICE_ID }}
           VITE_APP_EMAILJS_TEMPLATE_ID: ${{ secrets.VITE_APP_EMAILJS_TEMPLATE_ID_PROJECT_01_STATIC_SITE }}
           VITE_APP_EMAILJS_PUBLIC_KEY: ${{ secrets.VITE_APP_EMAILJS_PUBLIC_KEY }}
+
+      - name: Verify build output
+        run: ls -la 01-static-website-s3/site/dist
 
       - name: Deploy to S3
         uses: jakejarvis/s3-sync-action@master
@@ -46,4 +47,4 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: ${{ secrets.AWS_REGION }}
-          SOURCE_DIR: dist
+          SOURCE_DIR: 01-static-website-s3/site/dist
