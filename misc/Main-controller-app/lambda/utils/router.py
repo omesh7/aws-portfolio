@@ -6,6 +6,7 @@ from handlers.project_handler import (
     start_project,
     destroy_project,
 )
+from handlers.projects.project_01 import webhook_project_01_deploy
 from utils.response import error_response
 
 
@@ -30,6 +31,16 @@ def route_request(event: Dict[str, Any]) -> Dict[str, Any]:
         body = json.loads(event.get("body", "{}"))
         project = body.get("project")
         return destroy_project(project)
+
+    elif path.startswith("/webhook/") and method == "POST":
+        # Extract webhook token from path
+        webhook_token = path.split("/webhook/")[-1]
+        
+        # Route to appropriate project webhook
+        if webhook_token.startswith("tf-p1-"):
+            return webhook_project_01_deploy(webhook_token)
+        else:
+            return error_response("Invalid webhook", 404)
 
     elif path == "/":
         return {
