@@ -1,169 +1,364 @@
-# 🌐 Project 1: Static Portfolio Website on S3
+# Static Portfolio Website - AWS Cloud Infrastructure
 
-A serverless static website hosting solution using AWS S3 with automated CI/CD deployment pipeline.
+**Professional 3D Portfolio with Full-Stack Cloud Architecture**
 
-## 📋 Overview
+A production-ready static website showcasing modern web development and cloud engineering skills, featuring automated CI/CD, Infrastructure as Code, and enterprise-grade security.
 
-This project demonstrates hosting a personal portfolio website built with Vite on AWS S3, featuring automated deployment through GitHub Actions and global content delivery via CloudFront CDN.
+## 🎯 Quick Overview for Recruiters
 
-## 🏗️ Architecture
+**Key Technical Highlights:**
 
+- **Frontend:** React + Three.js + Vite (Modern JavaScript stack)
+- **Cloud Infrastructure:** AWS S3, CloudFront, ACM, IAM
+- **Infrastructure as Code:** Terraform with multi-provider setup
+- **CI/CD:** GitHub Actions with automated deployment
+- **DNS & Security:** Cloudflare integration with SSL/TLS
+- **Performance:** Global CDN, optimized builds, responsive design
+
+**Live Demo:** [View Portfolio](https://portfolio.omesh.site) | **Source Code:** [GitHub Repository](https://github.com/omesh7/aws-portfolio)
+
+---
+
+## 🏗️ Architecture Overview
+
+```mermaid
+graph LR
+    A[Developer] --> B[GitHub Repository]
+    B --> C[GitHub Actions CI/CD]
+    C --> D[AWS S3 Bucket]
+    D --> E[CloudFront CDN]
+    E --> F[Cloudflare DNS]
+    F --> G[Custom Domain]
+
+    H[Terraform Cloud] --> I[AWS Infrastructure]
+    I --> D
+    I --> E
+    I --> J[ACM Certificate]
 ```
-GitHub Repository → GitHub Actions → AWS S3 → CloudFront → [Optional: Custom Domain]
-```
 
-## 🔧 AWS Services Used
+**Data Flow:**
 
-- **Amazon S3** - Static website hosting and file storage
-- **Amazon CloudFront** - Global CDN for fast content delivery
-- **AWS IAM** - Access management and permissions
+1. Code push triggers GitHub Actions workflow
+2. Vite builds optimized React application
+3. Assets deployed to S3 via automated sync
+4. CloudFront serves content globally with caching
+5. Cloudflare provides DNS resolution and additional security
+
+---
+
+## 💼 Technical Implementation
+
+### Frontend Stack
+
+- **React 19** - Modern component architecture
+- **Three.js & React Three Fiber** - 3D graphics and animations
+- **Tailwind CSS 4.0** - Utility-first styling
+- **GSAP** - Professional animations
+- **Vite** - Fast build tool and development server
+- **EmailJS** - Contact form integration
+
+### Cloud Infrastructure (AWS)
+
+- **S3 Static Website Hosting** - Scalable storage with website configuration
+- **CloudFront Distribution** - Global CDN with 400+ edge locations
+- **ACM SSL Certificate** - Automated certificate management
+- **IAM Policies** - Least-privilege access control
+- **Origin Access Control** - Secure S3 access
+
+### Infrastructure as Code
+
+- **Terraform** - Multi-provider infrastructure management
+- **Terraform Cloud** - Remote state management and collaboration
+- **AWS Provider** - Complete AWS resource management
+- **Cloudflare Provider** - DNS and security configuration
+
+### DevOps & CI/CD
+
+- **GitHub Actions** - Automated deployment pipeline
+- **Node.js 18** - Modern runtime environment
+- **Automated Testing** - Build verification and deployment
+- **Environment Variables** - Secure configuration management
+
+---
 
 ## 📁 Project Structure
 
 ```
 01-static-website-s3/
-├── site/                    # Vite application source
-│   ├── src/                 # Source code
-│   ├── public/              # Static assets
-│   ├── package.json         # Dependencies
-│   └── vite.config.js       # Build configuration
-├── terraform/               # Infrastructure as Code
-│   ├── main.tf              # S3 bucket and CloudFront setup
-│   ├── variables.tf         # Configuration variables
-│   └── outputs.tf           # Resource outputs
-└── README.md               # This file
+├── infrastructure/              # Terraform Infrastructure
+│   ├── main.tf                 # Core AWS resources
+│   ├── providers.tf            # Provider configurations
+│   ├── variables.tf            # Input variables
+│   ├── outputs.tf              # Resource outputs
+│   └── .terraform.lock.hcl     # Provider version lock
+├── site/                       # React Application
+│   ├── src/
+│   │   ├── components/         # Reusable UI components
+│   │   ├── sections/           # Page sections
+│   │   ├── constants/          # Configuration data
+│   │   └── App.jsx            # Main application
+│   ├── public/                 # Static assets
+│   ├── package.json           # Dependencies & scripts
+│   └── vite.config.js         # Build configuration
+└── .github/workflows/          # CI/CD Pipeline
+    └── 01-static-website-deploy.yaml
 ```
 
-## ⚙️ Configuration
+---
+
+## 🚀 Deployment Pipeline
+
+### Automated CI/CD Workflow
+
+**Trigger Conditions:**
+
+- Push to `main` branch with changes in `01-static-website-s3/site/**`
+- Manual workflow dispatch
+
+**Pipeline Steps:**
+
+1. **Environment Setup** - Ubuntu latest, Node.js 18
+2. **Dependency Installation** - npm install with package-lock.json
+3. **Build Process** - Vite production build with environment variables
+4. **Build Verification** - Automated output validation
+5. **S3 Deployment** - Sync to S3 with `--delete` flag for cleanup
+
+**Environment Variables:**
+
+```yaml
+VITE_APP_EMAILJS_SERVICE_ID: ${{ secrets.VITE_APP_EMAILJS_SERVICE_ID }}
+VITE_APP_EMAILJS_TEMPLATE_ID: ${{ secrets.VITE_APP_EMAILJS_TEMPLATE_ID_PROJECT_01_STATIC_SITE }}
+VITE_APP_EMAILJS_PUBLIC_KEY: ${{ secrets.VITE_APP_EMAILJS_PUBLIC_KEY }}
+```
+
+### Infrastructure Provisioning
+
+**Terraform Resources:**
+
+- S3 bucket with static website configuration
+- CloudFront distribution with custom domain
+- ACM certificate with DNS validation
+- IAM policies for secure access
+- Cloudflare DNS records and CAA records
+
+---
+
+## 🔧 Technical Configuration
+
+### Required GitHub Secrets
+
+```
+AWS_ACCESS_KEY_ID              # AWS programmatic access
+AWS_SECRET_ACCESS_KEY          # AWS secret key
+AWS_REGION                     # Target AWS region
+S3_BUCKET_NAME_STATIC_PROJECT_01  # S3 bucket identifier
+VITE_APP_EMAILJS_SERVICE_ID    # EmailJS service configuration
+VITE_APP_EMAILJS_TEMPLATE_ID_PROJECT_01_STATIC_SITE  # Email template
+VITE_APP_EMAILJS_PUBLIC_KEY    # EmailJS public key
+```
 
 ### Terraform Variables
-- S3 bucket name for static hosting
-- CloudFront distribution settings
 
-### GitHub Secrets Required
-- `AWS_ACCESS_KEY_ID` - AWS access credentials
-- `AWS_SECRET_ACCESS_KEY` - AWS secret credentials
-- `AWS_REGION` - Target AWS region
-- `S3_BUCKET_NAME_STATIC_PROJECT_01` - S3 bucket name
-- `VITE_APP_EMAILJS_SERVICE_ID` - EmailJS service ID
-- `VITE_APP_EMAILJS_TEMPLATE_ID_PROJECT_01_STATIC_SITE` - EmailJS template
-- `VITE_APP_EMAILJS_PUBLIC_KEY` - EmailJS public key
+```hcl
+variable "project_name" {
+  description = "Project identifier for resource naming"
+  type        = string
+}
 
-## 🚀 Deployment Process
+variable "cloudflare_zone_id" {
+  description = "Cloudflare zone identifier"
+  type        = string
+}
 
-### 1. Infrastructure Provisioning
-- Terraform creates S3 bucket with static website hosting
-- CloudFront distribution configured for global delivery
+variable "subdomain" {
+  description = "Subdomain for the website"
+  type        = string
+}
+```
 
-### 2. Automated Deployment
-- GitHub Actions triggers on changes to `site/` directory
-- Vite builds the static application
-- Built files sync to S3 bucket
+---
 
-## 🛠️ Local Development
+## 🛡️ Security Implementation
+
+### AWS Security Features
+
+- **Origin Access Control (OAC)** - Restricts direct S3 access
+- **S3 Bucket Policy** - CloudFront-only access with GitHub CI/CD permissions
+- **IAM Least Privilege** - Minimal required permissions
+- **SSL/TLS Encryption** - ACM certificate with TLS 1.2+
+- **Server-Side Encryption** - AES256 encryption for S3 objects
+
+### Cloudflare Security
+
+- **DDoS Protection** - Automatic threat mitigation
+- **SSL/TLS Termination** - Additional encryption layer
+- **CAA Records** - Certificate authority authorization
+- **Proxied DNS** - Hide origin server details
+
+---
+
+## 📊 Performance Optimizations
+
+### Frontend Optimizations
+
+- **Vite Build Optimization** - Tree shaking, code splitting
+- **Asset Compression** - Gzip/Brotli compression
+- **Image Optimization** - WebP format, lazy loading
+- **Bundle Analysis** - Optimized chunk sizes
+
+### CDN Configuration
+
+- **CloudFront Caching** - Optimized cache behaviors
+- **Edge Locations** - 400+ global points of presence
+- **Compression** - Automatic gzip compression
+- **HTTP/2 Support** - Modern protocol support
+
+### Monitoring & Analytics
+
+- **CloudFront Metrics** - Request count, cache hit ratio, error rates
+- **S3 Metrics** - Storage usage, request metrics
+- **Real User Monitoring** - Performance tracking
+
+---
+
+## 🚀 Local Development
 
 ### Prerequisites
-- Node.js 18+
-- npm or yarn
+
+- Node.js 18+ (LTS recommended)
+- npm or yarn package manager
 - AWS CLI configured
+- Terraform CLI (optional)
 
-### Setup
+### Quick Start
+
 ```bash
+# Clone repository
+git clone <repository-url>
 cd 01-static-website-s3/site
+
+# Install dependencies
 npm install
+
+# Start development server
 npm run dev
-```
 
-### Build
-```bash
+# Build for production
 npm run build
+
+# Preview production build
+npm run preview
 ```
 
-## 📝 Features
+### Development Commands
 
-- **Responsive Design** - Mobile-first approach
-- **Fast Loading** - Optimized with Vite bundling
-- **Global CDN** - CloudFront for worldwide delivery
-- **Contact Form** - EmailJS integration
-- **CI/CD Pipeline** - Automated deployments
-
-## 🔄 Workflow Triggers
-
-The deployment workflow runs on:
-- Push to `main` branch with changes in `01-static-website-s3/site/**`
-- Manual trigger via `workflow_dispatch`
-
-## 📊 Monitoring
-
-- **CloudFront Metrics** - Request count, cache hit ratio
-- **S3 Metrics** - Storage usage, request metrics
-
-## 💰 Cost Optimization
-
-- S3 static hosting (minimal cost)
-- CloudFront free tier eligible
-- No additional DNS or SSL costs
-
-## 🔒 Security Features
-
-- S3 bucket policies restrict direct access
-- IAM roles with minimal required permissions
-- No server-side components to secure
-
-## 🌍 Custom Domain Setup Options
-
-### Option 1: Cloudflare Integration (Recommended)
-1. Add CNAME record in Cloudflare DNS:
-   ```
-   Type: CNAME
-   Name: portfolio (or subdomain of choice)
-   Target: your-cloudfront-domain.cloudfront.net
-   ```
-2. Enable Cloudflare SSL (Full or Flexible)
-3. Configure page rules for caching optimization
-4. Benefits: Free SSL, additional CDN layer, DDoS protection
-
-### Option 2: Direct CloudFront Access
-- Use the default CloudFront domain: `https://d1234567890.cloudfront.net`
-- No additional configuration required
-- Good for testing and development
-
-### Option 3: AWS Route 53 + ACM (Advanced)
-- Create Route 53 hosted zone
-- Request ACM certificate
-- Configure CloudFront with custom domain
-- Additional cost: ~$0.50/month for hosted zone
-
-## 📈 Performance
-
-- **Global Edge Locations** - CloudFront CDN
-- **Optimized Assets** - Vite build optimization
-- **Compressed Files** - Gzip/Brotli compression
-- **Browser Caching** - Configured cache headers
-
-## 🔧 Troubleshooting
-
-### Common Issues
-- **Build Failures** - Check Node.js version and dependencies
-- **S3 Sync Errors** - Verify AWS credentials and bucket permissions
-- **CloudFront Delays** - Distribution updates can take 15-20 minutes
-- **Cloudflare SSL Issues** - Ensure SSL mode is set to "Full" or "Flexible"
-
-### Debug Commands
 ```bash
-# Test local build
-npm run build && npm run preview
+# Lint code
+npm run lint
 
-# Check AWS credentials
+# Build with environment variables
+VITE_APP_EMAILJS_SERVICE_ID=your_service_id npm run build
+
+# Verify build output
+ls -la dist/
+```
+
+---
+
+## 💰 Cost Analysis
+
+### AWS Costs (Monthly Estimates)
+
+- **S3 Storage** - $0.023/GB (first 50TB)
+- **S3 Requests** - $0.0004/1000 GET requests
+- **CloudFront** - $0.085/GB (first 10TB)
+- **ACM Certificate** - Free for AWS resources
+- **Data Transfer** - $0.09/GB (after free tier)
+
+**Estimated Monthly Cost:** $1-5 for typical portfolio traffic
+
+### Cloudflare Costs
+
+- **DNS Management** - Free tier available
+- **CDN Services** - Free tier with 100GB bandwidth
+- **SSL Certificate** - Free with Cloudflare
+
+---
+
+## 🔍 Troubleshooting Guide
+
+### Common Issues & Solutions
+
+**Build Failures:**
+
+```bash
+# Check Node.js version
+node --version  # Should be 18+
+
+# Clear npm cache
+npm cache clean --force
+
+# Reinstall dependencies
+rm -rf node_modules package-lock.json
+npm install
+```
+
+**Deployment Issues:**
+
+```bash
+# Verify AWS credentials
 aws sts get-caller-identity
 
-# Verify S3 bucket
+# Check S3 bucket access
 aws s3 ls s3://your-bucket-name
+
+# Test S3 sync manually
+aws s3 sync ./dist s3://your-bucket-name --delete
 ```
 
-## 📚 Additional Resources
+**CloudFront Issues:**
 
-- [AWS S3 Static Website Hosting Guide](https://docs.aws.amazon.com/AmazonS3/latest/userguide/WebsiteHosting.html)
-- [CloudFront Documentation](https://docs.aws.amazon.com/cloudfront/)
+- Distribution updates take 15-20 minutes
+- Clear cache via AWS Console if needed
+- Check origin access control configuration
+
+---
+
+## 📈 Future Enhancements
+
+### Planned Improvements
+
+- **Monitoring Dashboard** - CloudWatch custom dashboard
+- **A/B Testing** - CloudFront functions for testing
+- **Performance Budgets** - Automated performance monitoring
+- **SEO Optimization** - Meta tags and structured data
+- **Analytics Integration** - Google Analytics 4
+
+### Scalability Considerations
+
+- **Multi-region Deployment** - Global infrastructure
+- **Blue-Green Deployments** - Zero-downtime updates
+- **Automated Rollbacks** - Deployment safety
+- **Load Testing** - Performance validation
+
+---
+
+## 📚 Technical Resources
+
+### Documentation
+
+- [AWS S3 Static Website Hosting](https://docs.aws.amazon.com/AmazonS3/latest/userguide/WebsiteHosting.html)
+- [CloudFront Developer Guide](https://docs.aws.amazon.com/cloudfront/)
+- [Terraform AWS Provider](https://registry.terraform.io/providers/hashicorp/aws/latest/docs)
 - [Vite Build Guide](https://vitejs.dev/guide/build.html)
 - [GitHub Actions Documentation](https://docs.github.com/en/actions)
+
+### Best Practices
+
+- [AWS Well-Architected Framework](https://aws.amazon.com/architecture/well-architected/)
+- [Terraform Best Practices](https://www.terraform.io/docs/cloud/guides/recommended-practices/index.html)
+- [React Performance Optimization](https://react.dev/learn/render-and-commit)
+
+---
+
+**Project Demonstrates:** Cloud Architecture, Infrastructure as Code, CI/CD Pipelines, Modern Frontend Development, Security Best Practices, Performance Optimization, and DevOps Methodologies.
