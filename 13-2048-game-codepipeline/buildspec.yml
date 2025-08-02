@@ -13,6 +13,9 @@ phases:
     commands:
       - echo Build started on `date`
       
+      # Navigate to project directory
+      - cd 13-2048-game-codepipeline
+      
       # Build Lambda container image
       - echo Building Lambda container image...
       - docker build -f docker/Dockerfile -t $REPOSITORY_URI:latest .
@@ -41,11 +44,11 @@ phases:
       
       # Deploy frontend to S3
       - echo Deploying frontend to S3...
-      - aws s3 sync frontend/dist/ s3://$S3_BUCKET --delete
+      - aws s3 sync 13-2048-game-codepipeline/frontend/dist/ s3://$S3_BUCKET --delete
       
-      # Invalidate CloudFront cache
-      - echo Invalidating CloudFront cache...
-      - aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
+      # CloudFront invalidation commented out for now
+      # - echo Invalidating CloudFront cache...
+      # - aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
 
 artifacts:
   files:

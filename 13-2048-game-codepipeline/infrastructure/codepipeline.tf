@@ -116,15 +116,15 @@ resource "aws_codebuild_project" "build_project" {
       value = aws_s3_bucket.frontend.bucket
     }
 
-    environment_variable {
-      name  = "CLOUDFRONT_DISTRIBUTION_ID"
-      value = aws_cloudfront_distribution.frontend.id
-    }
+    # environment_variable {
+    #   name  = "CLOUDFRONT_DISTRIBUTION_ID"
+    #   value = aws_cloudfront_distribution.frontend.id
+    # }
   }
 
   source {
     type = "CODEPIPELINE"
-    buildspec = "buildspec.yml"
+    buildspec = "13-2048-game-codepipeline/buildspec.yml"
   }
 }
 
@@ -203,6 +203,7 @@ resource "aws_codepipeline" "pipeline" {
         Repo       = var.github_repo
         Branch     = "main"
         OAuthToken = var.github_token
+        PollForSourceChanges = "true"
       }
     }
   }
