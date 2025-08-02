@@ -13,8 +13,7 @@ phases:
     commands:
       - echo Build started on `date`
       
-      # Navigate to project directory
-      - cd 13-2048-game-codepipeline
+      # Already in project directory
       
       # Build container image
       - echo Building container image...
@@ -25,7 +24,8 @@ phases:
       - echo Building frontend...
       - cd frontend
       - npm install
-      - echo "VITE_API_URL=http://$(aws elbv2 describe-load-balancers --names project-13-2048-game-codepipeline-alb --query 'LoadBalancers[0].DNSName' --output text)" > .env
+      - ALB_DNS_NAME=$(aws elbv2 describe-load-balancers --names project-13-2048-game-codepp-alb --query 'LoadBalancers[0].DNSName' --output text)
+      - echo "VITE_API_URL=http://$ALB_DNS_NAME" > .env
       - cat .env
       - npm run build || echo "Frontend build failed, continuing..."
       - echo "Checking if dist directory exists..."
@@ -53,12 +53,12 @@ phases:
       - echo "Listing project structure:"
       - ls -la
       - echo "Checking frontend directory:"
-      - ls -la 13-2048-game-codepipeline/frontend/
-      - if [ -d "13-2048-game-codepipeline/frontend/dist" ]; then
+      - ls -la frontend/
+      - if [ -d "frontend/dist" ]; then
           echo "Frontend dist directory found, syncing to S3...";
           echo "Contents of dist directory:";
-          ls -la 13-2048-game-codepipeline/frontend/dist/;
-          aws s3 sync 13-2048-game-codepipeline/frontend/dist/ s3://$S3_BUCKET --delete;
+          ls -la frontend/dist/;
+          aws s3 sync frontend/dist/ s3://$S3_BUCKET --delete;
           echo "S3 sync completed";
         else
           echo "Frontend dist directory not found, creating fallback...";
