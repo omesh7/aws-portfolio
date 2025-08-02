@@ -1,7 +1,16 @@
-FROM public.ecr.aws/lambda/python:3.11
+FROM python:3.11-slim
 
-# Copy function code
-COPY lambda/app.py ${LAMBDA_TASK_ROOT}
+WORKDIR /app
 
-# Set the CMD to your handler
-CMD [ "app.lambda_handler" ]
+# Copy requirements and install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY app.py .
+
+# Expose port
+EXPOSE 8080
+
+# Run the application
+CMD ["python", "app.py"]
