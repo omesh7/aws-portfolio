@@ -14,7 +14,7 @@ A sophisticated music recommendation system built from scratch using collaborati
 - **Data Science:** Feature engineering, similarity algorithms, recommendation logic
 - **Scalability:** Designed for production deployment and real-time inference
 
-**Live Demo:** Personalized music recommendations | **Source Code:** [GitHub Repository](https://github.com/your-username/aws-portfolio)
+**Live Demo:** Personalized music recommendations | **Source Code:** [GitHub Repository](https://github.com/omesh7/aws-portfolio)
 
 ---
 
