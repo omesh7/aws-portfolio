@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import Game2048 from './components/Game2048'
 import './App.css'
 
-const API_URL = import.meta.env.VITE_LAMBDA_URL || 'https://your-lambda-function-url'
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
 
 function App() {
   const [gameState, setGameState] = useState(null)

@@ -1,6 +1,7 @@
 # S3 Bucket for CodePipeline Artifacts
 resource "aws_s3_bucket" "codepipeline_artifacts" {
-  bucket = "${var.project_name}-pipeline-artifacts-${random_string.suffix.result}"
+  bucket        = "${var.project_name}-pipeline-artifacts-${random_string.suffix.result}"
+  force_destroy = true
 }
 
 resource "aws_s3_bucket_versioning" "codepipeline_artifacts" {
@@ -72,11 +73,12 @@ resource "aws_iam_role_policy" "codebuild_policy" {
       {
         Effect = "Allow"
         Action = [
-          "lambda:UpdateFunctionCode",
-          "lambda:GetFunctionUrlConfig",
-          "lambda:UpdateFunctionConfiguration"
+          "ecs:UpdateService",
+          "ecs:DescribeServices",
+          "ecs:DescribeTaskDefinition",
+          "ecs:RegisterTaskDefinition"
         ]
-        Resource = aws_lambda_function.game_api.arn
+        Resource = "*"
       }
     ]
   })
@@ -109,8 +111,13 @@ resource "aws_codebuild_project" "build_project" {
     }
 
     environment_variable {
-      name  = "LAMBDA_FUNCTION_NAME"
-      value = aws_lambda_function.game_api.function_name
+      name  = "ECS_CLUSTER_NAME"
+      value = aws_ecs_cluster.game_cluster.name
+    }
+
+    environment_variable {
+      name  = "ECS_SERVICE_NAME"
+      value = aws_ecs_service.main.name
     }
 
     environment_variable {
@@ -118,10 +125,10 @@ resource "aws_codebuild_project" "build_project" {
       value = aws_s3_bucket.frontend.bucket
     }
 
-    # environment_variable {
-    #   name  = "CLOUDFRONT_DISTRIBUTION_ID"
-    #   value = aws_cloudfront_distribution.frontend.id
-    # }
+    environment_variable {
+      name  = "TASK_DEFINITION_FAMILY"
+      value = aws_ecs_task_definition.app.family
+    }
   }
 
   source {

@@ -16,8 +16,8 @@ phases:
       # Navigate to project directory
       - cd 13-2048-game-codepipeline
       
-      # Build Lambda container image
-      - echo Building Lambda container image...
+      # Build container image
+      - echo Building container image...
       - docker build -f docker/Dockerfile -t $REPOSITORY_URI:latest .
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
       
@@ -25,7 +25,7 @@ phases:
       - echo Building frontend...
       - cd frontend
       - npm install
-      - echo "VITE_LAMBDA_URL=https://rgs5l7qoqypqzhujaodc4se75i0dghgc.lambda-url.ap-south-1.on.aws/" > .env
+      - echo "VITE_API_URL=http://$(aws elbv2 describe-load-balancers --names $PROJECT_NAME-alb --query 'LoadBalancers[0].DNSName' --output text)" > .env
       - npm run build
       - cd ..
   
@@ -33,22 +33,18 @@ phases:
     commands:
       - echo Build completed on `date`
       
-      # Push Lambda image to ECR
-      - echo Pushing Lambda image to ECR...
+      # Push image to ECR
+      - echo Pushing image to ECR...
       - docker push $REPOSITORY_URI:latest
       - docker push $REPOSITORY_URI:$IMAGE_TAG
       
-      # Update Lambda function
-      - echo Updating Lambda function...
-      - aws lambda update-function-code --function-name $LAMBDA_FUNCTION_NAME --image-uri $REPOSITORY_URI:latest
+      # Update ECS service
+      - echo Updating ECS service...
+      - aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $ECS_SERVICE_NAME --force-new-deployment
       
       # Deploy frontend to S3
       - echo Deploying frontend to S3...
       - aws s3 sync 13-2048-game-codepipeline/frontend/dist/ s3://$S3_BUCKET --delete
-      
-      # CloudFront invalidation commented out for now
-      # - echo Invalidating CloudFront cache...
-      # - aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
 
 artifacts:
   files:
