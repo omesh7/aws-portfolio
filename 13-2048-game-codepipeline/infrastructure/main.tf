@@ -18,6 +18,7 @@ provider "aws" {
 resource "aws_ecr_repository" "game_2048" {
   name                 = "${var.project_name}-repo-${random_string.suffix.result}"
   image_tag_mutability = "MUTABLE"
+  force_delete         = true
 
   image_scanning_configuration {
     scan_on_push = true
@@ -26,7 +27,8 @@ resource "aws_ecr_repository" "game_2048" {
 
 # S3 Bucket for Frontend
 resource "aws_s3_bucket" "frontend" {
-  bucket = "${var.project_name}-frontend-${random_string.suffix.result}"
+  bucket        = "${var.project_name}-frontend-${random_string.suffix.result}"
+  force_destroy = true
 }
 
 resource "aws_s3_bucket_website_configuration" "frontend" {
@@ -106,9 +108,14 @@ resource "aws_s3_bucket_policy" "frontend" {
 #   }
 # }
 
-# Lambda Execution Role
-resource "aws_iam_role" "lambda_role" {
-  name = "${var.project_name}-lambda-role"
+# ECS Cluster
+resource "aws_ecs_cluster" "game_cluster" {
+  name = "${var.project_name}-cluster"
+}
+
+# ECS Task Execution Role
+resource "aws_iam_role" "ecs_task_execution_role" {
+  name = "${var.project_name}-ecs-task-execution-role"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -117,69 +124,180 @@ resource "aws_iam_role" "lambda_role" {
         Action = "sts:AssumeRole"
         Effect = "Allow"
         Principal = {
-          Service = "lambda.amazonaws.com"
+          Service = "ecs-tasks.amazonaws.com"
         }
       }
     ]
   })
 }
 
-resource "aws_iam_role_policy_attachment" "lambda_basic" {
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-  role       = aws_iam_role.lambda_role.name
+resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
+  role       = aws_iam_role.ecs_task_execution_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
-# Create dummy zip file for initial Lambda deployment
-data "archive_file" "dummy_zip" {
-  type        = "zip"
-  output_path = "dummy.zip"
-  source {
-    content  = "def handler(event, context): return {'statusCode': 200, 'body': 'Placeholder'}"
-    filename = "index.py"
+# VPC and Networking
+resource "aws_vpc" "main" {
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_hostnames = true
+  enable_dns_support   = true
+}
+
+resource "aws_internet_gateway" "main" {
+  vpc_id = aws_vpc.main.id
+}
+
+resource "aws_subnet" "public" {
+  count                   = 2
+  vpc_id                  = aws_vpc.main.id
+  cidr_block              = "10.0.${count.index + 1}.0/24"
+  availability_zone       = data.aws_availability_zones.available.names[count.index]
+  map_public_ip_on_launch = true
+}
+
+resource "aws_route_table" "public" {
+  vpc_id = aws_vpc.main.id
+
+  route {
+    cidr_block = "0.0.0.0/0"
+    gateway_id = aws_internet_gateway.main.id
   }
 }
 
-# Lambda Function - Initial dummy function
-resource "aws_lambda_function" "game_api" {
-  function_name = "${var.project_name}-api"
-  role          = aws_iam_role.lambda_role.arn
-  package_type  = "Image"
-  image_uri     = "${aws_ecr_repository.game_2048.repository_url}:latest"
-  timeout       = 30
-  memory_size   = 256
+resource "aws_route_table_association" "public" {
+  count          = 2
+  subnet_id      = aws_subnet.public[count.index].id
+  route_table_id = aws_route_table.public.id
+}
 
-  environment {
-    variables = {
-      ENVIRONMENT = "portfolio"
+data "aws_availability_zones" "available" {
+  state = "available"
+}
+
+# Security Group
+resource "aws_security_group" "ecs_service" {
+  name_prefix = "${var.project_name}-ecs-"
+  vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port   = var.app_port
+    to_port     = var.app_port
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+# Application Load Balancer
+resource "aws_lb" "main" {
+  name               = "${var.project_name}-alb"
+  internal           = false
+  load_balancer_type = "application"
+  security_groups    = [aws_security_group.ecs_service.id]
+  subnets            = aws_subnet.public[*].id
+}
+
+resource "aws_lb_target_group" "app" {
+  name        = "${var.project_name}-tg"
+  port        = var.app_port
+  protocol    = "HTTP"
+  vpc_id      = aws_vpc.main.id
+  target_type = "ip"
+
+  health_check {
+    enabled             = true
+    healthy_threshold   = 2
+    interval            = 30
+    matcher             = "200"
+    path                = "/"
+    port                = "traffic-port"
+    protocol            = "HTTP"
+    timeout             = 5
+    unhealthy_threshold = 2
+  }
+}
+
+resource "aws_lb_listener" "web" {
+  load_balancer_arn = aws_lb.main.arn
+  port              = "80"
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.app.arn
+  }
+}
+
+# ECS Task Definition
+resource "aws_ecs_task_definition" "app" {
+  family                   = "${var.project_name}-task"
+  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = 256
+  memory                   = 512
+
+  container_definitions = jsonencode([
+    {
+      name  = "game-api"
+      image = "${aws_ecr_repository.game_2048.repository_url}:latest"
+      portMappings = [
+        {
+          containerPort = var.app_port
+          hostPort      = var.app_port
+        }
+      ]
+      environment = [
+        {
+          name  = "ENVIRONMENT"
+          value = "portfolio"
+        }
+      ]
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.ecs.name
+          "awslogs-region"        = var.aws_region
+          "awslogs-stream-prefix" = "ecs"
+        }
+      }
     }
-  }
-
-  lifecycle {
-    ignore_changes = [image_uri]
-  }
-
-  depends_on = [aws_ecr_repository.game_2048]
+  ])
 }
 
-# Lambda Function URL
-resource "aws_lambda_function_url" "game_api_url" {
-  function_name      = aws_lambda_function.game_api.function_name
-  authorization_type = "NONE"
-
-  cors {
-    allow_origins = ["*"]
-    allow_methods = ["POST", "GET"]
-    allow_headers = ["Content-Type"]
-    max_age       = 86400
-  }
+# CloudWatch Log Group
+resource "aws_cloudwatch_log_group" "ecs" {
+  name              = "/ecs/${var.project_name}"
+  retention_in_days = 30
 }
 
-resource "aws_lambda_permission" "allow_public_invoke" {
-  statement_id           = "AllowPublicInvoke"
-  action                 = "lambda:InvokeFunctionUrl"
-  function_name          = aws_lambda_function.game_api.function_name
-  principal              = "*"
-  function_url_auth_type = "NONE"
+# ECS Service
+resource "aws_ecs_service" "main" {
+  name            = "${var.project_name}-service"
+  cluster         = aws_ecs_cluster.game_cluster.id
+  task_definition = aws_ecs_task_definition.app.arn
+  desired_count   = 1
+  launch_type     = "FARGATE"
+
+  network_configuration {
+    security_groups  = [aws_security_group.ecs_service.id]
+    subnets          = aws_subnet.public[*].id
+    assign_public_ip = true
+  }
+
+  load_balancer {
+    target_group_arn = aws_lb_target_group.app.arn
+    container_name   = "game-api"
+    container_port   = var.app_port
+  }
+
+  depends_on = [aws_lb_listener.web]
 }
 
 resource "random_string" "suffix" {
