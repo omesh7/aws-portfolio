@@ -25,8 +25,12 @@ phases:
       - echo Building frontend...
       - cd frontend
       - npm install
-      - echo "VITE_API_URL=http://$(aws elbv2 describe-load-balancers --names $PROJECT_NAME-alb --query 'LoadBalancers[0].DNSName' --output text)" > .env
+      - echo "VITE_API_URL=http://$(aws elbv2 describe-load-balancers --names project-13-2048-game-codepipeline-alb --query 'LoadBalancers[0].DNSName' --output text)" > .env
+      - cat .env
       - npm run build
+      - echo "Checking if dist directory exists..."
+      - ls -la
+      - if [ -d "dist" ]; then echo "dist directory found"; ls -la dist/; else echo "dist directory not found"; fi
       - cd ..
   
   post_build:
@@ -44,7 +48,12 @@ phases:
       
       # Deploy frontend to S3
       - echo Deploying frontend to S3...
-      - aws s3 sync 13-2048-game-codepipeline/frontend/dist/ s3://$S3_BUCKET --delete
+      - if [ -d "13-2048-game-codepipeline/frontend/dist" ]; then
+          echo "Frontend dist directory found, syncing to S3...";
+          aws s3 sync 13-2048-game-codepipeline/frontend/dist/ s3://$S3_BUCKET --delete;
+        else
+          echo "Frontend dist directory not found, skipping S3 sync...";
+        fi
 
 artifacts:
   files:
