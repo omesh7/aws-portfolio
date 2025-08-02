@@ -31,8 +31,7 @@ phases:
       - echo Building frontend...
       - cd frontend
       - npm install
-      - ALB_DNS_NAME=$(aws elbv2 describe-load-balancers --names project-13-2048-game-codepp-alb --query 'LoadBalancers[0].DNSName' --output text)
-      - echo "VITE_API_URL=http://$ALB_DNS_NAME" > .env
+      - echo "VITE_API_URL=http://project-13-2048-game-codepp-alb-150668108.ap-south-1.elb.amazonaws.com" > .env
       - cat .env
       - npm run build || echo "Frontend build failed, continuing..."
       - echo "Checking if dist directory exists..."
