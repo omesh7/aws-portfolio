@@ -37,3 +37,11 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Build artifacts
+build/
+out/
+
+# Temporary files
+*.tmp
+*.temp
