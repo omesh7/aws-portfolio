@@ -143,10 +143,8 @@ data "archive_file" "dummy_zip" {
 resource "aws_lambda_function" "game_api" {
   function_name = "${var.project_name}-api"
   role          = aws_iam_role.lambda_role.arn
-  package_type  = "Zip"
-  filename      = data.archive_file.dummy_zip.output_path
-  handler       = "index.handler"
-  runtime       = "python3.11"
+  package_type  = "Image"
+  image_uri     = "${aws_ecr_repository.game_2048.repository_url}:latest"
   timeout       = 30
   memory_size   = 256
 
@@ -157,8 +155,10 @@ resource "aws_lambda_function" "game_api" {
   }
 
   lifecycle {
-    ignore_changes = [package_type, image_uri, filename, handler, runtime]
+    ignore_changes = [image_uri]
   }
+
+  depends_on = [aws_ecr_repository.game_2048]
 }
 
 # Lambda Function URL
