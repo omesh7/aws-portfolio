@@ -1,0 +1,5 @@
+aws_region = "ap-south-1"
+project_name = "project-13-2048-game-codepipeline"
+github_owner = "omesh7"
+github_repo = "aws-portfolio"
+github_token = "your-github-personal-access-token"

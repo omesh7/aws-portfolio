@@ -14,7 +14,7 @@ A production-ready serverless email system that processes CSV contact lists and 
 - **Development:** Local testing, environment configuration
 - **Architecture:** Event-driven, serverless, cost-effective
 
-**Live Demo:** Serverless function processing 1000+ emails | **Source Code:** [GitHub Repository](https://github.com/your-username/aws-portfolio)
+**Live Demo:** Serverless function processing 1000+ emails | **Source Code:** [GitHub Repository](https://github.com/omesh7/aws-portfolio)
 
 ---
 

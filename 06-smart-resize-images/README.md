@@ -14,7 +14,7 @@ A production-ready image resizing service combining Next.js frontend with AWS La
 - **Infrastructure:** Terraform for complete infrastructure automation
 - **UI/UX:** shadcn/ui components with responsive design
 
-**Live Demo:** Professional image resizing tool | **Source Code:** [GitHub Repository](https://github.com/your-username/aws-portfolio)
+**Live Demo:** Professional image resizing tool | **Source Code:** [GitHub Repository](https://github.com/omesh7/aws-portfolio)
 
 ---
 

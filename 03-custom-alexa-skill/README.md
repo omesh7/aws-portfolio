@@ -14,7 +14,7 @@ A production-ready Alexa skill that provides interactive voice responses about p
 - **Voice UX:** Professional voice interaction design
 - **Deployment:** Serverless architecture with automatic scaling
 
-**Live Demo:** "Alexa, ask Portfolio Assistant about my projects" | **Source Code:** [GitHub Repository](https://github.com/your-username/aws-portfolio)
+**Live Demo:** "Alexa, ask Portfolio Assistant about my projects" | **Source Code:** [GitHub Repository](https://github.com/omesh7/aws-portfolio)
 
 ---
 
