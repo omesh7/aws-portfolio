@@ -14,7 +14,7 @@ A production-ready text-to-speech service using Amazon Polly that converts user 
 - **Audio Processing:** MP3 generation and streaming
 - **Architecture:** Serverless, scalable, cost-effective
 
-**Live Demo:** Convert any text to professional speech | **Source Code:** [GitHub Repository](https://github.com/your-username/aws-portfolio)
+**Live Demo:** Convert any text to professional speech | **Source Code:** [GitHub Repository](https://github.com/omesh7/aws-portfolio)
 
 ---
 
