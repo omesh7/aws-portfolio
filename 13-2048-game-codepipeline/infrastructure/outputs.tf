@@ -3,27 +3,32 @@ output "ecr_repository_url" {
   value       = aws_ecr_repository.game_2048.repository_url
 }
 
-output "lambda_function_url" {
-  description = "Lambda Function URL"
-  value       = aws_lambda_function_url.game_api_url.function_url
+output "api_url" {
+  description = "API URL (Load Balancer)"
+  value       = "http://${aws_lb.main.dns_name}"
 }
-
-# output "cloudfront_domain" {
-#   description = "CloudFront distribution domain"
-#   value       = aws_cloudfront_distribution.frontend.domain_name
-# }
 
 output "s3_bucket_name" {
   description = "S3 bucket name for frontend"
   value       = aws_s3_bucket.frontend.bucket
 }
 
-output "lambda_function_name" {
-  description = "Lambda function name"
-  value       = aws_lambda_function.game_api.function_name
+output "ecs_service_name" {
+  description = "ECS service name"
+  value       = aws_ecs_service.main.name
+}
+
+output "ecs_cluster_name" {
+  description = "ECS cluster name"
+  value       = aws_ecs_cluster.game_cluster.name
 }
 
 output "codepipeline_name" {
   description = "CodePipeline name"
   value       = aws_codepipeline.pipeline.name
+}
+
+output "aws_region" {
+  description = "AWS region"
+  value       = var.aws_region
 }
