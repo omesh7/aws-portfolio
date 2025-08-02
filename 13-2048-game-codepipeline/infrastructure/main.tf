@@ -27,7 +27,7 @@ resource "aws_ecr_repository" "game_2048" {
 
 # S3 Bucket for Frontend
 resource "aws_s3_bucket" "frontend" {
-  bucket        = "${var.project_name}-frontend-${random_string.suffix.result}"
+  bucket        = "${var.project_name}-frontend"
   force_destroy = true
 }
 
