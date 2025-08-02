@@ -1,9 +1,18 @@
 provider "aws" {
-  region = "ap-south-1"
+
+
+  default_tags {
+    tags = {
+      Project     = var.project_name
+      Environment = "portfolio"
+      project-no  = "06"
+    }
+  }
+  region = var.aws_region
 }
 
 resource "aws_s3_bucket" "resized_bucket" {
-  bucket        = "05-resized-images-bucket-aws-portfolio"
+  bucket        = var.project_name
   force_destroy = true
 }
 
@@ -31,7 +40,7 @@ resource "aws_s3_bucket_policy" "public_policy" {
 }
 
 resource "aws_iam_role" "lambda_exec" {
-  name = "lambda-resize-project-05-role"
+  name = "lambda-${var.project_name}-role"
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
     Statement = [{
@@ -59,7 +68,7 @@ data "archive_file" "lambda_zip" {
 }
 
 resource "aws_lambda_function" "resize_upload" {
-  function_name    = "05-resize-upload-aws-portfolio"
+  function_name    = "${var.project_name}-resize-upload-function"
   description      = "Lambda function to resize uploaded images"
   runtime          = "nodejs20.x"
   handler          = "index.handler"
@@ -73,7 +82,7 @@ resource "aws_lambda_function" "resize_upload" {
   environment {
     variables = {
       BUCKET_NAME = aws_s3_bucket.resized_bucket.bucket
-      REGION      = "ap-south-1"
+      REGION      = var.aws_region
     }
   }
   depends_on = [aws_iam_role_policy_attachment.s3_full_access]

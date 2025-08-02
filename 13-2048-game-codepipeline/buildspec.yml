@@ -1,0 +1,52 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo Logging in to Amazon ECR...
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_REPOSITORY_URI
+      - REPOSITORY_URI=$ECR_REPOSITORY_URI
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
+  
+  build:
+    commands:
+      - echo Build started on `date`
+      
+      # Build Lambda container image
+      - echo Building Lambda container image...
+      - docker build -f docker/Dockerfile -t $REPOSITORY_URI:latest .
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
+      
+      # Build frontend
+      - echo Building frontend...
+      - cd frontend
+      - npm install
+      - echo "VITE_LAMBDA_URL=$(aws lambda get-function-url-config --function-name $LAMBDA_FUNCTION_NAME --query 'FunctionUrl' --output text)" > .env
+      - npm run build
+      - cd ..
+  
+  post_build:
+    commands:
+      - echo Build completed on `date`
+      
+      # Push Lambda image to ECR
+      - echo Pushing Lambda image to ECR...
+      - docker push $REPOSITORY_URI:latest
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      
+      # Update Lambda function
+      - echo Updating Lambda function...
+      - aws lambda update-function-code --function-name $LAMBDA_FUNCTION_NAME --image-uri $REPOSITORY_URI:latest
+      
+      # Deploy frontend to S3
+      - echo Deploying frontend to S3...
+      - aws s3 sync frontend/dist/ s3://$S3_BUCKET --delete
+      
+      # Invalidate CloudFront cache
+      - echo Invalidating CloudFront cache...
+      - aws cloudfront create-invalidation --distribution-id $CLOUDFRONT_DISTRIBUTION_ID --paths "/*"
+
+artifacts:
+  files:
+    - '**/*'
