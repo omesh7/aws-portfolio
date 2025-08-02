@@ -63,48 +63,48 @@ resource "aws_s3_bucket_policy" "frontend" {
   })
 }
 
-# CloudFront Distribution
-resource "aws_cloudfront_distribution" "frontend" {
-  origin {
-    domain_name = aws_s3_bucket_website_configuration.frontend.website_endpoint
-    origin_id   = "S3-${aws_s3_bucket.frontend.bucket}"
-
-    custom_origin_config {
-      http_port              = 80
-      https_port             = 443
-      origin_protocol_policy = "http-only"
-      origin_ssl_protocols   = ["TLSv1.2"]
-    }
-  }
-
-  enabled             = true
-  default_root_object = "index.html"
-
-  default_cache_behavior {
-    allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
-    cached_methods         = ["GET", "HEAD"]
-    target_origin_id       = "S3-${aws_s3_bucket.frontend.bucket}"
-    compress               = true
-    viewer_protocol_policy = "redirect-to-https"
-
-    forwarded_values {
-      query_string = false
-      cookies {
-        forward = "none"
-      }
-    }
-  }
-
-  restrictions {
-    geo_restriction {
-      restriction_type = "none"
-    }
-  }
-
-  viewer_certificate {
-    cloudfront_default_certificate = true
-  }
-}
+# CloudFront Distribution - Commented out for now
+# resource "aws_cloudfront_distribution" "frontend" {
+#   origin {
+#     domain_name = aws_s3_bucket_website_configuration.frontend.website_endpoint
+#     origin_id   = "S3-${aws_s3_bucket.frontend.bucket}"
+#
+#     custom_origin_config {
+#       http_port              = 80
+#       https_port             = 443
+#       origin_protocol_policy = "http-only"
+#       origin_ssl_protocols   = ["TLSv1.2"]
+#     }
+#   }
+#
+#   enabled             = true
+#   default_root_object = "index.html"
+#
+#   default_cache_behavior {
+#     allowed_methods        = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
+#     cached_methods         = ["GET", "HEAD"]
+#     target_origin_id       = "S3-${aws_s3_bucket.frontend.bucket}"
+#     compress               = true
+#     viewer_protocol_policy = "redirect-to-https"
+#
+#     forwarded_values {
+#       query_string = false
+#       cookies {
+#         forward = "none"
+#       }
+#     }
+#   }
+#
+#   restrictions {
+#     geo_restriction {
+#       restriction_type = "none"
+#     }
+#   }
+#
+#   viewer_certificate {
+#     cloudfront_default_certificate = true
+#   }
+# }
 
 # Lambda Execution Role
 resource "aws_iam_role" "lambda_role" {
@@ -129,12 +129,24 @@ resource "aws_iam_role_policy_attachment" "lambda_basic" {
   role       = aws_iam_role.lambda_role.name
 }
 
-# Lambda Function
+# Create dummy zip file for initial Lambda deployment
+data "archive_file" "dummy_zip" {
+  type        = "zip"
+  output_path = "dummy.zip"
+  source {
+    content  = "def handler(event, context): return {'statusCode': 200, 'body': 'Placeholder'}"
+    filename = "index.py"
+  }
+}
+
+# Lambda Function - Initial dummy function
 resource "aws_lambda_function" "game_api" {
   function_name = "${var.project_name}-api"
   role          = aws_iam_role.lambda_role.arn
-  package_type  = "Image"
-  image_uri     = "${aws_ecr_repository.game_2048.repository_url}:latest"
+  package_type  = "Zip"
+  filename      = data.archive_file.dummy_zip.output_path
+  handler       = "index.handler"
+  runtime       = "python3.11"
   timeout       = 30
   memory_size   = 256
 
@@ -144,7 +156,9 @@ resource "aws_lambda_function" "game_api" {
     }
   }
 
-  depends_on = [aws_ecr_repository.game_2048]
+  lifecycle {
+    ignore_changes = [package_type, image_uri, filename, handler, runtime]
+  }
 }
 
 # Lambda Function URL
@@ -154,7 +168,7 @@ resource "aws_lambda_function_url" "game_api_url" {
 
   cors {
     allow_origins = ["*"]
-    allow_methods = ["GET", "POST", "OPTIONS"]
+    allow_methods = ["POST", "GET"]
     allow_headers = ["Content-Type"]
     max_age       = 86400
   }
