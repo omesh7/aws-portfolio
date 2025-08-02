@@ -72,7 +72,9 @@ resource "aws_iam_role_policy" "codebuild_policy" {
       {
         Effect = "Allow"
         Action = [
-          "lambda:UpdateFunctionCode"
+          "lambda:UpdateFunctionCode",
+          "lambda:GetFunctionUrlConfig",
+          "lambda:UpdateFunctionConfiguration"
         ]
         Resource = aws_lambda_function.game_api.arn
       }
