@@ -8,10 +8,10 @@ output "lambda_function_url" {
   value       = aws_lambda_function_url.game_api_url.function_url
 }
 
-output "cloudfront_domain" {
-  description = "CloudFront distribution domain"
-  value       = aws_cloudfront_distribution.frontend.domain_name
-}
+# output "cloudfront_domain" {
+#   description = "CloudFront distribution domain"
+#   value       = aws_cloudfront_distribution.frontend.domain_name
+# }
 
 output "s3_bucket_name" {
   description = "S3 bucket name for frontend"
