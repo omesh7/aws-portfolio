@@ -25,7 +25,7 @@ phases:
       - echo Building frontend...
       - cd frontend
       - npm install
-      - echo "VITE_LAMBDA_URL=$(aws lambda get-function-url-config --function-name $LAMBDA_FUNCTION_NAME --query 'FunctionUrl' --output text)" > .env
+      - echo "VITE_LAMBDA_URL=https://mnizwfdnyxddtqk6vuf2q4e2km0sonpy.lambda-url.ap-south-1.on.aws/" > .env
       - npm run build
       - cd ..
   
@@ -40,6 +40,7 @@ phases:
       
       # Update Lambda function
       - echo Updating Lambda function...
+      - aws lambda update-function-configuration --function-name $LAMBDA_FUNCTION_NAME --package-type Image
       - aws lambda update-function-code --function-name $LAMBDA_FUNCTION_NAME --image-uri $REPOSITORY_URI:latest
       
       # Deploy frontend to S3
