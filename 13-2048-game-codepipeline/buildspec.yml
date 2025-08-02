@@ -12,8 +12,15 @@ phases:
   build:
     commands:
       - echo Build started on `date`
+      - echo "Current directory before navigation:"
+      - pwd
+      - ls -la
       
-      # Already in project directory
+      # Navigate to project directory
+      - cd 13-2048-game-codepipeline
+      - echo "Current directory after navigation:"
+      - pwd
+      - ls -la
       
       # Build container image
       - echo Building container image...
