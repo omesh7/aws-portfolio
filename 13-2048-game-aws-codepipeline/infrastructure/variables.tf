@@ -31,7 +31,7 @@ variable "tags" {
   type        = map(string)
   default = {
     Environment = "Portfolio"
-    Project     = "13-2048-game-codepipeline"
+    Project     = "13-2048-game-aws-codepipeline"
     ProjectNo   = "13"
   }
 }
