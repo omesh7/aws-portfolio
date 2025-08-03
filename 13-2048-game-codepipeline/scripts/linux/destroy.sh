@@ -5,7 +5,7 @@
 
 set -e  # Exit on any error
 
-PROJECT_NAME="project-13-2048-game-codepipeline"
+PROJECT_NAME="proj-13-2048-game-cp"
 REGION="ap-south-1"
 
 echo "🧹 Starting complete cleanup of 2048 Game CI/CD Pipeline..."

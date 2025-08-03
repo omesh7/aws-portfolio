@@ -32,3 +32,8 @@ output "aws_region" {
   description = "AWS region"
   value       = var.aws_region
 }
+
+output "target_group_arn" {
+  description = "ALB target group ARN"
+  value       = aws_lb_target_group.app.arn
+}

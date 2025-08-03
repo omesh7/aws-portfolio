@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "project_name" {
   description = "Project name"
   type        = string
-  default     = "project-13-2048-game-cp"
+  default     = "proj-13-2048-game-cp"
 }
 
 variable "github_owner" {
