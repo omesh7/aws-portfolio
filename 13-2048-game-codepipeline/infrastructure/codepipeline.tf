@@ -149,6 +149,11 @@ resource "aws_codebuild_project" "build_project" {
       name  = "TASK_DEFINITION_FAMILY"
       value = aws_ecs_task_definition.app.family
     }
+
+    environment_variable {
+      name  = "ALB_DNS_NAME"
+      value = aws_lb.main.dns_name
+    }
   }
 
   source {
@@ -200,7 +205,10 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
           "codebuild:BatchGetBuilds",
           "codebuild:StartBuild"
         ]
-        Resource = aws_codebuild_project.build_project.arn
+        Resource = [
+          aws_codebuild_project.build_project.arn,
+          aws_codebuild_project.frontend.arn
+        ]
       }
     ]
   })
@@ -238,19 +246,37 @@ resource "aws_codepipeline" "pipeline" {
   }
 
   stage {
-    name = "Build"
+    name = "BuildBackend"
 
     action {
-      name             = "Build"
+      name             = "BuildBackend"
       category         = "Build"
       owner            = "AWS"
       provider         = "CodeBuild"
       input_artifacts  = ["source_output"]
-      output_artifacts = ["build_output"]
+      output_artifacts = ["backend_output"]
       version          = "1"
 
       configuration = {
         ProjectName = aws_codebuild_project.build_project.name
+      }
+    }
+  }
+
+  stage {
+    name = "BuildFrontend"
+
+    action {
+      name             = "BuildFrontend"
+      category         = "Build"
+      owner            = "AWS"
+      provider         = "CodeBuild"
+      input_artifacts  = ["source_output"]
+      output_artifacts = ["frontend_output"]
+      version          = "1"
+
+      configuration = {
+        ProjectName = aws_codebuild_project.frontend.name
       }
     }
   }

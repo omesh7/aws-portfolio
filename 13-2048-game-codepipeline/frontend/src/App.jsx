@@ -9,6 +9,10 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
+  // Debug logging
+  console.log('API_URL:', API_URL)
+  console.log('Environment variables:', import.meta.env)
+
   const startNewGame = async () => {
     setLoading(true)
     setError(null)

@@ -1,0 +1,61 @@
+version: 0.2
+
+phases:
+  pre_build:
+    commands:
+      - echo "=== FRONTEND BUILD STARTED ==="
+      - echo "Build started on $(date)"
+      - echo "Current directory: $(pwd)"
+      - echo "Environment variables:"
+      - echo "  API_URL: $API_URL"
+      - echo "  S3_BUCKET: $S3_BUCKET"
+      - echo "  AWS_DEFAULT_REGION: $AWS_DEFAULT_REGION"
+      
+  build:
+    commands:
+      - echo "=== NAVIGATING TO PROJECT ==="
+      - cd 13-2048-game-codepipeline
+      - echo "Project directory: $(pwd)"
+      - ls -la
+      
+      - echo "=== BUILDING FRONTEND ==="
+      - cd frontend
+      - echo "Frontend directory: $(pwd)"
+      - ls -la
+      
+      - echo "=== INSTALLING DEPENDENCIES ==="
+      - npm install
+      - echo "Dependencies installed successfully"
+      
+      - echo "=== CREATING ENVIRONMENT FILE ==="
+      - echo "VITE_API_URL=$API_URL" > .env
+      - echo "Environment file created:"
+      - cat .env
+      
+      - echo "=== BUILDING APPLICATION ==="
+      - npm run build
+      - echo "Build completed successfully"
+      
+      - echo "=== VERIFYING BUILD OUTPUT ==="
+      - ls -la dist/
+      - echo "Build artifacts:"
+      - find dist/ -type f -exec ls -lh {} \;
+      
+  post_build:
+    commands:
+      - echo "=== DEPLOYING TO S3 ==="
+      - echo "Syncing to bucket: $S3_BUCKET"
+      - aws s3 sync dist/ s3://$S3_BUCKET --delete --exact-timestamps
+      - echo "S3 sync completed"
+      
+      - echo "=== VERIFYING DEPLOYMENT ==="
+      - aws s3 ls s3://$S3_BUCKET --recursive --human-readable
+      
+      - echo "=== FRONTEND BUILD COMPLETED ==="
+      - echo "Frontend URL: http://$S3_BUCKET.s3-website.$AWS_DEFAULT_REGION.amazonaws.com"
+      - echo "Build completed on $(date)"
+
+artifacts:
+  files:
+    - '**/*'
+  base-directory: '13-2048-game-codepipeline/frontend/dist'

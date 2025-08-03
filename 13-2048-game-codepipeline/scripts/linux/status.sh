@@ -3,7 +3,7 @@
 # 2048 Game CI/CD Pipeline - Status Check Script (Linux)
 # This script checks the health and status of all deployed resources
 
-PROJECT_NAME="project-13-2048-game-codepipeline"
+PROJECT_NAME="proj-13-2048-game-cp"
 REGION="ap-south-1"
 
 echo "📊 2048 Game CI/CD Pipeline - Status Check"
@@ -55,7 +55,7 @@ fi
 # Check Load Balancer Health
 echo ""
 echo "⚖️ Load Balancer Target Health:"
-ALB_TG_ARN=$(aws elbv2 describe-target-groups --names ${PROJECT_NAME}-tg --query "TargetGroups[0].TargetGroupArn" --output text 2>/dev/null || echo "")
+ALB_TG_ARN=$(terraform output -raw target_group_arn 2>/dev/null || echo "")
 if [ ! -z "$ALB_TG_ARN" ] && [ "$ALB_TG_ARN" != "None" ]; then
     TARGET_HEALTH=$(aws elbv2 describe-target-health --target-group-arn $ALB_TG_ARN --query "TargetHealthDescriptions[*].{Target:Target.Id,Port:Target.Port,Health:TargetHealth.State}" --output table 2>/dev/null || echo "No targets found")
     echo "$TARGET_HEALTH"
