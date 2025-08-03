@@ -1,0 +1,46 @@
+# Backend Build Specification for CodeBuild
+# This file defines the build process for the Flask API backend
+# It builds a Docker container and deploys it to ECS Fargate
+
+version: 0.2
+phases:
+  pre_build:
+    commands:
+      # Login to Amazon ECR to push Docker images
+      - echo "Logging in to Amazon ECR..."
+      - aws ecr get-login-password --region $AWS_DEFAULT_REGION | docker login --username AWS --password-stdin $ECR_REPOSITORY_URI
+      # Set up image tagging with commit hash for versioning
+      - REPOSITORY_URI=$ECR_REPOSITORY_URI
+      - COMMIT_HASH=$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | cut -c 1-7)
+      - IMAGE_TAG=${COMMIT_HASH:=latest}
+      - echo "Build started on $(date)"
+      - echo "Repository URI: $REPOSITORY_URI"
+      - echo "Image tag: $IMAGE_TAG"
+  build:
+    commands:
+      # Navigate to the project directory
+      - echo "Current directory before navigation:"
+      - pwd && ls -la
+      - cd 13-2048-game-aws-codepipeline
+      - echo "Project directory: $(pwd)"
+      - ls -la
+      # Build Docker container image
+      - echo "Building Docker container image..."
+      - docker build -f docker/Dockerfile -t $REPOSITORY_URI:latest .
+      - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
+      - echo "Backend container build completed"
+  post_build:
+    commands:
+      - echo "Build completed on $(date)"
+      # Push Docker image to ECR
+      - echo "Pushing Docker image to ECR..."
+      - docker push $REPOSITORY_URI:latest
+      - docker push $REPOSITORY_URI:$IMAGE_TAG
+      # Update ECS service to deploy new container
+      - echo "Updating ECS service with new container..."
+      - aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $ECS_SERVICE_NAME --force-new-deployment
+      - echo "Backend deployment completed successfully"
+# Artifacts are not needed for backend build as it deploys directly to ECS
+artifacts:
+  files:
+    - '**/*'

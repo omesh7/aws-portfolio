@@ -31,7 +31,7 @@ resource "aws_codebuild_project" "frontend" {
 
   source {
     type      = "CODEPIPELINE"
-    buildspec = "13-2048-game-codepipeline/frontend-buildspec.yml"
+    buildspec = "13-2048-game-aws-codepipeline/buildspec/frontend-buildspec.yml"
   }
 
   tags = {
