@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Multi-Cloud Weather Tracker</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌤️ Weather Tracker</h1>
+            <p class="subtitle">Multi-Cloud Disaster Recovery Demo</p>
+        </header>
+        
+        <main>
+            <div class="search-section">
+                <input type="text" id="cityInput" placeholder="Enter city name..." />
+                <button id="searchBtn">Get Weather</button>
+            </div>
+            
+            <div id="weatherCard" class="weather-card hidden">
+                <div class="weather-info">
+                    <h2 id="cityName"></h2>
+                    <div class="temperature">
+                        <span id="temp"></span>
+                        <span class="unit">°C</span>
+                    </div>
+                    <p id="description"></p>
+                    <div class="details">
+                        <div class="detail">
+                            <span>Feels like</span>
+                            <span id="feelsLike"></span>
+                        </div>
+                        <div class="detail">
+                            <span>Humidity</span>
+                            <span id="humidity"></span>
+                        </div>
+                        <div class="detail">
+                            <span>Wind</span>
+                            <span id="windSpeed"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="errorMessage" class="error hidden"></div>
+        </main>
+        
+        <footer>
+            <div class="cloud-status">
+                <div class="status-item">
+                    <span class="status-dot aws"></span>
+                    <span>AWS Primary</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-dot azure"></span>
+                    <span>Azure Backup</span>
+                </div>
+            </div>
+            <p>Powered by OpenWeatherMap API</p>
+        </footer>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

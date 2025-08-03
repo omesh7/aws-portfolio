@@ -158,7 +158,7 @@ resource "aws_codebuild_project" "build_project" {
 
   source {
     type      = "CODEPIPELINE"
-    buildspec = "13-2048-game-codepipeline/buildspec.yml"
+    buildspec = "13-2048-game-aws-codepipeline/buildspec/backend-buildspec.yml"
   }
 }
 

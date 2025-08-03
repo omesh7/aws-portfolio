@@ -1,5 +1,5 @@
 aws_region = "ap-south-1"
-project_name = "project-13-2048-game-codepipeline"
+project_name = "project-13-2048-game-aws-codepipeline"
 github_owner = "your-github-username"
 github_repo = "aws-portfolio"
 github_token = "ghp_your_github_personal_access_token"
