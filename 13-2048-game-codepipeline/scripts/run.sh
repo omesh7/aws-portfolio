@@ -26,15 +26,19 @@ echo "Available actions:"
 echo "  1. deploy   - Deploy the complete infrastructure and application"
 echo "  2. status   - Check the status of deployed resources"
 echo "  3. destroy  - Destroy all resources and clean up"
+echo "  4. trigger-build - Manually trigger CodePipeline build"
+echo "  5. test-deployment - Test the deployed application"
 echo ""
 
 # Get action from user
 if [ $# -eq 0 ]; then
-    read -p "Select an action (1-3): " ACTION_NUM
+    read -p "Select an action (1-5): " ACTION_NUM
     case $ACTION_NUM in
         1) ACTION="deploy" ;;
         2) ACTION="status" ;;
         3) ACTION="destroy" ;;
+        4) ACTION="trigger-build" ;;
+        5) ACTION="test-deployment" ;;
         *) echo "❌ Invalid selection"; exit 1 ;;
     esac
 else
@@ -46,12 +50,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # Validate action
 case $ACTION in
-    deploy|status|destroy)
+    deploy|status|destroy|trigger-build|test-deployment)
         SCRIPT_PATH="$SCRIPT_DIR/$PLATFORM/$ACTION$SCRIPT_EXT"
         ;;
     *)
         echo "❌ Invalid action: $ACTION"
-        echo "Valid actions: deploy, status, destroy"
+        echo "Valid actions: deploy, status, destroy, trigger-build, test-deployment"
         exit 1
         ;;
 esac

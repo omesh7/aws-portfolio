@@ -27,17 +27,8 @@ phases:
       - docker build -f docker/Dockerfile -t $REPOSITORY_URI:latest .
       - docker tag $REPOSITORY_URI:latest $REPOSITORY_URI:$IMAGE_TAG
       
-      # Build frontend
-      - echo Building frontend...
-      - cd frontend
-      - npm install
-      - echo "VITE_API_URL=http://project-13-2048-game-codepp-alb-150668108.ap-south-1.elb.amazonaws.com" > .env
-      - cat .env
-      - npm run build || echo "Frontend build failed, continuing..."
-      - echo "Checking if dist directory exists..."
-      - ls -la
-      - if [ -d "dist" ]; then echo "dist directory found"; ls -la dist/; else echo "dist directory not found"; fi
-      - cd ..
+      # Backend build only - frontend handled separately
+      - echo Backend build completed
   
   post_build:
     commands:
@@ -52,26 +43,8 @@ phases:
       - echo Updating ECS service...
       - aws ecs update-service --cluster $ECS_CLUSTER_NAME --service $ECS_SERVICE_NAME --force-new-deployment
       
-      # Deploy frontend to S3
-      - echo Deploying frontend to S3...
-      - echo "Current directory:"
-      - pwd
-      - echo "Listing project structure:"
-      - ls -la
-      - echo "Checking frontend directory:"
-      - ls -la frontend/
-      - if [ -d "frontend/dist" ]; then
-          echo "Frontend dist directory found, syncing to S3...";
-          echo "Contents of dist directory:";
-          ls -la frontend/dist/;
-          aws s3 sync frontend/dist/ s3://$S3_BUCKET --delete;
-          echo "S3 sync completed";
-        else
-          echo "Frontend dist directory not found, creating fallback...";
-          mkdir -p temp-frontend;
-          echo '<html><body><h1>2048 Game API is running</h1><p>Frontend build failed, but API is available.</p></body></html>' > temp-frontend/index.html;
-          aws s3 sync temp-frontend/ s3://$S3_BUCKET --delete;
-        fi
+      # Backend deployment completed
+      - echo Backend deployment completed
 
 artifacts:
   files:

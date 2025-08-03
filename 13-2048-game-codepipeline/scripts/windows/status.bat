@@ -1,13 +1,14 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set PROJECT_NAME=project-13-2048-game-codepipeline
+set PROJECT_NAME=proj-13-2048-game-cp
 set REGION=ap-south-1
 
 echo 2048 Game CI/CD Pipeline - Status Check
 echo ==================================================
 
-cd ..\infrastructure 2>nul || (
+cd /d "%~dp0..\.."
+cd infrastructure 2>nul || (
     echo No infrastructure directory found. Run from project root.
     echo.
     echo To deploy: .\scripts\windows\deploy.bat
@@ -48,7 +49,7 @@ if not "!ECS_CLUSTER!"=="" if not "!ECS_SERVICE!"=="" (
 
 echo.
 echo Load Balancer Target Health:
-for /f "tokens=*" %%i in ('aws elbv2 describe-target-groups --names !PROJECT_NAME!-tg --query "TargetGroups[0].TargetGroupArn" --output text 2^>nul ^|^| echo.') do set ALB_TG_ARN=%%i
+for /f "tokens=*" %%i in ('terraform output -raw target_group_arn 2^>nul ^|^| echo.') do set ALB_TG_ARN=%%i
 if not "!ALB_TG_ARN!"=="" if not "!ALB_TG_ARN!"=="None" (
     aws elbv2 describe-target-health --target-group-arn !ALB_TG_ARN! --query "TargetHealthDescriptions[*].{Target:Target.Id,Port:Target.Port,Health:TargetHealth.State}" --output table 2>nul || echo No targets found
 ) else (

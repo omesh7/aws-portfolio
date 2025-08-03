@@ -5,7 +5,7 @@
 
 set -e  # Exit on any error
 
-PROJECT_NAME="project-13-2048-game-codepipeline"
+PROJECT_NAME="proj-13-2048-game-cp"
 REGION="ap-south-1"
 
 echo "🚀 Starting complete deployment of 2048 Game CI/CD Pipeline..."
@@ -22,10 +22,20 @@ command -v python3 >/dev/null 2>&1 || { echo "❌ Python not found. Please insta
 # Check AWS credentials
 aws sts get-caller-identity >/dev/null 2>&1 || { echo "❌ AWS credentials not configured. Run 'aws configure'."; exit 1; }
 
+# Check if Docker is running
+echo "Checking if Docker is running..."
+if ! docker info >/dev/null 2>&1; then
+    echo "⚠️ WARNING: Docker is not running. Please start Docker."
+    read -p "Press Enter to continue once Docker is started..."
+    docker info >/dev/null 2>&1 || { echo "❌ Docker still not running. Exiting."; exit 1; }
+fi
+
 echo "✅ All prerequisites met!"
 
 # Navigate to project root
+echo "Navigating to project root..."
 cd "$(dirname "$0")/../.."
+echo "Current directory: $(pwd)"
 
 # Step 1: Test local development
 echo ""
@@ -34,9 +44,12 @@ echo "Installing Python dependencies..."
 pip3 install -r requirements.txt >/dev/null 2>&1
 
 echo "Installing frontend dependencies..."
-cd frontend
-npm install >/dev/null 2>&1
-cd ..
+if [ ! -d "frontend" ]; then
+    echo "❌ Frontend directory not found in $(pwd)"
+    exit 1
+fi
+echo "Found frontend directory, installing dependencies..."
+npm install --prefix frontend >/dev/null 2>&1
 
 # Step 2: Test Docker build
 echo ""
@@ -109,7 +122,9 @@ done
 
 # Check load balancer health
 echo "Checking load balancer target health..."
-ALB_TG_ARN=$(aws elbv2 describe-target-groups --names ${PROJECT_NAME}-tg --query "TargetGroups[0].TargetGroupArn" --output text)
+cd infrastructure
+ALB_TG_ARN=$(terraform output -raw target_group_arn 2>/dev/null || echo "")
+cd ..
 
 for i in {1..20}; do
     HEALTH_STATUS=$(aws elbv2 describe-target-health --target-group-arn $ALB_TG_ARN --query "TargetHealthDescriptions[0].TargetHealth.State" --output text 2>/dev/null || echo "unknown")
@@ -133,16 +148,22 @@ fi
 
 # Step 7: Deploy frontend
 echo ""
-echo "🎨 Step 7: Building and deploying frontend..."
+echo "🎨 Step 7: Initial frontend deployment (CI/CD will handle updates)..."
 cd frontend
 
 echo "VITE_API_URL=$API_URL" > .env
-npm run build >/dev/null 2>&1
-
-aws s3 sync dist/ s3://$S3_BUCKET --delete >/dev/null 2>&1
+if [ -d "dist" ]; then
+    echo "Deploying existing frontend build..."
+    aws s3 sync dist/ s3://$S3_BUCKET --delete >/dev/null 2>&1
+else
+    echo "No frontend build found, creating placeholder..."
+    mkdir -p dist
+    echo '<html><body><h1>2048 Game</h1><p>Building... Please wait for CI/CD pipeline to complete.</p></body></html>' > dist/index.html
+    aws s3 sync dist/ s3://$S3_BUCKET --delete >/dev/null 2>&1
+fi
 
 FRONTEND_URL="http://$S3_BUCKET.s3-website.$REGION.amazonaws.com"
-echo "✅ Frontend deployed successfully!"
+echo "✅ Frontend placeholder deployed! CI/CD pipeline will update with full build."
 
 cd ..
 

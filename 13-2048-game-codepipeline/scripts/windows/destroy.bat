@@ -1,7 +1,7 @@
 @echo off
 setlocal enabledelayedexpansion
 
-set PROJECT_NAME=project-13-2048-game-codepipeline
+set PROJECT_NAME=proj-13-2048-game-cp
 set REGION=ap-south-1
 
 echo Starting complete cleanup of 2048 Game CI/CD Pipeline...
@@ -19,7 +19,8 @@ if not "!CONFIRM!"=="yes" (
 echo.
 echo Checking if infrastructure exists...
 
-cd ..\infrastructure 2>nul || (
+cd /d "%~dp0..\.."
+cd infrastructure 2>nul || (
     echo No infrastructure directory found. Run from project root.
     echo.
     echo To deploy: .\scripts\windows\deploy.bat
