@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import sharp from "sharp";
 
 export async function POST(request: NextRequest) {
   try {
@@ -22,14 +23,6 @@ export async function POST(request: NextRequest) {
 
     const imageFile = formData.get("imageFile") as File | null;
 
-    if (!process.env.IMAGE_RESIZE_API_URL) {
-      console.error("IMAGE_RESIZE_API_URL environment variable is not set");
-      return NextResponse.json(
-        { error: "Service configuration error. Please contact support." },
-        { status: 500 }
-      );
-    }
-
     if (!imageFile) {
       return NextResponse.json(
         { error: "Please upload an image file." },
@@ -44,60 +37,53 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Build the URL with query parameters as expected by your Lambda
-    const apiUrl = new URL(`${process.env.IMAGE_RESIZE_API_URL}/resize`);
-    apiUrl.searchParams.set("width", width.toString());
-    apiUrl.searchParams.set("height", height.toString());
-    apiUrl.searchParams.set("format", format);
-
-    // Create FormData with the image file (match Lambda expectation)
-    const requestFormData = new FormData();
-    requestFormData.append("imageFile", imageFile);
-
-    console.log("Calling Lambda at:", apiUrl.toString());
-    
-    const response = await fetch(apiUrl.toString(), {
-      method: "POST",
-      body: requestFormData,
-      signal: AbortSignal.timeout(30000), // 30 second timeout
-    });
-
-    if (!response.ok) {
-      const errorMessage = "Image processing failed. Please try again.";
+    // Primary: Lambda processing
+    if (process.env.IMAGE_RESIZE_API_URL) {
       try {
-        const errorData = await response.json();
-        // Don't expose internal error details to client
-        console.error("Lambda error response:", errorData);
-      } catch (parseError) {
-        console.error("Could not parse error response:", parseError);
+        const apiUrl = new URL(`${process.env.IMAGE_RESIZE_API_URL}/resize`);
+        apiUrl.searchParams.set("width", width.toString());
+        apiUrl.searchParams.set("height", height.toString());
+        apiUrl.searchParams.set("format", format);
+
+        const requestFormData = new FormData();
+        requestFormData.append("imageFile", imageFile);
+
+        const response = await fetch(apiUrl.toString(), {
+          method: "POST",
+          body: requestFormData,
+          signal: AbortSignal.timeout(30000),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          return NextResponse.json({
+            resizedImageUrl: data.url,
+            format: format,
+          });
+        }
+      } catch (lambdaError) {
+        console.error("Lambda processing failed, falling back to local:", lambdaError);
       }
-      throw new Error(errorMessage);
     }
 
-    const data = await response.json();
+    // Fallback: Local processing with Sharp
+    console.log("Using local Sharp processing");
+    const buffer = Buffer.from(await imageFile.arrayBuffer());
+    const processedBuffer = await sharp(buffer)
+      .resize(width, height)
+      .toFormat(format as keyof sharp.FormatEnum)
+      .toBuffer();
+
+    const base64 = processedBuffer.toString('base64');
+    const mimeType = format === 'jpeg' ? 'image/jpeg' : `image/${format}`;
+    const dataUrl = `data:${mimeType};base64,${base64}`;
 
     return NextResponse.json({
-      resizedImageUrl: data.url,
+      resizedImageUrl: dataUrl,
       format: format,
     });
   } catch (err: any) {
-    console.error("API Route error details:", {
-      message: err.message,
-      name: err.name,
-      cause: err.cause,
-      stack: err.stack,
-    });
-
-    // Provide generic error messages without exposing internal details
-    let errorMessage =
-      "Service temporarily unavailable. Please try again later.";
-
-    if (err.name === "AbortError") {
-      errorMessage = "Request timeout. Please try with a smaller image.";
-    } else if (err.message.includes("Image processing failed")) {
-      errorMessage = err.message;
-    }
-
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    console.error("Image processing error:", err.message);
+    return NextResponse.json({ error: "Failed to process image" }, { status: 500 });
   }
 }

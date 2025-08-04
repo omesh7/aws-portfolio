@@ -1,4 +1,4 @@
-title AWS Static Website Architecture with CI/CD and DNS
+title AWS Static Website Architecture with CI/CD and DNS - PROJECT 01
 
 // Infrastructure Provisioning
 Terraform Cloud [icon: hashicorp, label: "Terraform Cloud (HCP)"]
