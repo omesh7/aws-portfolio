@@ -50,10 +50,12 @@ export async function POST(request: NextRequest) {
     apiUrl.searchParams.set("height", height.toString());
     apiUrl.searchParams.set("format", format);
 
-    // Create FormData with the image file
+    // Create FormData with the image file (match Lambda expectation)
     const requestFormData = new FormData();
-    requestFormData.append("image", imageFile);
+    requestFormData.append("imageFile", imageFile);
 
+    console.log("Calling Lambda at:", apiUrl.toString());
+    
     const response = await fetch(apiUrl.toString(), {
       method: "POST",
       body: requestFormData,
@@ -82,6 +84,8 @@ export async function POST(request: NextRequest) {
     console.error("API Route error details:", {
       message: err.message,
       name: err.name,
+      cause: err.cause,
+      stack: err.stack,
     });
 
     // Provide generic error messages without exposing internal details
