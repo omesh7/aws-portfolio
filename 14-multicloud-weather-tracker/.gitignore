@@ -9,6 +9,9 @@ terraform.tfvars
 .env
 .env.local
 
+# API Keys
+frontend/config.js
+
 # Logs
 *.log
 

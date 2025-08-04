@@ -19,3 +19,8 @@ variable "cloudflare_api_token" {
   description = "Cloudflare API token"
   sensitive   = true
 }
+
+variable "lambda_function_url" {
+  description = "Lambda function URL for API calls"
+  type        = string
+}

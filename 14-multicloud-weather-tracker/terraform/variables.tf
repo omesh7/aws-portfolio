@@ -57,9 +57,19 @@ variable "tags" {
   description = "Common tags to apply to all resources"
   type        = map(string)
   default = {
-    Project     = var.project_name
-    Environment = var.environment
-    Owner       = var.project_owner
+    Project     = "14-weather-app-aws-portfolio"
+    Environment = "portfolio"
+    Owner       = "omesh"
+    Description = "Weather Tracker Application"
     project-no  = "14"
   }
+}
+
+
+
+variable "openweather_api_key" {
+  description = "OpenWeather API key for weather data"
+  type        = string
+  sensitive   = true
+  default     = ""
 }

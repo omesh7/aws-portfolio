@@ -2,22 +2,14 @@
 
 # AWS Resources
 module "aws_infrastructure" {
-  source = "./modules/aws"
-
+  source               = "./modules/aws"
   domain_name          = "${var.subdomain}.${data.cloudflare_zone.zone.name}"
   aws_region           = var.aws_region
   cloudflare_zone_id   = var.cloudflare_zone_id
   cloudflare_api_token = var.cloudflare_api_token
+  lambda_function_url  = aws_lambda_function_url.weather_tracker_url.function_url
 }
 
-# Azure Resources
-module "azure_infrastructure" {
-  source = "./modules/azure"
-
-  domain_name    = "${var.subdomain}.${data.cloudflare_zone.zone.name}"
-  azure_location = var.azure_location
-  resource_group = var.azure_resource_group
-}
 
 # Health Check for AWS Primary
 resource "aws_route53_health_check" "aws_primary" {
@@ -43,27 +35,41 @@ resource "cloudflare_dns_record" "primary" {
   proxied = false
 }
 
-# Secondary DNS Record (Azure) - for manual failover
-resource "cloudflare_dns_record" "secondary" {
-  zone_id = var.cloudflare_zone_id
-  name    = "${var.subdomain}-backup"
-  type    = "CNAME"
-  content = module.azure_infrastructure.cdn_endpoint_fqdn
-  ttl     = 60
-  proxied = false
-}
+
 
 data "cloudflare_zone" "zone" {
   zone_id = var.cloudflare_zone_id
 }
 
 
-resource "azurerm_resource_group" "main" {
-  name     = var.azure_resource_group
-  location = var.azure_location
+# ============================================================================
+# AZURE RESOURCES - Commented out for AWS-only deployment
+# Uncomment this entire section when ready to deploy multicloud setup
+# ============================================================================
 
-  tags = {
-    environment = "production"
-    project     = "weather-tracker"
-  }
-}
+# module "azure_infrastructure" {
+#   source = "./modules/azure"
+#
+#   domain_name    = "${var.subdomain}.${data.cloudflare_zone.zone.name}"
+#   azure_location = var.azure_location
+#   resource_group = var.azure_resource_group
+# }
+
+# resource "azurerm_resource_group" "main" {
+#   name     = var.azure_resource_group
+#   location = var.azure_location
+#
+#   tags = {
+#     environment = "production"
+#     project     = "weather-tracker"
+#   }
+# }
+
+# resource "cloudflare_dns_record" "secondary" {
+#   zone_id = var.cloudflare_zone_id
+#   name    = "${var.subdomain}-backup"
+#   type    = "CNAME"
+#   content = module.azure_infrastructure.cdn_endpoint_fqdn
+#   ttl     = 60
+#   proxied = false
+# }
