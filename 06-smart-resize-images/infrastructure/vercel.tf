@@ -18,3 +18,21 @@ resource "vercel_project_environment_variable" "lambda_url" {
   target     = ["production", "preview", "development"]
   sensitive  = false
 }
+
+resource "vercel_deployment" "image_Resize_project_deploy" {
+  project_id        = vercel_project.image_Resize_project.id
+  ref               = "main" # or a git branch
+  production        = true
+  delete_on_destroy = true
+
+  depends_on = [
+    vercel_project.image_Resize_project,
+    vercel_project_environment_variable.lambda_url
+  ]
+}
+
+output "vercel_deployment_url" {
+  value       = vercel_deployment.image_Resize_project_deploy.domains[0]
+  description = "The URL of the Vercel deployment for the image resize project"
+
+}

@@ -1,0 +1,28 @@
+// Title
+title Smart Image Resizer – Serverless Processing Pipeline - PROJECT 06
+
+// Infrastructure Provisioning
+TERRAFORM BUILD [icon: terraform] {
+  AWS Infrastructure [icon: aws-cloud] {
+    API Gateway [icon: aws-api-gateway, label: "API Gateway"]
+    Lambda [icon: aws-lambda, label: "Image Processor (Lambda)"]
+    S3 Bucket [icon: aws-s3, label: "S3 Bucket"]
+  }
+  Vercel [icon: vercel, label: "Vercel (Frontend Deployment)"]
+  Next.js App [icon: nextjs, label: "Next.js (UI)"]
+}
+
+// Source Code
+Terraform [icon: terraform, label: "Terraform (IaC Source Code)"]
+GitHub [icon: github, label: "GitHub (Project Repository)"]
+
+// Deployment Flow
+Terraform -> TERRAFORM BUILD: Provision infrastructure
+GitHub -> Vercel: Pull source code
+Vercel -> Next.js App: Deploy frontend UI
+
+// Image Processing Flow
+Next.js App -> API Gateway: Upload image
+API Gateway -> Lambda: Resize Image
+Lambda -> S3 Bucket: Store Resized image
+S3 Bucket -> Next.js App: Return image URL
