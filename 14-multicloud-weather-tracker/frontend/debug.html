@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Weather API Debug</title>
+</head>
+<body>
+    <h1>Weather API Debug</h1>
+    <button onclick="testAPI()">Test API</button>
+    <div id="result"></div>
+
+    <script src="config.js"></script>
+    <script>
+        async function testAPI() {
+            const API_KEY = CONFIG?.OPENWEATHER_API_KEY ;
+            const city = "London";
+            const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${API_KEY}&units=metric`;
+            
+            console.log("API Key:", API_KEY);
+            console.log("URL:", url);
+            
+            try {
+                const response = await fetch(url);
+                console.log("Response status:", response.status);
+                console.log("Response ok:", response.ok);
+                
+                const data = await response.json();
+                console.log("Response data:", data);
+                
+                document.getElementById('result').innerHTML = `
+                    <h3>Response Status: ${response.status}</h3>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                console.error("Error:", error);
+                document.getElementById('result').innerHTML = `<h3>Error: ${error.message}</h3>`;
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+title AWS Static Website Architecture with CI/CD and DNS
+
+// Infrastructure Provisioning
+Terraform Cloud [icon: hashicorp, label: "Terraform Cloud (HCP)"]
+
+// CI/CD Automation
+GitHub Actions [icon: githubactions, label: "GitHub Actions"]
+
+TERRAFORM BUILD [icon: terraform] {
+  // AWS Infrastructure
+  AWS Infrastructure [icon: aws-cloud] {
+    S3 Static Website [icon: aws-s3, label: "S3 Bucket (Static Website Hosting)"]
+    CloudFront Distribution [icon: aws-cloudfront, label: "CloudFront (CDN, HTTPS)"] {
+      ACM Certificate [icon: aws-certificate-manager, label: "ACM Certificate (SSL/TLS)"]
+    }
+  }
+
+  // External DNS
+  Cloudflare DNS [icon: cloudflare, label: "Cloudflare DNS"]
+}
+
+// Terraform Flow
+Terraform Cloud -> TERRAFORM BUILD: terraform apply
+
+// Direct CI/CD Webhook
+
+// GitHub Actions CI/CD
+GitHub Actions -> S3 Static Website: build & upload Vite site
+
+// Static Content Hosting
+S3 Static Website -> CloudFront Distribution: serve static content via OAC
+
+// DNS Routing
+Cloudflare DNS -> CloudFront Distribution: DNS resolution (CNAME) (portfolio.domain)
