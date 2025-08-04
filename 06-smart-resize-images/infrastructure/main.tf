@@ -1,15 +1,4 @@
-provider "aws" {
 
-
-  default_tags {
-    tags = {
-      Project     = var.project_name
-      Environment = "portfolio"
-      project-no  = "06"
-    }
-  }
-  region = var.aws_region
-}
 
 resource "aws_s3_bucket" "resized_bucket" {
   bucket        = var.project_name
