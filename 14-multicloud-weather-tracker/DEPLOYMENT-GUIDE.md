@@ -1,377 +1,231 @@
-# 🚀 Deployment Guide - Multi-Cloud Weather Tracker
+# 🚀 Multi-Cloud Weather Tracker Deployment Guide
 
 ## Prerequisites
 
 ### Required Tools
-- [Terraform](https://terraform.io/downloads) (>= 1.0)
-- [AWS CLI](https://aws.amazon.com/cli/) (configured with credentials)
-- [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli) (logged in)
-- [Cloudflare Account](https://cloudflare.com) with API token
-- Domain managed by Cloudflare (omesh.site)
+- **Terraform** (>= 1.0)
+- **AWS CLI** (configured with credentials)
+- **Azure CLI** (for multi-cloud setup)
+- **Cloudflare account** with domain access
 
-### Required Accounts & Services
-- AWS Account with appropriate permissions
-- Azure Account with subscription
-- Cloudflare account with domain management
-- OpenWeatherMap API key (free at openweathermap.org)
-- Terraform Cloud account (optional)
+### API Keys
+- **OpenWeatherMap API key** (free tier available)
+- **Cloudflare API token** with Zone:Edit permissions
 
-## Step-by-Step Deployment
+## 📋 Step-by-Step Deployment
 
-### 1. Configure Cloud Credentials
+### 1. Configuration Setup
 
 ```bash
-# AWS CLI Configuration
-aws configure
-# Enter your AWS Access Key ID, Secret Access Key, and region (ap-south-1)
-
-# Azure CLI Login
-az login
-# Follow browser authentication flow
-
-# Verify credentials
-aws sts get-caller-identity
-az account show
-```
-
-### 2. Setup Cloudflare API Access
-
-1. Login to [Cloudflare Dashboard](https://dash.cloudflare.com)
-2. Go to "My Profile" > "API Tokens"
-3. Create token with permissions:
-   - Zone:Zone:Read
-   - Zone:DNS:Edit
-   - Zone:Zone Settings:Read
-4. Note your Zone ID from the domain overview page
-
-### 3. Clone and Setup Project
-
-```bash
-git clone <your-repository>
+# Clone and navigate
 cd 14-multicloud-weather-tracker
-```
 
-### 4. Configure Terraform Variables
-
-```bash
+# Copy configuration template
 cp terraform.tfvars.example terraform.tfvars
 ```
 
 Edit `terraform.tfvars`:
 ```hcl
-aws_region = "ap-south-1"
-azure_location = "East US"
-azure_resource_group = "weather-tracker-rg"
-
-# Cloudflare Configuration
-cloudflare_api_token = "your_cloudflare_api_token_here"
-cloudflare_zone_id = "your_cloudflare_zone_id_here"
-
-# Project Configuration
-project_name = "14-weather-app-aws-portfolio"
-subdomain = "weather.portfolio"
-project_owner = "your_name"
-environment = "portfolio"
+openweather_api_key = "your-openweather-api-key"
+cloudflare_api_token = "your-cloudflare-token"
+domain_name = "your-domain.com"
+subdomain = "weather"
+project_name = "weather-app"
 ```
 
-### 5. Configure OpenWeatherMap API
+### 2. Deploy Infrastructure
 
-1. Sign up at [OpenWeatherMap](https://openweathermap.org/api)
-2. Get your free API key
-3. Edit `frontend/script.js`:
-
-```javascript
-const API_KEY = 'your_openweathermap_api_key_here';
+**Option A: Windows**
+```cmd
+# From any directory
+scripts\windows\deploy.bat
 ```
 
-### 6. Deploy Infrastructure
-
+**Option B: Linux**
 ```bash
-# Navigate to terraform directory
-cd terraform
+# Make executable (first time only)
+chmod +x scripts/linux/*.sh
 
-# Initialize Terraform
-terraform init
-
-# Plan deployment
-terraform plan
-
-# Apply infrastructure
-terraform apply
+# Deploy from any directory
+scripts/linux/deploy.sh
 ```
 
-### 7. Deploy Frontend Applications
+### 3. Verify Deployment
 
-```bash
-# Deploy to AWS S3
-aws s3 sync ../frontend/ s3://$(terraform output -raw aws_s3_bucket)/ --delete
-
-# Deploy to Azure Blob Storage
-az storage blob upload-batch \
-    --account-name $(terraform output -raw azure_storage_account) \
-    --destination '$web' \
-    --source ../frontend/
+```cmd
+# Check status
+scripts\windows\status.bat    # Windows
+scripts/linux/status.sh       # Linux
 ```
 
-### 8. Verify Deployment
+Expected output:
+```
+Multi-Cloud Weather Tracker Status
+===================================
+Infrastructure Status:
+Lambda: Deployed
+Weather App: https://weather.your-domain.com
 
+Testing endpoints...
+✅ API: Working
+```
+
+### 4. Test Failover
+
+```cmd
+scripts\windows\test-failover.bat    # Windows
+scripts/linux/test-failover.sh       # Linux
+```
+
+## 🌐 Multi-Cloud Configuration (Optional)
+
+### Enable Azure Backup
+
+1. **Uncomment Azure resources** in `terraform/main.tf`:
+```hcl
+# Uncomment for multi-cloud setup
+module "azure_infrastructure" {
+  source = "./modules/azure"
+  # ... configuration
+}
+```
+
+2. **Uncomment Azure outputs** in `terraform/outputs.tf`:
+```hcl
+output "azure_storage_account" {
+  description = "Azure storage account name"
+  value       = module.azure_infrastructure.storage_account_name
+}
+```
+
+3. **Update deployment scripts** to include Azure:
 ```bash
-# Test primary endpoint (AWS)
-curl -I https://weather.portfolio.omesh.site
+# In deploy scripts, uncomment:
+# az storage blob upload-batch --account-name $AZURE_STORAGE ...
+```
 
-# Test secondary endpoint (Azure)
-curl -I https://weather.portfolio-backup.omesh.site
+4. **Configure Azure CLI**:
+```bash
+az login
+az account set --subscription "your-subscription-id"
+```
 
+### Full Multi-Cloud Benefits
+- ✅ **Automatic failover** from AWS to Azure
+- ✅ **Health monitoring** every 30 seconds
+- ✅ **Zero downtime** during outages
+- ✅ **Geographic redundancy**
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+**1. CORS Errors**
+```bash
+# Check Lambda CORS configuration
+terraform output aws_lambda_function_url_weather_tracker_url
+```
+
+**2. API Key Issues**
+```bash
+# Verify OpenWeather API key
+curl "https://api.openweathermap.org/data/2.5/weather?q=London&appid=YOUR_KEY"
+```
+
+**3. DNS Propagation**
+```bash
 # Check DNS resolution
-dig +short weather.portfolio.omesh.site
+nslookup weather.your-domain.com
 ```
 
-## Alternative: Automated Deployment Script
-
-For automated deployment, use the provided script:
-
+**4. Terraform State Lock**
 ```bash
-# Make script executable
-chmod +x scripts/deploy.sh
-
-# Run deployment
-./scripts/deploy.sh
+# Force unlock if needed
+terraform force-unlock LOCK_ID
 ```
 
-The script will:
-1. Initialize Terraform
-2. Apply infrastructure changes
-3. Deploy frontend to both AWS and Azure
-4. Verify deployments
-5. Display access URLs
+### Script Debugging
 
-## Testing Disaster Recovery
-
-### Automated Failover Testing
-
-```bash
-# Run the failover test script
-chmod +x scripts/test-failover.sh
-./scripts/test-failover.sh weather.portfolio.omesh.site
+**Windows:**
+```cmd
+# Enable verbose output
+set TERRAFORM_LOG=DEBUG
+scripts\windows\deploy.bat
 ```
 
-### Manual Failover Testing
-
-1. **Test Primary Endpoint (AWS)**
-   ```bash
-   curl -I https://weather.portfolio.omesh.site
-   # Should return 200 OK from CloudFront
-   ```
-
-2. **Simulate AWS Failure**
-   - Go to AWS CloudFront Console
-   - Find your distribution
-   - Disable the distribution temporarily
-   - Wait 3-5 minutes for health check to fail
-
-3. **Verify Failover to Azure**
-   ```bash
-   # Monitor DNS changes
-   watch -n 5 'dig +short weather.portfolio.omesh.site'
-   
-   # Test secondary endpoint
-   curl -I https://weather.portfolio-backup.omesh.site
-   ```
-
-4. **Test Recovery**
-   - Re-enable AWS CloudFront distribution
-   - Wait for health check to recover
-   - Verify traffic returns to primary
-
-### Health Check Monitoring
-
+**Linux:**
 ```bash
-# Check Route 53 health check status
-aws route53 get-health-check --health-check-id YOUR_HEALTH_CHECK_ID
-
-# Monitor health check metrics
-aws cloudwatch get-metric-statistics \
-    --namespace AWS/Route53 \
-    --metric-name HealthCheckStatus \
-    --dimensions Name=HealthCheckId,Value=YOUR_HEALTH_CHECK_ID
+# Enable debug mode
+set -x
+scripts/linux/deploy.sh
 ```
 
-## Troubleshooting
+## 🧹 Cleanup
 
-### Common Issues & Solutions
+### Destroy Resources
 
-#### 1. Terraform Authentication Issues
-
-```bash
-# AWS credentials
-aws sts get-caller-identity
-
-# Azure credentials
-az account show
-
-# Cloudflare API token test
-curl -X GET "https://api.cloudflare.com/client/v4/user/tokens/verify" \
-     -H "Authorization: Bearer YOUR_API_TOKEN"
+```cmd
+scripts\windows\destroy.bat    # Windows
+scripts/linux/destroy.sh       # Linux
 ```
 
-#### 2. Certificate Validation Failures
-
+### Manual Cleanup (if needed)
 ```bash
-# Check ACM certificate status
-aws acm list-certificates --region us-east-1
+# Remove Terraform state
+rm terraform/terraform.tfstate*
 
-# Verify DNS validation records
-dig TXT _acme-challenge.weather.portfolio.omesh.site
+# Clean temporary files
+rm -rf temp-frontend/
+rm lambda_14.zip
 ```
 
-#### 3. S3 Deployment Issues
+## 📊 Monitoring & Maintenance
 
+### Health Checks
+- **Cloudflare**: Monitors primary endpoint every 30s
+- **Status scripts**: Manual health verification
+- **Failover tests**: Validate disaster recovery
+
+### Updates
 ```bash
-# Check S3 bucket policy
-aws s3api get-bucket-policy --bucket YOUR_BUCKET_NAME
+# Update infrastructure
+scripts/windows/deploy.bat
 
-# Test S3 sync manually
-aws s3 sync frontend/ s3://YOUR_BUCKET_NAME/ --delete --dryrun
-```
-
-#### 4. Azure Storage Issues
-
-```bash
-# Check storage account
-az storage account show --name YOUR_STORAGE_ACCOUNT --resource-group weather-tracker-rg
-
-# Enable static website
-az storage blob service-properties update --account-name YOUR_STORAGE_ACCOUNT --static-website
-```
-
-#### 5. Health Check Failures
-
-```bash
-# Test endpoint manually
-curl -v https://weather.portfolio.omesh.site
-
-# Check CloudFront distribution status
-aws cloudfront get-distribution --id YOUR_DISTRIBUTION_ID
-```
-
-### Diagnostic Commands
-
-```bash
-# View Terraform state
-terraform show
-
-# Check specific outputs
-terraform output aws_cloudfront_domain
-terraform output azure_cdn_endpoint
-terraform output domain_name
-
-# Validate Terraform configuration
-terraform validate
-
-# Plan without applying
+# Check changes
 terraform plan
 ```
 
-### Emergency Procedures
+### Logs
+- **AWS CloudWatch**: Lambda function logs
+- **Cloudflare Analytics**: Traffic and failover events
+- **Local logs**: Script execution output
 
-```bash
-# Force failover to Azure (manual)
-# Update Cloudflare DNS record to point to Azure CDN
+## 🎯 Production Considerations
 
-# Rollback deployment
-terraform destroy -target=module.aws_infrastructure
+### Security
+- ✅ HTTPS enforced via CloudFront/CDN
+- ✅ API keys stored in Terraform variables
+- ✅ CORS properly configured
+- ✅ No hardcoded credentials
 
-# Complete infrastructure teardown
-terraform destroy
-```
+### Performance
+- ✅ CDN caching for static assets
+- ✅ Lambda cold start optimization
+- ✅ Gzip compression enabled
+- ✅ Health check intervals optimized
 
-## Cost Optimization
+### Reliability
+- ✅ Multi-cloud redundancy ready
+- ✅ Automated failover configured
+- ✅ Health monitoring active
+- ✅ Error handling implemented
 
-### AWS Cost Management
+## 📞 Support
 
-```bash
-# Set up billing alerts
-aws budgets create-budget --account-id YOUR_ACCOUNT_ID --budget file://budget.json
+For issues:
+1. Check the troubleshooting section
+2. Run status scripts for diagnostics
+3. Review Terraform and script logs
+4. Verify all prerequisites are met
 
-# Monitor CloudFront usage
-aws cloudwatch get-metric-statistics --namespace AWS/CloudFront --metric-name Requests
-```
-
-### Azure Cost Management
-
-```bash
-# Check current costs
-az consumption usage list --top 10
-
-# Set up budget alerts
-az consumption budget create --budget-name weather-app-budget --amount 10
-```
-
-### Cost Optimization Tips
-
-- Use AWS Free Tier: S3 (5GB), CloudFront (1TB), ACM (free)
-- Azure Free Tier: Storage (5GB), CDN (15GB)
-- Cloudflare Free Tier: DNS, SSL, CDN (100GB)
-- Monitor usage with CloudWatch and Azure Monitor
-- Set up billing alerts for both clouds
-
-## Security Best Practices
-
-### AWS Security
-
-```bash
-# Enable CloudTrail
-aws cloudtrail create-trail --name weather-app-trail --s3-bucket-name your-cloudtrail-bucket
-
-# Check S3 bucket security
-aws s3api get-bucket-acl --bucket YOUR_BUCKET_NAME
-```
-
-### Azure Security
-
-```bash
-# Enable activity logging
-az monitor activity-log list --resource-group weather-tracker-rg
-
-# Check storage account security
-az storage account show --name YOUR_STORAGE_ACCOUNT --query "encryption"
-```
-
-### Security Checklist
-
-- ☑️ HTTPS-only access enforced
-- ☑️ Origin Access Control configured
-- ☑️ IAM least privilege policies
-- ☑️ SSL/TLS certificates valid
-- ☑️ CloudTrail and Activity Log enabled
-- ☑️ Regular security audits scheduled
-- ☑️ API keys rotated regularly
-
-## Monitoring & Maintenance
-
-### Health Monitoring
-
-```bash
-# Check health check status
-aws route53 get-health-check --health-check-id YOUR_HEALTH_CHECK_ID
-
-# Monitor application performance
-aws cloudwatch get-metric-statistics --namespace AWS/CloudFront --metric-name OriginLatency
-```
-
-### Regular Maintenance Tasks
-
-1. **Weekly:**
-   - Review health check logs
-   - Monitor cost usage
-   - Check SSL certificate expiry
-
-2. **Monthly:**
-   - Update dependencies
-   - Review security logs
-   - Test disaster recovery procedures
-
-3. **Quarterly:**
-   - Security audit
-   - Performance optimization review
-   - Cost optimization analysis
+The deployment is designed to be robust and self-healing with proper monitoring and failover capabilities.

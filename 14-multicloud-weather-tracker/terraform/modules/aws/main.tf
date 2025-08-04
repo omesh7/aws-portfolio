@@ -152,3 +152,28 @@ resource "aws_cloudfront_distribution" "website" {
     Name = "Weather Tracker AWS"
   }
 }
+
+# Generate API config file with Lambda URL
+resource "local_file" "api_config" {
+  content  = "window.LAMBDA_API_URL = '${var.lambda_function_url}api/weather';"
+  filename = "${path.module}/../../../frontend/api-config.js"
+}
+
+# Upload frontend files to S3
+resource "aws_s3_object" "frontend_files" {
+  for_each = fileset("${path.module}/../../../frontend", "**/*")
+
+  bucket = aws_s3_bucket.website.id
+  key    = each.value
+  source = "${path.module}/../../../frontend/${each.value}"
+  content_type = lookup({
+    "html" = "text/html",
+    "css"  = "text/css",
+    "js"   = "application/javascript",
+    "ico"  = "image/x-icon"
+  }, split(".", each.value)[length(split(".", each.value)) - 1], "application/octet-stream")
+
+  source_hash = filemd5("${path.module}/../../../frontend/${each.value}")
+
+  depends_on = [local_file.api_config]
+}
