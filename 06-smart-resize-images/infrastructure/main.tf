@@ -62,12 +62,13 @@ resource "aws_lambda_function" "resize_upload" {
   runtime          = "nodejs20.x"
   handler          = "index.handler"
   filename         = data.archive_file.lambda_zip.output_path
-  source_code_hash = filebase64sha256(data.archive_file.lambda_zip.output_path)
+  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+  timeout          = 30
   role             = aws_iam_role.lambda_exec.arn
 
-  # layers = [
-  #   "arn:aws:lambda:ap-south-1:982534384941:layer:sharp:1"
-  # ]
+  layers = [
+    "arn:aws:lambda:ap-south-1:982534384941:layer:sharp:2"
+  ]
   environment {
     variables = {
       BUCKET_NAME = aws_s3_bucket.resized_bucket.bucket
