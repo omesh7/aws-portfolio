@@ -1,20 +1,20 @@
-# Custom Alexa Skill - Portfolio Assistant
+# Custom Alexa Skill - Sassy GPT
 
-**Voice-Activated Portfolio Information System**
+**AI-Powered Voice Assistant with Personality**
 
-A production-ready Alexa skill that provides interactive voice responses about portfolio projects, demonstrating voice interface development, AWS Lambda integration, and conversational AI implementation.
+A production-ready Alexa skill that integrates Google Gemini AI to provide sassy, witty responses to user queries, demonstrating voice interface development, external API integration, and conversational AI implementation.
 
 ## 🎯 Quick Overview for Recruiters
 
 **Key Technical Highlights:**
 - **Voice Interface:** Alexa Skills Kit (ASK) with custom intents
-- **Backend:** Node.js Lambda function with voice response logic
-- **Cloud Integration:** AWS Lambda, Alexa Developer Console
-- **Conversational AI:** Natural language processing and response generation
-- **Voice UX:** Professional voice interaction design
-- **Deployment:** Serverless architecture with automatic scaling
+- **AI Integration:** Google Gemini 1.5 Flash API for intelligent responses
+- **Backend:** Node.js Lambda function with synchronous API calls
+- **Conversational AI:** Natural language processing with personality
+- **Voice UX:** Interactive voice experience with follow-up prompts
+- **Deployment:** Serverless architecture with multi-region support
 
-**Live Demo:** "Alexa, ask Portfolio Assistant about my projects" | **Source Code:** [GitHub Repository](https://github.com/omesh7/aws-portfolio)
+**Live Demo:** "Alexa, open Sassy me" then say anything | **Source Code:** [GitHub Repository](https://github.com/omesh7/aws-portfolio)
 
 ---
 
@@ -24,24 +24,27 @@ A production-ready Alexa skill that provides interactive voice responses about p
 graph LR
     A[User Voice Command] --> B[Alexa Device]
     B --> C[Alexa Service]
-    C --> D[Custom Skill]
+    C --> D[Sassy GPT Skill]
     D --> E[AWS Lambda]
-    E --> F[Response Logic]
-    F --> G[Voice Response]
-    G --> C
+    E --> F[Google Gemini API]
+    F --> G[AI Response]
+    G --> E
+    E --> H[Voice Response]
+    H --> C
     C --> B
     B --> A
     
-    H[Alexa Developer Console] --> D
-    I[Intent Model] --> D
+    I[Alexa Developer Console] --> D
+    J[Intent Model] --> D
 ```
 
 **Voice Interaction Flow:**
-1. User speaks command to Alexa device
+1. User speaks to Alexa device
 2. Alexa service processes speech-to-text
-3. Custom skill receives structured intent
-4. Lambda function processes request and generates response
-5. Response converted to speech and delivered to user
+3. Custom skill receives intent with user input
+4. Lambda function calls Google Gemini API with "sassy" prompt
+5. AI generates witty response
+6. Response converted to speech and delivered to user
 
 ---
 
@@ -49,23 +52,23 @@ graph LR
 
 ### Voice Interface Stack
 - **Alexa Skills Kit (ASK)** - Voice interface framework
-- **Intent Recognition** - Natural language understanding
-- **Slot Types** - Parameter extraction from voice commands
-- **Response Templates** - Structured voice responses
-- **Session Management** - Multi-turn conversation handling
+- **HelloWorldIntent** - Main intent with CatchAll slot
+- **AMAZON.SearchQuery** - Captures any user input
+- **Multi-region Deployment** - NA, EU, FE regions
+- **Session Management** - Conversation flow handling
 
 ### Backend Stack
 - **Node.js 18** - Lambda runtime environment
-- **AWS Lambda** - Serverless compute for skill logic
-- **JSON Response Format** - Alexa-compatible response structure
-- **Error Handling** - Graceful fallback responses
-- **Logging** - CloudWatch integration for debugging
+- **AWS Lambda** - Serverless compute with multi-region support
+- **Google Gemini 1.5 Flash** - AI response generation
+- **sync-request** - Synchronous HTTP requests
+- **Error Handling** - Graceful API failure responses
 
-### Development Tools
-- **Alexa Developer Console** - Skill configuration and testing
-- **ASK CLI** - Command-line development tools
-- **Lambda Console** - Function deployment and monitoring
-- **Voice Simulator** - Testing without physical device
+### AI Integration
+- **Google Gemini API** - Advanced language model
+- **Personality Prompting** - "Sassy and mean" response style
+- **Real-time Processing** - Synchronous API calls
+- **Response Parsing** - JSON response handling
 
 ---
 
@@ -74,12 +77,17 @@ graph LR
 ```
 03-custom-alexa-skill/
 ├── lambda/                     # Lambda Function Code
-│   ├── index.js               # Main skill handler
-│   └── package.json           # Dependencies
-├── skill-manifest.json        # Skill configuration
-├── interaction-model.json     # Voice interface model
-├── README.md                  # This documentation
-└── deployment-guide.md        # Setup instructions
+│   ├── index.js               # Main skill handler with Gemini integration
+│   ├── config.js              # API key configuration
+│   ├── package.json           # Dependencies (ask-sdk-core, sync-request)
+│   ├── util.js                # S3 utility functions
+│   └── local-debugger.js      # Local testing utility
+├── interactionModels/          # Voice Interface Models
+│   └── custom/
+│       └── en-US.json         # English language model
+├── skill.json                 # Skill manifest with multi-region endpoints
+├── architecture-diagram/       # Architecture diagrams
+└── README.md                  # This documentation
 ```
 
 ---
@@ -88,57 +96,57 @@ graph LR
 
 ### Skill Invocation
 ```
-User: "Alexa, open Portfolio Assistant"
-Alexa: "Hello! I can tell you about your AWS projects. What would you like to know?"
+User: "Alexa, open Sassy me"
+Alexa: "Which Intent do you want - say hello to start"
 ```
 
-### Custom Intents
+### Main Intent - HelloWorldIntent
 
-**GetProjectCountIntent:**
+**Casual Conversation:**
 ```
-User: "How many projects do I have?"
-Alexa: "You have completed 6 AWS projects so far. Keep going!"
-```
-
-**ProjectInfoIntent:**
-```
-User: "Tell me about my static website project"
-Alexa: "Your static website project uses React, AWS S3, and CloudFront for global delivery..."
+User: "Hello"
+Alexa: [Sassy AI-generated response from Gemini]
 ```
 
-**HelpIntent:**
+**Any Question:**
 ```
-User: "Help"
-Alexa: "You can ask me about your projects, project count, or specific technologies used."
+User: "How are you?"
+Alexa: [Witty, slightly mean response generated by AI]
+```
+
+**Follow-up:**
+```
+User: "Tell me a joke"
+Alexa: [AI response] "Anything else?"
 ```
 
 ### Intent Model Configuration
 ```json
 {
-  "intents": [
-    {
-      "name": "GetProjectCountIntent",
-      "samples": [
-        "how many projects do I have",
-        "what's my project count",
-        "tell me about my portfolio"
-      ]
-    },
-    {
-      "name": "ProjectInfoIntent",
-      "slots": [
-        {
-          "name": "ProjectName",
-          "type": "CUSTOM_PROJECT_TYPES"
-        }
-      ],
-      "samples": [
-        "tell me about {ProjectName}",
-        "what is {ProjectName}",
-        "describe {ProjectName} project"
-      ]
-    }
-  ]
+  "languageModel": {
+    "invocationName": "Sassy me",
+    "intents": [
+      {
+        "name": "HelloWorldIntent",
+        "slots": [
+          {
+            "name": "CatchAll",
+            "type": "AMAZON.SearchQuery",
+            "samples": ["{CatchAll}"]
+          }
+        ],
+        "samples": [
+          "hello",
+          "how are you",
+          "say hi world",
+          "say hi",
+          "hi",
+          "say hello world",
+          "say hello"
+        ]
+      }
+    ]
+  }
 }
 ```
 
@@ -148,41 +156,50 @@ Alexa: "You can ask me about your projects, project count, or specific technolog
 
 ### Lambda Handler Implementation
 ```javascript
-exports.handler = async (event) => {
-    console.log("Received event:", JSON.stringify(event));
-
-    const intent = event.request?.intent?.name || "Unknown";
-    let speechText = "Hello! This is your custom Alexa skill.";
-
-    if (intent === "GetProjectCountIntent") {
-        const projectCount = 6; // Dynamic count from database/API
-        speechText = `You have completed ${projectCount} AWS projects so far. Keep going!`;
+const HelloWorldIntentHandler = {
+    canHandle(handlerInput) {
+        return Alexa.getRequestType(handlerInput.requestEnvelope) === 'IntentRequest'
+            && Alexa.getIntentName(handlerInput.requestEnvelope) === 'HelloWorldIntent';
+    },
+    handle(handlerInput) {
+        var speakOutput = 'Hello World!';
+        
+        // Get user input from CatchAll slot
+        const catchAllValue = handlerInput.requestEnvelope.request.intent.slots.CatchAll.value;
+        
+        // Call Google Gemini API
+        const response = request('POST', 
+            'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=' + GEMINI_API_KEY, {
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                "contents": [{
+                    "role": "user", 
+                    "parts": [{
+                        "text": "Be sassy, and a tad mean in your replies. " + catchAllValue
+                    }]
+                }]
+            })
+        });
+        
+        if (response.statusCode === 200) {
+            const responseBody = JSON.parse(response.getBody('utf8'));
+            speakOutput = responseBody.candidates[0].content.parts[0].text;
+        }
+        
+        return handlerInput.responseBuilder
+            .speak(speakOutput)
+            .reprompt('anything else?')
+            .getResponse();
     }
-
-    if (intent === "ProjectInfoIntent") {
-        const projectName = event.request.intent.slots?.ProjectName?.value;
-        speechText = getProjectDetails(projectName);
-    }
-
-    return {
-        version: "1.0",
-        response: {
-            outputSpeech: {
-                type: "PlainText",
-                text: speechText,
-            },
-            shouldEndSession: true,
-        },
-    };
 };
 ```
 
 ### Advanced Features
-- **Dynamic Content** - Real-time project information
-- **Error Handling** - Graceful responses for unrecognized intents
-- **Session Management** - Multi-turn conversations
-- **Personalization** - User-specific responses
-- **Analytics** - Usage tracking and optimization
+- **AI Integration** - Real-time Google Gemini API calls
+- **Personality Injection** - Sassy response prompting
+- **Error Handling** - Graceful API failure responses
+- **Multi-region Deployment** - NA, EU, FE Lambda endpoints
+- **Session Continuity** - Follow-up conversation prompts
 
 ---
 
@@ -192,36 +209,34 @@ exports.handler = async (event) => {
 
 **1. Create New Skill:**
 ```
-Skill Name: Portfolio Assistant
+Skill Name: sassy GPT
+Invocation Name: Sassy me
 Default Language: English (US)
 Model: Custom
-Backend: AWS Lambda
+Backend: AWS Lambda (Multi-region)
 ```
 
 **2. Interaction Model:**
 ```json
 {
   "languageModel": {
-    "invocationName": "portfolio assistant",
+    "invocationName": "Sassy me",
     "intents": [
       {
-        "name": "AMAZON.CancelIntent",
-        "samples": []
-      },
-      {
-        "name": "AMAZON.HelpIntent",
-        "samples": []
-      },
-      {
-        "name": "AMAZON.StopIntent",
-        "samples": []
-      },
-      {
-        "name": "GetProjectCountIntent",
+        "name": "HelloWorldIntent",
+        "slots": [{
+          "name": "CatchAll",
+          "type": "AMAZON.SearchQuery",
+          "samples": ["{CatchAll}"]
+        }],
         "samples": [
-          "how many projects do I have",
-          "what's my project count",
-          "tell me my portfolio stats"
+          "hello",
+          "how are you",
+          "say hi world",
+          "say hi",
+          "hi",
+          "say hello world",
+          "say hello"
         ]
       }
     ]
@@ -229,10 +244,11 @@ Backend: AWS Lambda
 }
 ```
 
-**3. Endpoint Configuration:**
+**3. Multi-Region Endpoint Configuration:**
 ```
-Service Endpoint Type: AWS Lambda ARN
-Default Region: arn:aws:lambda:us-east-1:123456789:function:portfolio-alexa-skill
+NA Region: arn:aws:lambda:us-east-1:309645991521:function:91e4dfcd-804f-496a-89d9-0eb5d05b752a:Release_0
+EU Region: arn:aws:lambda:eu-west-1:309645991521:function:91e4dfcd-804f-496a-89d9-0eb5d05b752a:Release_0
+FE Region: arn:aws:lambda:us-west-2:309645991521:function:91e4dfcd-804f-496a-89d9-0eb5d05b752a:Release_0
 ```
 
 ### AWS Lambda Configuration
@@ -245,10 +261,23 @@ Memory: 128 MB
 Timeout: 30 seconds
 ```
 
-**Environment Variables:**
+**Dependencies:**
+```json
+{
+  "dependencies": {
+    "ask-sdk-core": "^2.7.0",
+    "ask-sdk-model": "^1.19.0",
+    "aws-sdk": "^2.326.0",
+    "sync-request": "6.1.0"
+  }
+}
 ```
-SKILL_ID=amzn1.ask.skill.your-skill-id
-LOG_LEVEL=INFO
+
+**Configuration:**
+```javascript
+// config.js
+const GEMINI_API_KEY = 'your-gemini-api-key';
+module.exports = { GEMINI_API_KEY };
 ```
 
 ---
@@ -274,9 +303,10 @@ LOG_LEVEL=INFO
 ```
 
 ### Skill Permissions
-- **No sensitive data access** - Read-only portfolio information
-- **CloudWatch Logging** - Error tracking and debugging
-- **Lambda Invocation** - Alexa service permissions
+- **External API Access** - Google Gemini API integration
+- **CloudWatch Logging** - Request/response tracking
+- **Multi-region Deployment** - Global Lambda function access
+- **No AWS Resource Access** - Stateless AI processing
 
 ---
 
@@ -289,28 +319,34 @@ LOG_LEVEL=INFO
 
 ### Development Workflow
 ```bash
-# Test Lambda function locally
+# Install dependencies
 cd 03-custom-alexa-skill/lambda
-node index.js
+npm install
+
+# Test locally with debugger
+node local-debugger.js --skillEntryFile index.js
 
 # Deploy to Lambda
-zip -r skill-deployment.zip index.js package.json
+zip -r skill-deployment.zip index.js config.js package.json util.js
 aws lambda update-function-code \
-  --function-name portfolio-alexa-skill \
+  --function-name sassy-gpt-skill \
   --zip-file fileb://skill-deployment.zip
 
 # Test in Alexa Developer Console
-# Use the Test tab to simulate voice interactions
+# Use "Alexa, open Sassy me" then say anything
 ```
 
 ### Testing Commands
 ```bash
-# Test intent recognition
-echo '{"request":{"intent":{"name":"GetProjectCountIntent"}}}' | \
-  aws lambda invoke --function-name portfolio-alexa-skill response.json
+# Test HelloWorldIntent
+echo '{"request":{"intent":{"name":"HelloWorldIntent","slots":{"CatchAll":{"value":"hello"}}}}}' | \
+  aws lambda invoke --function-name sassy-gpt-skill response.json
 
 # View logs
-aws logs tail /aws/lambda/portfolio-alexa-skill --follow
+aws logs tail /aws/lambda/sassy-gpt-skill --follow
+
+# Monitor Gemini API calls
+grep "Response:" /aws/lambda/sassy-gpt-skill
 ```
 
 ---
@@ -319,28 +355,22 @@ aws logs tail /aws/lambda/portfolio-alexa-skill --follow
 
 ### Alexa Analytics Dashboard
 - **Unique Users** - Daily/monthly active users
-- **Session Duration** - Average interaction time
-- **Intent Usage** - Most popular voice commands
-- **Error Rates** - Failed interactions and reasons
+- **Session Duration** - Average conversation time
+- **Intent Usage** - HelloWorldIntent popularity
+- **Error Rates** - API failures and timeouts
 
 ### CloudWatch Metrics
 ```javascript
-// Custom metrics in Lambda
-const AWS = require('aws-sdk');
-const cloudwatch = new AWS.CloudWatch();
+// Monitor API calls and responses
+console.log('User Input:', catchAllValue);
+console.log('Response:', speakOutput);
 
-await cloudwatch.putMetricData({
-    Namespace: 'AlexaSkill/Portfolio',
-    MetricData: [{
-        MetricName: 'IntentInvocations',
-        Value: 1,
-        Unit: 'Count',
-        Dimensions: [{
-            Name: 'IntentName',
-            Value: intent
-        }]
-    }]
-}).promise();
+// Track API performance
+if (response.statusCode === 200) {
+    console.log('Gemini API Success');
+} else {
+    console.error('Failed with status code:', response.statusCode);
+}
 ```
 
 ---
@@ -348,22 +378,25 @@ await cloudwatch.putMetricData({
 ## 🎯 Voice UX Best Practices
 
 ### Conversation Design
-- **Clear Prompts** - Guide users on available commands
-- **Error Recovery** - Helpful responses for misunderstood requests
-- **Brevity** - Concise but informative responses
-- **Natural Language** - Conversational tone and phrasing
+- **Open-ended Input** - CatchAll slot accepts any user input
+- **AI-powered Responses** - Dynamic, contextual replies
+- **Personality Consistency** - Sassy, witty tone maintained
+- **Follow-up Prompts** - "Anything else?" keeps conversation going
 
 ### Response Examples
 ```javascript
+// AI prompt engineering
+const prompt = "Be sassy, and a tad mean in your replies. " + userInput;
+
+// Dynamic responses from Gemini
 const responses = {
-    welcome: "Welcome to Portfolio Assistant! You can ask about project count, specific projects, or technologies used.",
-    
-    projectCount: `You have ${count} impressive AWS projects showcasing cloud architecture, serverless computing, and modern web development.`,
-    
-    projectDetails: `Your ${projectName} project demonstrates ${technologies.join(', ')} with ${features.join(' and ')}.`,
-    
-    fallback: "I didn't catch that. You can ask about your projects, project count, or say help for more options."
+    launch: "Which Intent do you want - say hello to start",
+    help: "You can say hello to me! How can I help?",
+    fallback: "Sorry, I don't know about that. Please try again.",
+    goodbye: "Goodbye!"
 };
+
+// AI-generated responses vary based on user input
 ```
 
 ---
@@ -374,9 +407,9 @@ const responses = {
 
 **1. Lambda Function Setup:**
 ```bash
-# Create Lambda function
+# Create multi-region Lambda function
 aws lambda create-function \
-  --function-name portfolio-alexa-skill \
+  --function-name sassy-gpt-skill \
   --runtime nodejs18.x \
   --role arn:aws:iam::account:role/lambda-execution-role \
   --handler index.handler \
@@ -384,33 +417,34 @@ aws lambda create-function \
 ```
 
 **2. Alexa Skill Configuration:**
-- Create skill in Alexa Developer Console
-- Configure interaction model
-- Set Lambda ARN as endpoint
-- Test and certify skill
+- Create "sassy GPT" skill in Alexa Developer Console
+- Set invocation name to "Sassy me"
+- Configure HelloWorldIntent with CatchAll slot
+- Set multi-region Lambda endpoints
+- Test with voice simulator
 
-**3. Publishing Process:**
-- Skill testing and validation
-- Privacy policy and terms of service
-- Skill store submission (optional)
-- Distribution settings
+**3. API Configuration:**
+- Obtain Google Gemini API key
+- Configure API key in config.js
+- Test API integration
+- Deploy to production
 
 ---
 
 ## 📈 Future Enhancements
 
 ### Planned Features
-- **Multi-language Support** - Spanish, French language models
+- **Conversation Memory** - Context-aware multi-turn conversations
 - **Visual Cards** - Rich responses for Echo Show devices
-- **Account Linking** - Personalized user experiences
-- **External APIs** - Real-time project data integration
-- **Voice Shopping** - Skill monetization options
+- **Voice Modulation** - Match AI personality with voice tone
+- **Multiple AI Models** - Switch between different AI personalities
+- **User Preferences** - Customizable response styles
 
 ### Advanced Capabilities
-- **Progressive Response** - Handle long-running requests
-- **Push Notifications** - Proactive skill updates
+- **Async API Calls** - Non-blocking AI processing
+- **Response Caching** - Improve performance for common queries
 - **Multi-modal** - Screen and voice interactions
-- **Personalization** - User preference learning
+- **Analytics Integration** - Track conversation patterns
 
 ---
 
@@ -427,4 +461,4 @@ aws lambda create-function \
 
 ---
 
-**Project Demonstrates:** Voice Interface Development, Conversational AI, AWS Lambda Integration, Natural Language Processing, Voice UX Design, and Serverless Architecture.
+**Project Demonstrates:** Voice Interface Development, External AI API Integration, Conversational AI, AWS Lambda Multi-region Deployment, Real-time AI Processing, and Serverless Architecture.

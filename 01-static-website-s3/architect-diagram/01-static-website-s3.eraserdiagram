@@ -1,3 +1,5 @@
+cloud-architecture-diagram
+
 title AWS Static Website Architecture with CI/CD and DNS
 
 // Infrastructure Provisioning
@@ -14,7 +16,7 @@ TERRAFORM BUILD [icon: terraform] {
       ACM Certificate [icon: aws-certificate-manager, label: "ACM Certificate (SSL/TLS)"]
     }
   }
-
+  
   // External DNS
   Cloudflare DNS [icon: cloudflare, label: "Cloudflare DNS"]
 }

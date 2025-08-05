@@ -1,0 +1,23 @@
+cloud-architecture-diagram
+
+title Mass Email System - AWS Lambda + SES - PROJECT 02
+// AWS Infrastructure
+AWS Infrastructure [icon: aws-cloud] {
+  Lambda Function [icon: aws-lambda, label: "Email Processor (Node.js 18)"]
+  SES [icon: aws-ses, label: "Simple Email Service"]
+  S3 Bucket [icon: aws-s3, label: "S3 (CSV Storage)"]
+  CloudWatch [icon: aws-cloudwatch, label: "CloudWatch (Monitoring)"]
+  IAM Role [icon: aws-iam, label: "IAM (Permissions)"]
+}
+
+// Source Code
+GitHub [icon: github, label: "GitHub (TypeScript Source)"]
+
+// Deployment Flow
+GitHub -> Lambda Function: Deploy TypeScript code
+
+// Email Processing Flow
+S3 Bucket -> Lambda Function: 1. CSV file upload trigger
+Lambda Function -> SES: 2. Process & send bulk emails
+SES -> Lambda Function: 3. Delivery status
+Lambda Function -> CloudWatch: 4. Log metrics & errors
