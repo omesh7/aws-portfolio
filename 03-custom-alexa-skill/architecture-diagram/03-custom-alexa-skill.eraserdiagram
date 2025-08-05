@@ -1,0 +1,37 @@
+cloud-architecture-diagram
+//cloud-architecture-diagram
+
+title Custom Alexa Skill - Sassy GPT with AI Integration - PROJECT 03
+
+// User Interaction
+User [icon: user, label: "User Voice Command"]
+Alexa Device [icon: alexa, label: "Alexa Device"]
+
+// Alexa Service
+Alexa Service [icon: aws-cloud, label: "Alexa Voice Service"]
+Skill [icon: aws-alexa-for-business, label: "Custom Alexa Skill"]
+
+// AWS Infrastructure
+AWS Infrastructure [icon: aws-cloud] {
+  Lambda Function [icon: aws-lambda, label: "Multi-region Lambda (Node.js 18)"]
+  CloudWatch [icon: aws-cloudwatch, label: "CloudWatch (Logging)"]
+  IAM Role [icon: aws-iam, label: "IAM (Permissions)"]
+}
+
+// External AI Service
+Google Gemini [icon: google, label: "Gemini 1.5 Flash API"]
+
+// Voice Interaction Flow
+User -> Alexa Device: 1. "Alexa, Sassy me"
+Alexa Device -> Alexa Service: 2. Voice to text
+Alexa Service -> Skill: 3. Intent + user input
+Skill -> Lambda Function: 4. Process request
+Lambda Function -> Google Gemini: 5. AI prompt with "sassy" personality
+Google Gemini -> Lambda Function: 6. AI-generated response
+Lambda Function -> Skill: 7. Formatted voice response
+Skill -> Alexa Service: 8. Response data
+Alexa Service -> Alexa Device: 9. Text to speech
+Alexa Device -> User: 10. Sassy AI response
+
+// Monitoring
+Lambda Function -> CloudWatch: Log API calls & responses
