@@ -1,17 +1,60 @@
 # AWS Portfolio Architecture Diagrams
 
-## Project 01 - Static Portfolio Website on S3 with CI/CD
+## Overall Portfolio Architecture
+
+```mermaid
+graph TB
+    subgraph "Frontend Layer"
+        A[Static Websites] --> B[React/Next.js Apps]
+        B --> C[Progressive Web Apps]
+    end
+    
+    subgraph "API Layer"
+        D[API Gateway] --> E[Lambda Functions]
+        E --> F[Alexa Skills]
+        F --> G[Function URLs]
+    end
+    
+    subgraph "Data Layer"
+        H[DynamoDB] --> I[S3 Storage]
+        I --> J[Kinesis Streams]
+        J --> K[ECR Repositories]
+    end
+    
+    subgraph "AI/ML Layer"
+        L[Amazon Polly] --> M[Textract]
+        M --> N[Rekognition]
+        N --> O[Custom ML Models]
+    end
+    
+    subgraph "Infrastructure"
+        P[Terraform IaC] --> Q[Multi-Cloud Setup]
+        Q --> R[CI/CD Pipelines]
+        R --> S[Monitoring & Logging]
+    end
+    
+    A --> D
+    D --> H
+    E --> L
+    P --> A
+    P --> D
+    P --> H
+```
+
+---
+
+## Project 01 - Static Portfolio Website (S3 + CloudFront + Cloudflare)
 
 ```
 ┌─────────────┐    ┌──────────────┐    ┌─────────────┐
 │   GitHub    │───▶│ GitHub       │───▶│    AWS S3   │
 │ Repository  │    │ Actions      │    │   Bucket    │
-│   (site/)   │    │   CI/CD      │    │ (Website)   │
+│ (React/Vite)│    │   CI/CD      │    │ (Website)   │
 └─────────────┘    └──────────────┘    └─────────────┘
                                               │
 ┌─────────────┐    ┌──────────────┐          │
-│   Route 53  │◄───│ CloudFront   │◄─────────┘
-│   (DNS)     │    │    (CDN)     │
+│ Cloudflare  │◄───│ CloudFront   │◄─────────┘
+│    DNS      │    │    (CDN)     │
 └─────────────┘    └──────────────┘
        │                  │
        │           ┌──────────────┐
@@ -20,52 +63,39 @@
                    └──────────────┘
 ```
 
-**Flow:**
-1. Code push to GitHub triggers Actions
-2. Vite builds static files
-3. Files deployed to S3 bucket
-4. CloudFront serves content globally
-5. Route 53 handles DNS routing
-6. ACM provides SSL certificate
+**Tech Stack:** React 19, Three.js, Vite, Terraform
+**Live:** [portfolio.omesh.site](https://portfolio.omesh.site)
 
 ---
 
-## Project 02 - Mass Emailing System using AWS Lambda and SES
+## Project 02 - Mass Email System (Lambda + SES)
 
 ```
 ┌─────────────┐    ┌──────────────┐    ┌─────────────┐
-│   GitHub    │───▶│ GitHub       │───▶│ AWS Lambda  │
-│ Repository  │    │ Actions      │    │ Function    │
+│   GitHub    │───▶│ Manual       │───▶│ AWS Lambda  │
+│ Repository  │    │ Deployment   │    │(TypeScript) │
+│(TypeScript) │    │              │    │             │
 └─────────────┘    └──────────────┘    └─────────────┘
                                               │
-                                              ▼
-┌─────────────┐                    ┌─────────────────┐
-│    AWS S3   │◄───────────────────│   Lambda        │
-│email-list.csv│                   │   Runtime       │
-└─────────────┘                    └─────────────────┘
-                                              │
-                                              ▼
-                                   ┌─────────────────┐
-                                   │   Amazon SES    │
-                                   │ (Email Service) │
-                                   └─────────────────┘
+┌─────────────┐                              ▼
+│ CSV Upload  │────────────────────▶ ┌─────────────────┐
+│(email-list) │                     │   Amazon SES    │
+└─────────────┘                     │ (Email Service) │
+                                    └─────────────────┘
                                               │
                                               ▼
                                    ┌─────────────────┐
                                    │   Recipients    │
-                                   │    (Email)      │
+                                   │ (Bulk Emails)  │
                                    └─────────────────┘
 ```
 
-**Flow:**
-1. GitHub Actions deploys Lambda function
-2. Lambda reads CSV from S3
-3. Parses email list and sends via SES
-4. SES delivers emails to recipients
+**Tech Stack:** TypeScript, Node.js 18, AWS SDK v3
+**Features:** 1000+ emails/batch, CSV processing
 
 ---
 
-## Project 03 - Alexa Skill for Portfolio Projects
+## Project 03 - Custom Alexa Skill (Voice Interface)
 
 ```
 ┌─────────────┐    ┌──────────────┐    ┌─────────────┐
@@ -77,31 +107,27 @@
                                               ▼
                                    ┌─────────────────┐
                                    │  AWS Lambda     │
-                                   │ (Skill Logic)   │
+                                   │(Node.js + AI)  │
                                    └─────────────────┘
                                               │
                                               ▼
-┌─────────────┐                    ┌─────────────────┐
-│    AWS S3   │◄───────────────────│   Response      │
-│(Documentation)│                  │  Generation     │
-└─────────────┘                    └─────────────────┘
+                                   ┌─────────────────┐
+                                   │ Google Gemini   │
+                                   │ API (Sassy AI)  │
+                                   └─────────────────┘
 ```
 
-**Flow:**
-1. User speaks to Alexa device
-2. Alexa processes intent via Developer Console
-3. Lambda function handles business logic
-4. Optional S3 lookup for project details
-5. Response sent back to user
+**Tech Stack:** Node.js, Alexa Skills Kit, Google Gemini API
+**Features:** Voice-activated portfolio queries, AI personality
 
 ---
 
-## Project 04 - Text-to-Speech Generator with Amazon Polly
+## Project 04 - Text-to-Speech Generator (Polly)
 
 ```
 ┌─────────────┐    ┌──────────────┐    ┌─────────────┐
-│   Client    │───▶│ API Gateway  │───▶│ AWS Lambda  │
-│ (Frontend)  │    │   (POST)     │    │ Function    │
+│   Client    │───▶│ Lambda       │───▶│ AWS Lambda  │
+│ (Frontend)  │    │Function URL  │    │ Function    │
 └─────────────┘    └──────────────┘    └─────────────┘
                                               │
                                               ▼
@@ -124,55 +150,44 @@
 └─────────────┘
 ```
 
-**Flow:**
-1. Client sends text via API Gateway
-2. Lambda receives text input
-3. Polly converts text to audio
-4. Audio uploaded to S3
-5. Public S3 URL returned to client
+**Tech Stack:** Node.js, AWS SDK, Lambda Function URLs
+**Features:** Multiple voices, MP3 generation, public URLs
 
 ---
 
-## Project 05 - Music Recommendation API with Custom ML
+## Project 05 - Content Recommendation Engine (Custom ML)
 
 ```
 ┌─────────────┐    ┌──────────────┐    ┌─────────────┐
-│   Spotify   │───▶│    AWS S3    │───▶│  SageMaker  │
-│  Dataset    │    │ (Training    │    │   /Local    │
-│   (1GB)     │    │   Data)      │    │  Training   │
+│   Spotify   │───▶│   Local      │───▶│   Python    │
+│  Dataset    │    │ Processing   │    │ ML Models   │
+│   (1GB)     │    │              │    │(Scikit-learn)│
 └─────────────┘    └──────────────┘    └─────────────┘
                                               │
                                               ▼
-┌─────────────┐                    ┌─────────────────┐
-│   Client    │◄───────────────────│  Trained Model  │
-│  Request    │                    │   (Stored)      │
-└─────────────┘                    └─────────────────┘
-       │                                     │
-       ▼                                     ▼
-┌─────────────┐    ┌──────────────┐    ┌─────────────┐
-│ API Gateway │───▶│ AWS Lambda   │───▶│   Model     │
-│             │    │ (Prediction) │    │ Inference   │
-└─────────────┘    └──────────────┘    └─────────────┘
+                                   ┌─────────────────┐
+                                   │ Collaborative   │
+                                   │   Filtering     │
+                                   │ Recommendations │
+                                   └─────────────────┘
 ```
 
-**Flow:**
-1. Spotify dataset stored in S3
-2. Model trained using SageMaker/Local Python
-3. Client requests recommendations via API Gateway
-4. Lambda loads model and generates predictions
-5. Recommendations returned to client
+**Tech Stack:** Python, Pandas, Scikit-learn
+**Features:** User-based recommendations, similarity analysis
+**Alternative:** Amazon Personalize integration ready
 
 ---
 
-## Project 06 - Serverless Image Resizer
+## Project 06 - Smart Image Resizer (Next.js + Lambda)
 
 ```
 ┌─────────────┐    ┌──────────────┐    ┌─────────────┐
-│   Vite UI   │───▶│ API Gateway  │───▶│ AWS Lambda  │
-│(shadcn/ui)  │    │  (/resize)   │    │ Function    │
+│  Next.js    │───▶│ API Gateway  │───▶│ AWS Lambda  │
+│   UI App    │    │  (/resize)   │    │(Sharp.js)   │
+│(shadcn/ui)  │    │              │    │             │
 └─────────────┘    └──────────────┘    └─────────────┘
        │                                     │
-       │ (Image URL/Upload)                  ▼
+       │ (Image Upload)                      ▼
        │                          ┌─────────────────┐
        │                          │     Sharp       │
        │                          │ (Image Resize)  │
@@ -191,41 +206,284 @@
                                    └─────────────────┘
 ```
 
-**Flow:**
-1. User uploads image or provides URL via Vite UI
-2. API Gateway receives resize request
-3. Lambda processes image with Sharp library
-4. Resized image stored in S3 with public access
-5. Download link returned to frontend
+**Tech Stack:** Next.js 15, React 19, Sharp, TypeScript, Tailwind CSS
+**Deployment:** Vercel (Frontend) + AWS (Backend)
+
+---
+
+## Project 07 - Automated Receipt Processor (Textract + OCR)
+
+```
+┌─────────────┐    ┌──────────────┐    ┌─────────────┐
+│   Client    │───▶│    AWS S3    │───▶│ AWS Lambda  │
+│(Receipt     │    │   Upload     │    │ Function    │
+│ Upload)     │    │              │    │             │
+└─────────────┘    └──────────────┘    └─────────────┘
+                                              │
+                                              ▼
+                                   ┌─────────────────┐
+                                   │ Amazon Textract │
+                                   │ (OCR Service)   │
+                                   └─────────────────┘
+                                              │
+                                              ▼
+┌─────────────┐                    ┌─────────────────┐
+│  DynamoDB   │◄───────────────────│   Data Parser   │
+│(Structured  │                    │   & Extractor   │
+│   Data)     │                    └─────────────────┘
+└─────────────┘
+```
+
+**Tech Stack:** Python, Textract, Lambda, DynamoDB
+**Features:** OCR text extraction, expense tracking, data parsing
+
+---
+
+## Project 08 - AI RAG Portfolio Chat (Vector Database)
+
+```
+┌─────────────┐    ┌──────────────┐    ┌─────────────┐
+│   Client    │───▶│ API Gateway  │───▶│ AWS Lambda  │
+│   Query     │    │              │    │(Python+AI) │
+└─────────────┘    └──────────────┘    └─────────────┘
+                                              │
+┌─────────────┐                              ▼
+│  Portfolio  │────────────────────▶ ┌─────────────────┐
+│ Documents   │                     │   LangChain     │
+│(Knowledge   │                     │ + OpenAI API   │
+│   Base)     │                     └─────────────────┘
+└─────────────┘                              │
+                                              ▼
+┌─────────────┐                    ┌─────────────────┐
+│  DynamoDB   │◄───────────────────│ Vector Embeddings│
+│(Vector DB)  │                    │ & RAG Pipeline  │
+└─────────────┘                    └─────────────────┘
+```
+
+**Tech Stack:** Python, LangChain, OpenAI, Vector Embeddings
+**Features:** Conversational AI, document retrieval, context awareness
+
+---
+
+## Project 09 - Amazon Lex Chatbot (Conversational Interface)
+
+```
+┌─────────────┐    ┌──────────────┐    ┌─────────────┐
+│   Client    │───▶│ Amazon Lex   │───▶│ AWS Lambda  │
+│   Chat      │    │   Service    │    │ Function    │
+└─────────────┘    └──────────────┘    └─────────────┘
+                                              │
+                                              ▼
+                                   ┌─────────────────┐
+                                   │ Intent Recognition│
+                                   │ & Slot Filling  │
+                                   └─────────────────┘
+                                              │
+                                              ▼
+┌─────────────┐                    ┌─────────────────┐
+│  DynamoDB   │◄───────────────────│ Conversation    │
+│(Session     │                    │ Management      │
+│  State)     │                    └─────────────────┘
+└─────────────┘
+```
+
+**Tech Stack:** Amazon Lex, Lambda, Natural Language Processing
+**Features:** Intent recognition, multi-channel deployment
+
+---
+
+## Project 10 - Kinesis ECR ML Pipeline (Stream Processing)
+
+```
+┌─────────────┐    ┌──────────────┐    ┌─────────────┐
+│   Docker    │───▶│    AWS ECR   │───▶│   ECS/      │
+│ Producer    │    │ (Container   │    │ Container   │
+│   App       │    │  Registry)   │    │ Instance    │
+└─────────────┘    └──────────────┘    └─────────────┘
+                                              │
+                                              ▼
+┌─────────────┐                    ┌─────────────────┐
+│ AWS Lambda  │◄───────────────────│ Kinesis Data    │
+│(Consumer)   │                    │   Streams       │
+└─────────────┘                    └─────────────────┘
+       │                                     ▲
+       ▼                                     │
+┌─────────────┐                             │
+│  DynamoDB   │─────────────────────────────┘
+│(Processed   │
+│   Data)     │
+└─────────────┘
+```
+
+**Tech Stack:** Python, Docker, Kinesis, ECR, Lambda
+**Features:** Real-time data ingestion, containerized processing
+
+---
+
+## Project 11 - Serverless Image Recognition + Poem Engine
+
+```
+┌─────────────┐    ┌──────────────┐    ┌─────────────┐
+│   Client    │───▶│    AWS S3    │───▶│ AWS Lambda  │
+│(Image       │    │   Upload     │    │(Upload)     │
+│ Upload)     │    │              │    │             │
+└─────────────┘    └──────────────┘    └─────────────┘
+                                              │
+                                              ▼
+                                   ┌─────────────────┐
+                                   │ AWS Rekognition │
+                                   │(Image Analysis) │
+                                   └─────────────────┘
+                                              │
+                                              ▼
+┌─────────────┐                    ┌─────────────────┐
+│   Client    │◄───────────────────│   OpenAI API    │
+│(AI Poem     │                    │ (Poem Generator)│
+│ Response)   │                    └─────────────────┘
+└─────────────┘
+```
+
+**Tech Stack:** Python, Rekognition, OpenAI, Lambda
+**Features:** Object detection, scene analysis, creative AI poetry
+
+---
+
+## Project 12 - Kubernetes Simple App (Container Orchestration)
+
+```
+┌─────────────┐    ┌──────────────┐    ┌─────────────┐
+│   Docker    │───▶│ Kubernetes   │───▶│   EKS/      │
+│ Containers  │    │   Cluster    │    │ Local K8s   │
+│(Node.js/    │    │              │    │             │
+│ Python)     │    │              │    │             │
+└─────────────┘    └──────────────┘    └─────────────┘
+                                              │
+┌─────────────┐                              ▼
+│   Client    │────────────────────▶ ┌─────────────────┐
+│  Request    │                     │ YouTube         │
+└─────────────┘                     │ Summarizer      │
+                                    │ Microservices   │
+                                    └─────────────────┘
+```
+
+**Tech Stack:** Node.js, Python, Docker, Kubernetes, Flask
+**Features:** Microservices architecture, container orchestration
+
+---
+
+## Project 13 - 2048 Game (AWS CodePipeline CI/CD)
+
+```
+┌─────────────┐    ┌──────────────┐    ┌─────────────┐
+│   GitHub    │───▶│ AWS Code     │───▶│ AWS Code    │
+│ Repository  │    │ Pipeline     │    │ Build       │
+│(React Game) │    │              │    │             │
+└─────────────┘    └──────────────┘    └─────────────┘
+                                              │
+┌─────────────┐                              ▼
+│ CloudFront  │◄───────────────────▶ ┌─────────────────┐
+│    CDN      │                     │    AWS S3       │
+└─────────────┘                     │ (Static Site)   │
+                                    └─────────────────┘
+                                              │
+                                              ▼
+                                   ┌─────────────────┐
+                                   │ Python Flask    │
+                                   │   Backend       │
+                                   └─────────────────┘
+```
+
+**Tech Stack:** React, Vite, Python Flask, Docker, CodePipeline
+**Features:** Automated deployment, multi-stage pipeline, testing
+
+---
+
+## Project 14 - Multi-Cloud Weather Tracker (Disaster Recovery)
+
+```
+┌─────────────┐    ┌──────────────┐    ┌─────────────┐
+│ Cloudflare  │───▶│    AWS       │───▶│ CloudFront  │
+│    DNS      │    │  (Primary)   │    │     CDN     │
+│             │    │              │    │             │
+└─────────────┘    └──────────────┘    └─────────────┘
+       │                                     │
+       │                                     ▼
+       │                          ┌─────────────────┐
+       │                          │    AWS S3       │
+       │                          │ (Static Site)   │
+       │                          └─────────────────┘
+       │                                     │
+       │                                     ▼
+       │                          ┌─────────────────┐
+       │                          │ AWS Lambda      │
+       │                          │(Weather API)    │
+       │                          └─────────────────┘
+       │
+       ▼
+┌─────────────┐
+│   Azure     │ (Commented out - Ready for multi-cloud)
+│ (Secondary) │
+└─────────────┘
+```
+
+**Tech Stack:** Vanilla JavaScript, Node.js, Terraform, Cloudflare
+**Features:** Automated failover ready, health monitoring, global CDN
+**Live:** [weather.portfolio.omesh.site](https://weather.portfolio.omesh.site)
+
+---
+
+## Infrastructure Summary by Service
+
+### **AWS Services Used:**
+- **Compute:** Lambda Functions, ECS (Kinesis project)
+- **Storage:** S3 Buckets, DynamoDB Tables
+- **Networking:** CloudFront, API Gateway, Lambda Function URLs
+- **AI/ML:** Polly, Textract, Rekognition
+- **Integration:** SES, Kinesis Data Streams, ECR
+- **Security:** ACM Certificates, IAM Roles
+- **Developer Tools:** CodePipeline, CodeBuild
+
+### **External Services:**
+- **DNS:** Cloudflare (Primary DNS provider)
+- **Deployment:** Vercel (Next.js apps), GitHub Actions
+- **AI APIs:** OpenAI, Google Gemini
+- **Containers:** Docker, Kubernetes (EKS/Local)
+
+### **Infrastructure as Code:**
+- **Primary:** Terraform (14 projects)
+- **Configuration:** .tf files with state management
+- **Deployment:** Automated via CI/CD pipelines
 
 ---
 
 ## Recommended Tools for Visual Diagrams
 
-### 1. **draw.io (diagrams.net)** - FREE
+### 1. **Eraser.io** - Current Tool
+- Cloud architecture diagrams
+- Code-based diagram generation
+- Export to PNG, SVG
+- Used for existing project diagrams
+
+### 2. **draw.io (diagrams.net)** - FREE
 - Web-based, no installation required
 - AWS architecture icons included
 - Export to PNG, SVG, PDF
 - URL: https://app.diagrams.net/
 
-### 2. **Lucidchart** - Freemium
-- Professional diagrams
-- AWS shape libraries
-- Collaboration features
-- URL: https://lucidchart.com/
+### 3. **Mermaid** - Code-based
+- Markdown-compatible diagrams
+- Version control friendly
+- GitHub integration
+- Used for overview diagram above
 
-### 3. **AWS Architecture Icons**
+### 4. **AWS Architecture Icons**
 - Official AWS icon set
 - Download: https://aws.amazon.com/architecture/icons/
 
-### 4. **Cloudcraft** - AWS Specific
-- 3D AWS architecture diagrams
-- Cost estimation integration
-- URL: https://cloudcraft.co/
-
-### Quick Start with draw.io:
-1. Go to https://app.diagrams.net/
-2. Choose "Create New Diagram"
-3. Select "AWS" template
-4. Use the text diagrams above as reference
-5. Drag and drop AWS services from the left panel
+### Quick Start with Mermaid:
+```mermaid
+graph LR
+    A[Client] --> B[API Gateway]
+    B --> C[Lambda]
+    C --> D[DynamoDB]
+```

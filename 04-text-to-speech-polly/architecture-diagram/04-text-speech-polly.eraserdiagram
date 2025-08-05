@@ -1,0 +1,34 @@
+cloud-architecture-diagram
+
+title Text-to-Speech Generator - Amazon Polly + S3 - PROJECT 04
+
+// Infrastructure Provisioning
+Terraform [icon: terraform, label: "Terraform (IaC)"]
+
+// AWS Infrastructure
+AWS Infrastructure [icon: aws-cloud] {
+  Lambda Function [icon: aws-lambda, label: "TTS Lambda (Node.js 18)"]
+  Lambda Function URL [icon: aws-lambda, label: "Function URL (HTTPS + CORS)"]
+  Amazon Polly [icon: aws-polly, label: "Text-to-Speech Service"]
+  S3 Bucket [icon: aws-s3, label: "S3 (Audio Storage)"]
+  CloudWatch [icon: aws-cloudwatch, label: "CloudWatch (Monitoring)"]
+  IAM Role [icon: aws-iam, label: "IAM (Permissions)"]
+}
+
+// User Interface
+User [icon: user, label: "User"]
+
+// Terraform Deployment
+Terraform -> AWS Infrastructure: terraform apply
+
+// Text-to-Speech Flow
+User -> Lambda Function URL: 1. POST {"text": "Hello World"}
+Lambda Function URL -> Lambda Function: 2. Process request
+Lambda Function -> Amazon Polly: 3. SynthesizeSpeech API
+Amazon Polly -> Lambda Function: 4. Audio stream (MP3)
+Lambda Function -> S3 Bucket: 5. Upload audio file
+S3 Bucket -> Lambda Function: 6. Return public URL
+Lambda Function -> User: 7. JSON response with download link
+
+// Monitoring
+Lambda Function -> CloudWatch: Log processing & errors
