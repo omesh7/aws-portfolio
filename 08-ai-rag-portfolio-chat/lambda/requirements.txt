@@ -1,5 +1,5 @@
-boto3
-unstructured
-langchain
 langchain-community
-faiss-cpu
+langchain
+pypdf
+numpy
+langchain-aws
