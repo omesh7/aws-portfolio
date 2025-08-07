@@ -1,0 +1,38 @@
+cloud-architecture-diagram
+
+title Content Recommendation Engine - Custom ML + Big Data - PROJECT 05
+
+// Data Sources
+Spotify Dataset [icon: database, label: "Spotify Dataset (100K+ Songs)"]
+User Interactions [icon: users, label: "User Interactions"]
+
+// Data Processing
+Dask Processing [icon: cpu, label: "Dask Parallel Processing"]
+Feature Engineering [icon: settings, label: "Feature Engineering (Audio + Metadata)"]
+
+// Machine Learning
+ML Engine [icon: brain, label: "Custom ML Engine (Collaborative Filtering)"]
+Model Training [icon: chart-line, label: "Model Training & Validation"]
+
+// Storage & Cache
+AWS S3 [icon: aws-s3, label: "S3 (Models & Features)"]
+Redis Cache [icon: redis, label: "Redis (Response Cache)"]
+
+// API & Services
+Recommendation API [icon: api, label: "Flask/FastAPI"]
+Amazon Personalize [icon: aws-personalize, label: "Amazon Personalize (Alternative)"]
+
+// Frontend
+Web Interface [icon: react, label: "Web Interface"]
+
+// Data Flow
+Spotify Dataset -> Dask Processing: 1. Raw data ingestion
+User Interactions -> Dask Processing: User behavior data
+Dask Processing -> Feature Engineering: 2. Parallel processing
+Feature Engineering -> ML Engine: 3. Engineered features
+ML Engine -> Model Training: 4. Custom algorithms
+Model Training -> AWS S3: 5. Store trained models
+AWS S3 -> Recommendation API: 6. Load model artifacts
+Amazon Personalize -> Recommendation API: Alternative ML service
+Recommendation API -> Redis Cache: 7. Cache responses
+Redis Cache -> Web Interface: 8. Serve recommendations

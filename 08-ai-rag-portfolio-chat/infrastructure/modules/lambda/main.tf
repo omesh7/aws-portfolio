@@ -1,21 +1,19 @@
 resource "aws_lambda_function" "ingest" {
-  function_name = "rag-ingest-${var.project_suffix}"
+  function_name = "${var.project_suffix}-function"
   role          = var.role_arn
-  handler       = "lambda_function.lambda_handler"
-  runtime       = "python3.12"
+  package_type  = "Image"
+  image_uri     = var.image_uri
   timeout       = 900
-  filename      = var.function_zip
-  layers        = ["arn:aws:lambda:ap-south-1:982534384941:layer:lambda_langchain_layer:1"]
+
   environment {
     variables = {
       BUCKET_NAME = var.bucket_name
       EMBED_MODEL = var.embed_model
     }
   }
-  lifecycle {
-    create_before_destroy = true
-  }
-  tags = var.tags
+
+  depends_on = [var.log_group_name]
+  tags       = var.tags
 }
 
 resource "aws_lambda_function_url" "url" {
@@ -23,7 +21,7 @@ resource "aws_lambda_function_url" "url" {
   authorization_type = "NONE"
   cors {
     allow_origins = ["*"]
-    allow_methods = ["POST"]
+    allow_methods = ["GET", "POST"]
   }
 }
 
@@ -35,10 +33,16 @@ resource "aws_lambda_permission" "allow_s3" {
   source_arn    = "arn:aws:s3:::${var.bucket_name}"
 }
 
+
+
 output "lambda_arn" {
   value = aws_lambda_function.ingest.arn
 }
 
 output "lambda_url" {
   value = aws_lambda_function_url.url.function_url
+}
+
+output "function_name" {
+  value = aws_lambda_function.ingest.function_name
 }

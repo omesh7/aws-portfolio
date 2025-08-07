@@ -1,0 +1,10 @@
+list:
+aws s3vectors list-vector-buckets --region us-east-1
+
+create:
+aws s3vectors create-vector-bucket \
+   --vector-bucket-name "amzn-s3-demo-vector-bucket"
+
+delete:
+aws s3vectors delete-vector-bucket --vector-bucket-name "demo-vector-bucket"
+
