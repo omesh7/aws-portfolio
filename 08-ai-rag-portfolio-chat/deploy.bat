@@ -31,14 +31,14 @@ if errorlevel 1 (
 echo [3/6] Building Docker image...
 cd lambda
 docker system prune -f
-docker buildx build --no-cache --platform linux/amd64 --provenance=false -t %ECR_REPO%:%IMAGE_TAG% .
+docker buildx build --platform linux/amd64 --provenance=false -t %ECR_REPO%:%IMAGE_TAG% .
 if errorlevel 1 (
     echo ERROR: Failed to build Docker image
     exit /b 1
 )
 
 echo [4/6] Tagging image for ECR...
-docker tag %ECR_REPO%:%IMAGE_TAG% %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/%ECR_REPO%:%IMAGE_TAG%
+docker tag %ECR_REPO%:%IMAGE_TAG% %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/%ECR_REPO%:%IMAGE_TAG% 
 
 echo [5/6] Pushing image to ECR...
 docker push %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/%ECR_REPO%:%IMAGE_TAG%

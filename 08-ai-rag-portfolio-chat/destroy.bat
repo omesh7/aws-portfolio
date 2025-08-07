@@ -9,10 +9,11 @@ set AWS_REGION=ap-south-1
 set AWS_ACCOUNT_ID=982534384941
 set PROJECT_NAME=08-rag-portfolio-chat-aws-portfolio
 set ECR_REPO=%PROJECT_NAME%-repo
+set IMAGE_TAG=latest
 
 echo [1/3] Destroying Terraform infrastructure...
 cd infrastructure
-terraform destroy -auto-approve
+terraform destroy -auto-approve -var="image_uri=%AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/%ECR_REPO%:%IMAGE_TAG%"
 if errorlevel 1 (
     echo WARNING: Terraform destroy had issues, continuing...
 )
