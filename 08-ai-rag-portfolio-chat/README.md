@@ -213,7 +213,7 @@ def get_loader(file_path: str, ext: str):
 ```bash
 # AWS Bedrock Configuration
 EMBED_MODEL=amazon.titan-embed-text-v1
-BEDROCK_REGION=us-east-1
+BEDROCK_REGION=ap-south-1
 
 # S3 Configuration
 BUCKET_NAME=ai-rag-portfolio-documents
@@ -309,7 +309,7 @@ resource "aws_s3_bucket_notification" "document_upload" {
 bedrock_embeddings = BedrockEmbeddings(
     model_id="amazon.titan-embed-text-v1",
     client=bedrock_client,
-    region_name="us-east-1"
+    region_name="ap-south-1"
 )
 
 # High-dimensional vector representation
@@ -416,7 +416,7 @@ python lambda/lambda_function.py
 ### Testing Commands
 ```bash
 # Test Bedrock connectivity
-aws bedrock list-foundation-models --region us-east-1
+aws bedrock list-foundation-models --region ap-south-1
 
 # Test document upload
 aws s3 cp test-document.pdf s3://your-bucket/docs/
