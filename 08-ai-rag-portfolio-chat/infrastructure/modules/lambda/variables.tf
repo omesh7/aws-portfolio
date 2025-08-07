@@ -3,8 +3,8 @@ variable "role_arn" {
   type        = string
 
 }
-variable "function_zip" {
-  description = "Path to the Lambda function zip file"
+variable "image_uri" {
+  description = "ECR image URI for the Lambda function"
   type        = string
 }
 
@@ -19,10 +19,7 @@ variable "embed_model" {
   default     = "amazon.titan-embed-text-v1"
 }
 
-variable "source_dir" {
-  description = "Source directory for the Lambda function code"
-  type        = string
-}
+
 
 
 variable "tags" {
@@ -34,4 +31,9 @@ variable "project_suffix" {
   description = "Unique suffix for resource names"
   type        = string
   default     = ""
+}
+
+variable "log_group_name" {
+  description = "CloudWatch log group name for Lambda function"
+  type        = string
 }

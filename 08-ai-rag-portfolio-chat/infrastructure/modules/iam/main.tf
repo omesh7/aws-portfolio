@@ -34,6 +34,16 @@ resource "aws_iam_policy" "lambda_policy" {
         Effect   = "Allow",
         Action   = ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"],
         Resource = "*"
+      },
+      {
+        Effect   = "Allow",
+        Action   = ["bedrock:InvokeModel"],
+        Resource = "arn:aws:bedrock:*:*:foundation-model/amazon.titan-*"
+      },
+      {
+        Effect   = "Allow",
+        Action   = ["cloudwatch:PutMetricData"],
+        Resource = "*"
       }
     ]
   })

@@ -1,5 +1,5 @@
 resource "aws_s3_bucket" "kb" {
-  bucket        = "rag-kb-${var.sku}"
+  bucket        = "${var.sku}-kb"
   force_destroy = true
   tags          = var.tags
 }

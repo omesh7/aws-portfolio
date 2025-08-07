@@ -1,0 +1,19 @@
+AWS Portfolio Project - RAG Chat System
+
+This is a comprehensive AI-powered Retrieval Augmented Generation (RAG) system built on AWS.
+
+Key Features:
+- Document processing using Lambda functions
+- Vector embeddings with Amazon Bedrock
+- Serverless architecture for cost efficiency
+- Support for PDF and TXT file formats
+- Automatic S3 trigger-based processing
+
+Technical Stack:
+- AWS Lambda for serverless computing
+- Amazon Bedrock for AI embeddings
+- S3 for document and vector storage
+- Python with LangChain framework
+- Docker containerization for deployment
+
+This system demonstrates enterprise-grade cloud architecture patterns and modern AI integration techniques.
