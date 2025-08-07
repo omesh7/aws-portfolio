@@ -3,14 +3,13 @@ import boto3
 import uuid
 import logging
 import tempfile
-
-from langchain_community.embeddings import BedrockEmbeddings
+from langchain_aws import BedrockEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain_community.vectorstores import FAISS
+import numpy as np
+import json
 from langchain_community.document_loaders import (
     PyPDFLoader,
     TextLoader,
-    UnstructuredMarkdownLoader,
 )
 
 # ----------------------------
@@ -48,8 +47,6 @@ def get_loader(file_path: str, ext: str):
         return PyPDFLoader(file_path)
     elif ext == ".txt":
         return TextLoader(file_path)
-    elif ext == ".md":
-        return UnstructuredMarkdownLoader(file_path)
     else:
         raise ValueError(f"Unsupported file extension: {ext}")
 
@@ -61,20 +58,36 @@ def split_text(pages, chunk_size=1000, chunk_overlap=200):
     return splitter.split_documents(pages)
 
 
-def save_faiss_index(documents, request_id):
-    index = FAISS.from_documents(documents, bedrock_embeddings)
-    with tempfile.TemporaryDirectory() as tmpdir:
-        index.save_local(index_name=request_id, folder_path=tmpdir)
-        s3_client.upload_file(
-            Filename=os.path.join(tmpdir, request_id + ".faiss"),
-            Bucket=BUCKET_NAME,
-            Key=f"indices/{request_id}.faiss",
-        )
-        s3_client.upload_file(
-            Filename=os.path.join(tmpdir, request_id + ".pkl"),
-            Bucket=BUCKET_NAME,
-            Key=f"indices/{request_id}.pkl",
-        )
+def save_vector_index(documents, request_id):
+    # Create simple vector index
+    vectors = []
+    texts = []
+    
+    for doc in documents:
+        embedding = bedrock_embeddings.embed_query(doc.page_content)
+        vectors.append(embedding)
+        texts.append({
+            "content": doc.page_content,
+            "metadata": doc.metadata
+        })
+    
+    # Save to S3 as JSON
+    index_data = {
+        "vectors": vectors,
+        "texts": texts
+    }
+    
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        json.dump(index_data, f)
+        temp_file = f.name
+    
+    s3_client.upload_file(
+        Filename=temp_file,
+        Bucket=BUCKET_NAME,
+        Key=f"indices/{request_id}.json"
+    )
+    
+    os.unlink(temp_file)
 
 
 # ----------------------------
@@ -84,16 +97,38 @@ def lambda_handler(event, context):
     try:
         logger.info("Event received: %s", event)
 
-        record = event["Records"][0]
-        s3_bucket = record["s3"]["bucket"]["name"]
-        s3_key = record["s3"]["object"]["key"]
+        # Handle S3 event
+        if "Records" in event:
+            record = event["Records"][0]
+            s3_bucket = record["s3"]["bucket"]["name"]
+            s3_key = record["s3"]["object"]["key"]
+        # Handle direct invocation with bucket/key
+        elif "bucket" in event and "key" in event:
+            s3_bucket = event["bucket"]
+            s3_key = event["key"]
+        # Handle manual trigger with s3Bucket/s3Key
+        elif "s3Bucket" in event and "s3Key" in event:
+            s3_bucket = event["s3Bucket"]
+            s3_key = event["s3Key"]
+        # Handle API Gateway body
+        elif "body" in event:
+            import json
+            body = json.loads(event["body"]) if isinstance(event["body"], str) else event["body"]
+            s3_bucket = body.get("bucket") or body.get("s3Bucket") or BUCKET_NAME
+            s3_key = body["key"] if "key" in body else body["s3Key"]
+        else:
+            raise ValueError("Invalid event format. Expected: S3 event, {bucket,key}, {s3Bucket,s3Key}, or API Gateway body.")
 
+        # Use provided bucket or default
+        if not s3_bucket:
+            s3_bucket = BUCKET_NAME
+            
         if not s3_key.startswith("docs/"):
             logger.warning("Skipped file not in docs/: %s", s3_key)
             return {"status": "skipped", "reason": "File not in docs/"}
 
         ext = os.path.splitext(s3_key)[1].lower()
-        if ext not in [".pdf", ".txt", ".md"]:
+        if ext not in [".pdf", ".txt"]:
             logger.warning("Unsupported file type: %s", s3_key)
             return {"status": "skipped", "reason": f"Unsupported extension: {ext}"}
 
@@ -110,13 +145,13 @@ def lambda_handler(event, context):
         chunks = split_text(pages)
         logger.info("Split into %d chunks", len(chunks))
 
-        save_faiss_index(chunks, request_id)
+        save_vector_index(chunks, request_id)
         logger.info("Vector index saved and uploaded to S3")
 
         return {
             "status": "success",
             "chunks": len(chunks),
-            "key_base": f"indices/{request_id}",
+            "index_key": f"indices/{request_id}.json",
         }
 
     except Exception as e:

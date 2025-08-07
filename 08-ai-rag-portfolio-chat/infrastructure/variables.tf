@@ -2,10 +2,15 @@
 variable "project_suffix" {
   description = "Unique suffix for resource names"
   type        = string
-  default     = "08-aws-portfolio"
+  default     = "08-rag-portfolio-chat-aws-portfolio"
 }
 variable "embed_model" {
-  default = "amazon.titan-embed-text-v1"
+  default = "amazon.titan-embed-text-v2:0"
+}
+
+variable "image_uri" {
+  description = "ECR image URI for the Lambda function"
+  type        = string
 }
 
 variable "subnet_ids" {
@@ -36,3 +41,4 @@ variable "tags" {
   }
 
 }
+

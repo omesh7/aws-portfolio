@@ -57,7 +57,7 @@ resource "aws_lambda_function" "process_receipt" {
   package_type  = "Zip"
 
   reserved_concurrent_executions = -1
-  role                           = var.role_arn
+  role                           = aws_iam_role.lambda_exec.arn
   runtime                        = "python3.11"
   skip_destroy                   = false
   tags = {
@@ -122,7 +122,7 @@ resource "aws_dynamodb_table" "receipts_table" {
 resource "aws_s3_bucket" "uploads_bucket" {
   bucket              = "07-receipt-processor-aws-portfolio"
   bucket_prefix       = null
-  force_destroy       = false
+  force_destroy       = true
   object_lock_enabled = false
   region              = "ap-south-1"
   tags = {
@@ -131,7 +131,6 @@ resource "aws_s3_bucket" "uploads_bucket" {
   tags_all = {}
 }
 
-# __generated__ by Terraform from "lambda-receipt-processor-role-07-aws-portfolio"
 resource "aws_iam_role" "lambda_exec" {
   assume_role_policy = jsonencode({
     Statement = [{
@@ -165,4 +164,38 @@ data "archive_file" "lambda_zip" {
   output_path = "${path.module}/../lambda_07_project.zip"
   depends_on  = [aws_iam_role.lambda_exec]
 
+}
+
+
+resource "aws_s3_bucket_notification" "receipt_upload_notification" {
+  bucket = aws_s3_bucket.uploads_bucket.id
+
+  lambda_function {
+    lambda_function_arn = aws_lambda_function.process_receipt.arn
+    events              = ["s3:ObjectCreated:*"]
+    filter_prefix       = "receipts/"
+    filter_suffix       = ".pdf"
+  }
+}
+
+resource "aws_lambda_permission" "allow_s3_invoke" {
+  statement_id  = "AllowExecutionFromS3Bucket"
+  action        = "lambda:InvokeFunction"
+  function_name = aws_lambda_function.process_receipt.function_name
+  principal     = "s3.amazonaws.com"
+  source_arn    = aws_s3_bucket.uploads_bucket.arn
+}
+
+resource "aws_lambda_function_url" "process_receipt_url" {
+  function_name      = aws_lambda_function.process_receipt.function_name
+  authorization_type = "NONE"
+
+  cors {
+    allow_credentials = false
+    allow_origins     = ["*"]
+    allow_methods     = ["GET", "POST"]
+    allow_headers     = ["date", "keep-alive"]
+    expose_headers    = ["date", "keep-alive"]
+    max_age           = 86400
+  }
 }
