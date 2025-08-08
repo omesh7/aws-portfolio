@@ -1,159 +1,107 @@
-import os
 import boto3
-import uuid
-import logging
-import tempfile
-from langchain_aws import BedrockEmbeddings
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-import numpy as np
+import os
 import json
-from langchain_community.document_loaders import (
-    PyPDFLoader,
-    TextLoader,
-)
+import logging
+import uuid
+from urllib.parse import unquote_plus
+from botocore.exceptions import ClientError
 
-# ----------------------------
-# 1. Setup Logging
-# ----------------------------
-logging.basicConfig(level=logging.INFO)
+# Setup logging
 logger = logging.getLogger()
+logger.setLevel(logging.INFO)
 
-# ----------------------------
-# 2. AWS Clients & ENV
-# ----------------------------
-s3_client = boto3.client("s3")
-bedrock_client = boto3.client(service_name="bedrock-runtime")
+# Set up S3 clients per region
+s3_client_docs = boto3.client("s3", region_name="ap-south-1")
+s3_client_vector = boto3.client("s3", region_name="us-east-1")
 
-BUCKET_NAME = os.getenv("BUCKET_NAME")
-EMBED_MODEL = os.getenv("EMBED_MODEL", "amazon.titan-embed-text-v1")
-
-# ----------------------------
-# 3. Embedding Model
-# ----------------------------
-bedrock_embeddings = BedrockEmbeddings(model_id=EMBED_MODEL, client=bedrock_client)
-
-# ----------------------------
-# 4. Helper Functions
-# ----------------------------
+# Constants
+SOURCE_BUCKET = os.environ.get("SOURCE_BUCKET")  # ap-south-1
+VECTOR_BUCKET = os.environ.get("VECTOR_BUCKET")  # us-east-1
+VECTOR_INDEX_PREFIX = "vector-indexes/"
 
 
-def get_unique_id():
-    return str(uuid.uuid4())
+def dummy_embed_text(text):
+    """Fake embedding function — replace with your real embedding model"""
+    return [ord(c) for c in text[:50]]  # Simple list of char codes
 
 
-def get_loader(file_path: str, ext: str):
-    ext = ext.lower()
-    if ext == ".pdf":
-        return PyPDFLoader(file_path)
-    elif ext == ".txt":
-        return TextLoader(file_path)
-    else:
-        raise ValueError(f"Unsupported file extension: {ext}")
-
-
-def split_text(pages, chunk_size=1000, chunk_overlap=200):
-    splitter = RecursiveCharacterTextSplitter(
-        chunk_size=chunk_size, chunk_overlap=chunk_overlap
-    )
-    return splitter.split_documents(pages)
-
-
-def save_vector_index(documents, request_id):
-    # Create simple vector index
-    vectors = []
-    texts = []
-    
-    for doc in documents:
-        embedding = bedrock_embeddings.embed_query(doc.page_content)
-        vectors.append(embedding)
-        texts.append({
-            "content": doc.page_content,
-            "metadata": doc.metadata
-        })
-    
-    # Save to S3 as JSON
-    index_data = {
-        "vectors": vectors,
-        "texts": texts
-    }
-    
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
-        json.dump(index_data, f)
-        temp_file = f.name
-    
-    s3_client.upload_file(
-        Filename=temp_file,
-        Bucket=BUCKET_NAME,
-        Key=f"indices/{request_id}.json"
-    )
-    
-    os.unlink(temp_file)
-
-
-# ----------------------------
-# 5. Lambda Handler
-# ----------------------------
-def lambda_handler(event, context):
+def save_vector_index(chunks, file_name):
     try:
-        logger.info("Event received: %s", event)
-
-        # Handle S3 event
-        if "Records" in event:
-            record = event["Records"][0]
-            s3_bucket = record["s3"]["bucket"]["name"]
-            s3_key = record["s3"]["object"]["key"]
-        # Handle direct invocation with bucket/key
-        elif "bucket" in event and "key" in event:
-            s3_bucket = event["bucket"]
-            s3_key = event["key"]
-        # Handle manual trigger with s3Bucket/s3Key
-        elif "s3Bucket" in event and "s3Key" in event:
-            s3_bucket = event["s3Bucket"]
-            s3_key = event["s3Key"]
-        # Handle API Gateway body
-        elif "body" in event:
-            import json
-            body = json.loads(event["body"]) if isinstance(event["body"], str) else event["body"]
-            s3_bucket = body.get("bucket") or body.get("s3Bucket") or BUCKET_NAME
-            s3_key = body["key"] if "key" in body else body["s3Key"]
-        else:
-            raise ValueError("Invalid event format. Expected: S3 event, {bucket,key}, {s3Bucket,s3Key}, or API Gateway body.")
-
-        # Use provided bucket or default
-        if not s3_bucket:
-            s3_bucket = BUCKET_NAME
-            
-        if not s3_key.startswith("docs/"):
-            logger.warning("Skipped file not in docs/: %s", s3_key)
-            return {"status": "skipped", "reason": "File not in docs/"}
-
-        ext = os.path.splitext(s3_key)[1].lower()
-        if ext not in [".pdf", ".txt"]:
-            logger.warning("Unsupported file type: %s", s3_key)
-            return {"status": "skipped", "reason": f"Unsupported extension: {ext}"}
-
-        request_id = get_unique_id()
-        tmp_file = f"/tmp/{request_id}{ext}"
-
-        logger.info("Downloading file from S3: %s", s3_key)
-        s3_client.download_file(Bucket=s3_bucket, Key=s3_key, Filename=tmp_file)
-
-        loader = get_loader(tmp_file, ext)
-        pages = loader.load_and_split()
-        logger.info("Loaded %d pages from document", len(pages))
-
-        chunks = split_text(pages)
-        logger.info("Split into %d chunks", len(chunks))
-
-        save_vector_index(chunks, request_id)
-        logger.info("Vector index saved and uploaded to S3")
-
-        return {
-            "status": "success",
-            "chunks": len(chunks),
-            "index_key": f"indices/{request_id}.json",
+        logger.info(f"Saving vector index for file: {file_name}")
+        index_data = {
+            "file": file_name,
+            "vectors": [dummy_embed_text(chunk) for chunk in chunks],
         }
 
+        key = f"{VECTOR_INDEX_PREFIX}{file_name}.json"
+        local_path = f"/tmp/{file_name}_vector.json"
+
+        with open(local_path, "w") as f:
+            json.dump(index_data, f)
+
+        logger.info(f"Uploading to vector bucket: {VECTOR_BUCKET}, Key: {key}")
+        if not VECTOR_BUCKET or not key:
+            raise ValueError("VECTOR_BUCKET or key is None!")
+
+        s3_client_vector.upload_file(local_path, VECTOR_BUCKET, key)
+        logger.info("Upload completed successfully.")
+
     except Exception as e:
-        logger.error("Error processing file: %s", str(e), exc_info=True)
-        return {"status": "error", "error": str(e)}
+        logger.error(f"Failed to save vector index: {str(e)}", exc_info=True)
+        raise
+
+
+def process_s3_file(bucket_name, object_key):
+    try:
+        logger.info(f"Downloading file: {object_key} from {bucket_name}")
+        response = s3_client_docs.get_object(Bucket=bucket_name, Key=object_key)
+        content = response["Body"].read().decode("utf-8")
+
+        chunks = content.split("\n\n")  # Dummy chunking
+        save_vector_index(chunks, object_key.replace("/", "_"))
+
+    except Exception as e:
+        logger.error(f"Error processing file: {e}", exc_info=True)
+        raise
+
+
+def lambda_handler(event, context):
+    logger.info("Lambda triggered")
+    try:
+        # Handle S3 trigger event
+        if "Records" in event and "s3" in event["Records"][0]:
+            for record in event["Records"]:
+                s3_info = record["s3"]
+                bucket = s3_info["bucket"]["name"]
+                key = unquote_plus(s3_info["object"]["key"])
+                logger.info(f"S3 Triggered file: {key}")
+                process_s3_file(bucket, key)
+
+        # Handle manual/API trigger
+        elif "file_key" in event:
+            file_key = event["file_key"]
+            logger.info(f"Manual/API Triggered with file: {file_key}")
+            process_s3_file(SOURCE_BUCKET, file_key)
+
+        else:
+            logger.warning("Event format not recognized")
+            return {"statusCode": 400, "body": json.dumps("Invalid event")}
+
+        return {"statusCode": 200, "body": json.dumps("Processing complete")}
+
+    except Exception as e:
+        logger.critical("Fatal error in lambda_handler", exc_info=True)
+        return {"statusCode": 500, "body": json.dumps(f"Error: {str(e)}")}
+
+##---------------------------------------------------------------------------------------
+
+
+from typing import Dict, Any
+from utils.router import route_request
+from utils.response import error_response
+
+def lambda_handler(event: Dict[str, Any], context: Any) -> Dict[str, Any]:
+    try:
+        return route_request(event)
+    except Exception as e:
+        return error_response(str(e), 500)

@@ -4,11 +4,13 @@ resource "aws_lambda_function" "ingest" {
   package_type  = "Image"
   image_uri     = var.image_uri
   timeout       = 900
+  memory_size   = 1024
 
   environment {
     variables = {
-      BUCKET_NAME = var.bucket_name
-      EMBED_MODEL = var.embed_model
+      SRC_BUCKET          = var.bucket_name
+      EMBED_MODEL         = var.embed_model
+      VECTOR_BUCKET_NAME  = var.vector_bucket_name
     }
   }
 
