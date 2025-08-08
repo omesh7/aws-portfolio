@@ -7,7 +7,7 @@ echo ========================================
 
 set AWS_REGION=ap-south-1
 set AWS_ACCOUNT_ID=982534384941
-set PROJECT_NAME=08-rag-portfolio-chat-aws-portfolio
+set PROJECT_NAME=08-rag-portfolio-chat-2-aws-portfolio
 set ECR_REPO=%PROJECT_NAME%-repo
 set IMAGE_TAG=latest
 
@@ -29,8 +29,8 @@ if errorlevel 1 (
 )
 
 echo [3/6] Building Docker image...
-cd lambda
-docker system prune -f
+cd app
+
 docker buildx build --platform linux/amd64 --provenance=false -t %ECR_REPO%:%IMAGE_TAG% .
 if errorlevel 1 (
     echo ERROR: Failed to build Docker image
