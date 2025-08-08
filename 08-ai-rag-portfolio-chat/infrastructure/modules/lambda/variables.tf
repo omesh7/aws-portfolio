@@ -37,3 +37,8 @@ variable "log_group_name" {
   description = "CloudWatch log group name for Lambda function"
   type        = string
 }
+
+variable "vector_bucket_name" {
+  description = "Name of the S3 bucket for vector storage"
+  type        = string
+}
