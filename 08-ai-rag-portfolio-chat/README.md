@@ -97,6 +97,18 @@ graph LR
 └── README.md                 # This documentation
 ```
 
+08-ai-rag-portfolio-chat/
+├── app/            
+│   ├── handlers/              
+│   │   ├── add_conversation.py
+│   ├── main.py             
+│   ├── routes.py        
+│   ├── utils.py        
+│   ├── requirements.txt       
+│   └── Dockerfile
+
+
+
 ---
 
 ## 🚀 Core Functionality
