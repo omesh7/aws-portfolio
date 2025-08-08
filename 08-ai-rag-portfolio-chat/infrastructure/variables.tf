@@ -42,3 +42,10 @@ variable "tags" {
 
 }
 
+
+variable "vector_bucket_name" {
+  description = "Name of the S3 bucket for vector storage"
+  type        = string
+  default     = "08-ai-rag-portfolio-vector-bucket"
+
+}

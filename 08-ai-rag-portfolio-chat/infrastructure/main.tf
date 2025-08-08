@@ -12,8 +12,6 @@ module "iam" {
 }
 
 
-
-
 # CloudWatch Log Group
 resource "aws_cloudwatch_log_group" "lambda_logs" {
   name              = "/aws/lambda/ai-rag-processor-${var.project_suffix}"
@@ -22,14 +20,15 @@ resource "aws_cloudwatch_log_group" "lambda_logs" {
 }
 
 module "lambda" {
-  source         = "./modules/lambda"
-  role_arn       = module.iam.role_arn
-  bucket_name    = module.s3.bucket_name
-  embed_model    = var.embed_model
-  image_uri      = var.image_uri
-  tags           = var.tags
-  project_suffix = var.project_suffix
-  log_group_name = aws_cloudwatch_log_group.lambda_logs.name
+  source             = "./modules/lambda"
+  role_arn           = module.iam.role_arn
+  bucket_name        = module.s3.bucket_name
+  embed_model        = var.embed_model
+  image_uri          = var.image_uri
+  tags               = var.tags
+  project_suffix     = var.project_suffix
+  log_group_name     = aws_cloudwatch_log_group.lambda_logs.name
+  vector_bucket_name = var.vector_bucket_name
 }
 
 resource "aws_s3_bucket_notification" "kb_notify" {
