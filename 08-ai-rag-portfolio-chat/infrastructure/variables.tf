@@ -1,51 +1,43 @@
-
-variable "project_suffix" {
-  description = "Unique suffix for resource names"
+variable "aws_region" {
+  description = "The AWS region where resources will be created."
   type        = string
-  default     = "08-rag-portfolio-chat-aws-portfolio"
+  default     = "ap-south-1"
+
 }
+
+
+variable "project_name" {
+  description = "The name of the project."
+  type        = string
+  default     = "08-ai-rag-portfolio-2-chat"
+}
+
+variable "tags" {
+  description = "Tags to apply to all resources."
+  type        = map(string)
+  default = {
+    Project     = "08-ai-rag-portfolio-2-chat"
+    Environment = "portfolio"
+    project-no  = "08"
+  }
+
+}
+
+#--------------------LAMBDA
+
 variable "embed_model" {
-  default = "amazon.titan-embed-text-v2:0"
+  description = "Embed Model ID"
+  type        = string
+  default     = "amazon.titan-embed-text-v2:0"
+}
+
+variable "chat_model" {
+  description = "Chat Model ID"
+  type        = string
+  default     = "anthropic.claude-3-haiku-20240307-v1:0"
 }
 
 variable "image_uri" {
   description = "ECR image URI for the Lambda function"
   type        = string
-}
-
-variable "subnet_ids" {
-  default     = []
-  description = "Optional for future"
-}
-
-variable "vpc_id" {
-  default     = ""
-  description = "Optional for future"
-}
-
-variable "chat_model" {
-  default     = ""
-  description = "The chat model to use for the application"
-}
-
-variable "aws_region" {
-  default     = "ap-south-1"
-  description = "AWS region for the resources"
-}
-
-variable "tags" {
-  type        = map(string)
-  description = "Tags to apply to all resources"
-  default = {
-    "project-no" = "8"
-  }
-
-}
-
-
-variable "vector_bucket_name" {
-  description = "Name of the S3 bucket for vector storage"
-  type        = string
-  default     = "08-ai-rag-portfolio-vector-bucket"
-
 }
