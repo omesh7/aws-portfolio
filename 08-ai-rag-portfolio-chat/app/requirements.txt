@@ -1,0 +1,8 @@
+langchain-community
+langchain
+langchain-aws
+pypdf
+numpy
+boto3
+faiss-cpu
+aws_lambda_powertools
