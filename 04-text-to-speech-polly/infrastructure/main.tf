@@ -142,9 +142,12 @@ resource "aws_lambda_function" "polly_tts" {
 
   environment {
     variables = {
-
       S3_BUCKET = aws_s3_bucket.polly_audio.bucket
     }
+  }
+
+  lifecycle {
+    ignore_changes = [source_code_hash, filename]
   }
 }
 
