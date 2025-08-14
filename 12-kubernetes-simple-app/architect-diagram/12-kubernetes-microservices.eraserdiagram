@@ -1,0 +1,46 @@
+cloud-architecture-diagram
+
+title Kubernetes Microservices Platform - YouTube Summarizer - PROJECT 12
+
+// Infrastructure Provisioning
+Terraform [icon: terraform, label: "Terraform (IaC)"]
+
+// AWS Infrastructure
+AWS Infrastructure [icon: aws-cloud] {
+  EKS Cluster [icon: aws-eks, label: "EKS Kubernetes Cluster"]
+  ECR Registry [icon: aws-ecr, label: "ECR (Container Registry)"]
+  ALB [icon: aws-elb, label: "Application Load Balancer"]
+  VPC [icon: aws-vpc, label: "VPC (Networking)"]
+  CloudWatch [icon: aws-cloudwatch, label: "CloudWatch (Monitoring)"]
+}
+
+// Kubernetes Services
+Kubernetes Services [icon: kubernetes] {
+  Python Service [icon: python, label: "FastAPI Service (Python)"]
+  TypeScript Service [icon: typescript, label: "Hono Service (TypeScript)"]
+  HPA [icon: kubernetes, label: "Horizontal Pod Autoscaler"]
+}
+
+// External APIs
+AI Services [icon: openai, label: "AI Models (OpenAI, Gemini, Groq)"]
+YouTube API [icon: youtube, label: "YouTube API"]
+
+// User Interface
+User [icon: user, label: "User"]
+
+// Terraform Deployment
+Terraform -> AWS Infrastructure: terraform apply
+
+// Container Deployment
+ECR Registry -> Kubernetes Services: Container images
+
+// Microservices Flow
+User -> ALB: 1. API requests
+ALB -> Python Service: 2. Route to FastAPI (features)
+ALB -> TypeScript Service: 3. Route to Hono (performance)
+Python Service -> YouTube API: 4. Fetch video data
+TypeScript Service -> YouTube API: 5. Fetch video data
+Python Service -> AI Services: 6. Generate summaries
+TypeScript Service -> AI Services: 7. Generate summaries
+HPA -> Kubernetes Services: 8. Auto-scale pods
+Kubernetes Services -> CloudWatch: 9. Metrics & logs

@@ -1,0 +1,45 @@
+cloud-architecture-diagram
+
+title Multi-Cloud Weather Tracker - Disaster Recovery - PROJECT 14
+
+// Infrastructure Provisioning
+Terraform [icon: terraform, label: "Terraform (IaC)"]
+
+// DNS & CDN
+Cloudflare [icon: cloudflare, label: "Cloudflare DNS (Health Checks)"]
+
+// AWS Primary Infrastructure
+AWS Primary [icon: aws-cloud, label: "AWS (Primary)"] {
+  Lambda Function [icon: aws-lambda, label: "Weather API (Node.js 18)"]
+  S3 Bucket [icon: aws-s3, label: "S3 (Static Website)"]
+  CloudFront [icon: aws-cloudfront, label: "CloudFront (CDN)"]
+  Route53 [icon: aws-route53, label: "Route53 (Health Checks)"]
+  ACM [icon: aws-certificate-manager, label: "ACM (SSL Certificates)"]
+}
+
+// Azure Secondary Infrastructure (Ready)
+Azure Secondary [icon: azure, label: "Azure (Secondary - Ready)"] {
+  Azure Functions [icon: azure-functions, label: "Azure Functions (Backup API)"]
+  Blob Storage [icon: azure-storage, label: "Blob Storage (Static Site)"]
+  Azure CDN [icon: azure-cdn, label: "Azure CDN (Backup)"]
+}
+
+// External API
+OpenWeather API [icon: weather, label: "OpenWeatherMap API"]
+
+// User Interface
+User [icon: user, label: "User"]
+
+// Terraform Deployment
+Terraform -> AWS Primary: terraform apply (primary)
+Terraform -> Azure Secondary: terraform apply (secondary)
+
+// Multi-Cloud Disaster Recovery Flow
+User -> Cloudflare: 1. DNS request (weather.domain.com)
+Cloudflare -> Route53: 2. Health check AWS primary
+Route53 -> Cloudflare: 3. Primary healthy/failed status
+Cloudflare -> CloudFront: 4a. Route to AWS (if healthy)
+Cloudflare -> Azure CDN: 4b. Route to Azure (if AWS failed)
+CloudFront -> S3 Bucket: 5a. Serve static frontend
+Lambda Function -> OpenWeather API: 6a. Fetch weather data
+Azure Functions -> OpenWeather API: 6b. Fetch weather data (failover)

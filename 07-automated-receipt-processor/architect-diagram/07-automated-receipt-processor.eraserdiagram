@@ -1,0 +1,33 @@
+cloud-architecture-diagram
+
+title Automated Receipt Processor - OCR + AI - PROJECT 07
+
+// Infrastructure Provisioning
+Terraform [icon: terraform, label: "Terraform (IaC)"]
+
+// AWS Infrastructure
+AWS Infrastructure [icon: aws-cloud] {
+  S3 Bucket [icon: aws-s3, label: "S3 (Receipt Storage)"]
+  Lambda Function [icon: aws-lambda, label: "Receipt Processor (lambda)"]
+  AWS Textract [icon: aws-textract, label: "Textract (OCR + AI)"]
+  DynamoDB [icon: aws-dynamodb, label: "DynamoDB (Receipt Data)"]
+  SNS Topic [icon: aws-sns, label: "SNS (Notifications)"]
+  CloudWatch [icon: aws-cloudwatch, label: "CloudWatch (Monitoring)"]
+  IAM Role [icon: aws-iam, label: "IAM (Permissions)"]
+}
+
+// User Interface
+User [icon: user, label: "User"]
+
+// Terraform Deployment
+Terraform -> AWS Infrastructure: terraform apply
+
+// Receipt Processing Flow
+User -> S3 Bucket: 1. Upload receipt (PDF/Image)
+S3 Bucket -> Lambda Function: 2. S3 event trigger (uploads/)
+Lambda Function -> AWS Textract: 3. AnalyzeExpense API
+AWS Textract -> Lambda Function: 4. Extract vendor, total, items
+Lambda Function -> DynamoDB: 5. Store structured data
+Lambda Function -> SNS Topic: 6. Send notification
+Lambda Function -> S3 Bucket: 7. Save processing log
+Lambda Function -> CloudWatch: 8. Log metrics & errors
