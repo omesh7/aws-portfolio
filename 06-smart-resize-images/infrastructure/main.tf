@@ -50,10 +50,19 @@ resource "aws_iam_role_policy_attachment" "s3_full_access" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
 }
 
+# Environment-based lambda packaging
+locals {
+  use_local_archive  = var.environment == "local"
+  lambda_filename    = local.use_local_archive ? data.archive_file.lambda_zip[0].output_path : var.lambda_zip_path
+  lambda_source_hash = local.use_local_archive ? data.archive_file.lambda_zip[0].output_base64sha256 : (fileexists(var.lambda_zip_path) ? filebase64sha256(var.lambda_zip_path) : "")
+}
+
+# Conditional archive - only for local development
 data "archive_file" "lambda_zip" {
+  count       = local.use_local_archive ? 1 : 0
   type        = "zip"
   source_dir  = "${path.module}/../lambda"
-  output_path = "${path.module}/../lambda_05_project.zip"
+  output_path = "${path.module}/06_lambda.zip"
 }
 
 resource "aws_lambda_function" "resize_upload" {
@@ -61,13 +70,13 @@ resource "aws_lambda_function" "resize_upload" {
   description      = "Lambda function to resize uploaded images"
   runtime          = "nodejs20.x"
   handler          = "index.handler"
-  filename         = data.archive_file.lambda_zip.output_path
-  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+  filename         = local.lambda_filename
+  source_code_hash = local.lambda_source_hash
   timeout          = 30
   role             = aws_iam_role.lambda_exec.arn
 
   layers = [
-    "arn:aws:lambda:ap-south-1:982534384941:layer:sharp:2"
+    "arn:aws:lambda:ap-south-1:533674634124:layer:sharp:1"
   ]
   environment {
     variables = {
@@ -75,6 +84,11 @@ resource "aws_lambda_function" "resize_upload" {
       REGION      = var.aws_region
     }
   }
+
+  lifecycle {
+    ignore_changes = [source_code_hash, filename]
+  }
+
   depends_on = [aws_iam_role_policy_attachment.s3_full_access]
 }
 
@@ -139,5 +153,20 @@ resource "aws_apigatewayv2_route" "hello_route" {
 output "resize_url" {
   value       = "${aws_apigatewayv2_api.api.api_endpoint}/resize"
   description = "URL to resize images"
+}
+
+output "api_endpoint" {
+  value       = aws_apigatewayv2_api.api.api_endpoint
+  description = "API Gateway endpoint"
+}
+
+output "lambda_function_name" {
+  value       = aws_lambda_function.resize_upload.function_name
+  description = "Lambda function name"
+}
+
+output "s3_bucket_name" {
+  value       = aws_s3_bucket.resized_bucket.bucket
+  description = "S3 bucket name for resized images"
 }
 

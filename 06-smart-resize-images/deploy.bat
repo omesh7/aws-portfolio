@@ -1,13 +1,41 @@
 @echo off
-echo 🚀 Deploying infrastructure...
-cd infrastructure
-terraform apply -auto-approve
+REM Project 06 - Smart Image Resizer Local Deployment Script (Windows)
 
-echo 🌐 Triggering Vercel deployment...
-for /f "tokens=*" %%i in ('terraform output -raw vercel_deploy_hook_url 2^>nul') do set DEPLOY_HOOK_URL=%%i
-if defined DEPLOY_HOOK_URL (
-    curl -X POST "%DEPLOY_HOOK_URL%"
-    echo ✅ Vercel deployment triggered!
-) else (
-    echo ⚠️  No deploy hook found. Push to main branch to deploy.
+echo  Starting local deployment for Project 06 - Smart Image Resizer
+
+REM Check if we're in the right directory
+if not exist "06-smart-resize-images" (
+    echo  Please run this script from the aws-portfolio root directory
+    exit /b 1
 )
+
+cd 06-smart-resize-images
+
+REM Build Lambda package locally
+echo  Building Lambda package...
+cd lambda
+call npm ci --production --omit=dev
+cd ..
+
+REM Deploy infrastructure
+echo  Deploying infrastructure...
+cd infrastructure
+
+REM Initialize Terraform if needed
+if not exist ".terraform" (
+    echo  Initializing Terraform...
+    terraform init
+)
+
+REM Check if Vercel token is set
+if "%VERCEL_API_TOKEN%"=="" (
+    echo   VERCEL_API_TOKEN not set - deploying AWS only
+    terraform apply -auto-approve -var="environment=local" -var="vercel_api_token="
+) else (
+    echo  Deploying AWS + Vercel...
+    terraform apply -auto-approve -var="environment=local" -var="vercel_api_token=%VERCEL_API_TOKEN%"
+)
+
+echo  Deployment completed!
+echo  Outputs:
+terraform output -json
