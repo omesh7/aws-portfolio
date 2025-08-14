@@ -80,6 +80,15 @@ jobs:
           name: lambda-package
           path: 04-text-to-speech-polly/infrastructure/
       
+      - name: Create Dummy Lambda Package for Destroy
+        if: inputs.action == 'destroy'
+        working-directory: 04-text-to-speech-polly/infrastructure
+        run: |
+          echo "Creating dummy lambda package for destroy operation..."
+          echo 'exports.handler = async () => ({});' > index.js
+          zip lambda-package.zip index.js
+          rm index.js
+      
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
