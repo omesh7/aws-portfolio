@@ -1,38 +1,24 @@
-resource "vercel_project" "image_Resize_project" {
-  name                                 = var.vercel_project_name
-  framework                            = "nextjs"
-  root_directory                       = "06-smart-resize-images/site"
-  enable_affected_projects_deployments = true
-
-  git_repository = {
-    production_branch = "main"
-    repo              = "omesh7/aws-portfolio"
-    type              = "github"
-  }
+# Conditional Vercel deployment - only when token is provided
+resource "vercel_project" "image_resizer" {
+  count     = var.vercel_api_token != "" ? 1 : 0
+  name      = "${var.project_name}-site"
+  framework = "nextjs"
 }
 
-resource "vercel_project_environment_variable" "lambda_url" {
-  project_id = vercel_project.image_Resize_project.id
+resource "vercel_project_environment_variable" "api_url" {
+  count      = var.vercel_api_token != "" ? 1 : 0
+  project_id = vercel_project.image_resizer[0].id
   key        = "IMAGE_RESIZE_API_URL"
-  value      = aws_apigatewayv2_stage.default.invoke_url
+  value      = aws_apigatewayv2_api.api.api_endpoint
   target     = ["production", "preview", "development"]
-  sensitive  = false
 }
 
-resource "vercel_deployment" "image_Resize_project_deploy" {
-  project_id        = vercel_project.image_Resize_project.id
-  ref               = "main" # or a git branch
-  production        = true
-  delete_on_destroy = true
-
-  depends_on = [
-    vercel_project.image_Resize_project,
-    vercel_project_environment_variable.lambda_url
-  ]
+output "vercel_project_id" {
+  value     = var.vercel_api_token != "" ? vercel_project.image_resizer[0].id : null
+  sensitive = true
 }
 
-output "vercel_deployment_url" {
-  value       = vercel_deployment.image_Resize_project_deploy.domains[0]
-  description = "The URL of the Vercel deployment for the image resize project"
-
+output "vercel_url" {
+  value     = var.vercel_api_token != "" ? "https://${vercel_project.image_resizer[0].name}.vercel.app" : null
+  sensitive = true
 }
