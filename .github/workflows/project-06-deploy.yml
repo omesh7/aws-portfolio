@@ -167,6 +167,13 @@ jobs:
           echo "📋 Capturing Terraform outputs..."
           echo "api_endpoint=$(terraform output -raw api_endpoint)" >> $GITHUB_OUTPUT
           echo "lambda_function_name=$(terraform output -raw lambda_function_name)" >> $GITHUB_OUTPUT
+          VERCEL_URL=$(terraform output -raw vercel_deployment_url 2>/dev/null || echo "")
+          if [ ! -z "$VERCEL_URL" ]; then
+            echo "vercel_deployment_url=$VERCEL_URL" >> $GITHUB_OUTPUT
+            echo "✅ Vercel deployment URL: $VERCEL_URL"
+          else
+            echo "ℹ️ No Vercel deployment (AWS only)"
+          fi
           terraform output -json | jq '.'
 
   test-deployment:
