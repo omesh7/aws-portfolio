@@ -1,5 +1,5 @@
 output "lambda_function_url" {
-  description = "Lambda Function URL endpoint"
+  description = "Lambda Function URL"
   value       = aws_lambda_function_url.polly_tts_url.function_url
 }
 
@@ -11,4 +11,9 @@ output "s3_bucket_name" {
 output "lambda_function_name" {
   description = "Lambda function name"
   value       = aws_lambda_function.polly_tts.function_name
+}
+
+output "environment" {
+  description = "Deployment environment"
+  value       = var.environment
 }

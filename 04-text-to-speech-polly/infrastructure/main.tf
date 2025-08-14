@@ -1,9 +1,11 @@
 terraform {
-  cloud {
-    organization = "aws-portfolio-omesh"
-    workspaces {
-      name = "04-text-to-speech-polly"
-    }
+  backend "s3" {
+    bucket         = "aws-portfolio-terraform-state"
+    key            = "04-text-to-speech-polly/terraform.tfstate"
+    region         = "ap-south-1"
+    dynamodb_table = "aws-portfolio-terraform-locks"
+    use_lockfile   = true
+    encrypt        = true
   }
 
   required_providers {
@@ -16,10 +18,26 @@ terraform {
 
 provider "aws" {
   region = var.aws_region
+  default_tags {
+    tags = {
+      Project    = var.project_name
+      project-no = "01"
+
+
+    }
+  }
 }
 
-# Archive Lambda function code
+# Environment-based lambda packaging
+locals {
+  use_local_archive  = var.environment == "local"
+  lambda_filename    = local.use_local_archive ? data.archive_file.lambda_zip[0].output_path : var.lambda_zip_path
+  lambda_source_hash = local.use_local_archive ? data.archive_file.lambda_zip[0].output_base64sha256 : filebase64sha256(var.lambda_zip_path)
+}
+
+# Conditional archive - only for local development
 data "archive_file" "lambda_zip" {
+  count       = local.use_local_archive ? 1 : 0
   type        = "zip"
   source_dir  = "${path.module}/../lambda"
   output_path = "${path.module}/04_lambda.zip"
@@ -111,9 +129,9 @@ resource "aws_iam_role_policy" "lambda_policy" {
   })
 }
 
-# Lambda function
+# Lambda function with conditional source
 resource "aws_lambda_function" "polly_tts" {
-  filename      = data.archive_file.lambda_zip.output_path
+  filename      = local.lambda_filename
   function_name = "${var.project_name}-polly-tts"
   role          = aws_iam_role.lambda_role.arn
   handler       = "index.handler"
@@ -121,7 +139,7 @@ resource "aws_lambda_function" "polly_tts" {
   timeout       = 30
   memory_size   = 256
 
-  source_code_hash = data.archive_file.lambda_zip.output_base64sha256
+  source_code_hash = local.lambda_source_hash
 
   environment {
     variables = {

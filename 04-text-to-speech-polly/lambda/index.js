@@ -18,6 +18,7 @@ async function streamToBuffer(stream) {
 
 exports.handler = async (event) => {
   let text = "Hello Clara! This is AWS Polly speaking."; // default
+  let voice = "Joanna"; // default
 
   try {
     // Parse body if POST
@@ -26,14 +27,17 @@ exports.handler = async (event) => {
       if (body.text && typeof body.text === 'string' && body.text.trim().length > 0) {
         text = body.text.trim();
       }
+      if (body.voice && typeof body.voice === 'string' && body.voice.trim().length > 0) {
+        voice = body.voice.trim();
+      }
     }
 
-    console.log("📢 Converting text to speech:", text);
+    console.log("📢 Converting text to speech:", text, "with voice:", voice);
 
     const speechCommand = new SynthesizeSpeechCommand({
       OutputFormat: "mp3",
       Text: text,
-      VoiceId: "Joanna"
+      VoiceId: voice
     });
 
     const pollyResponse = await polly.send(speechCommand);
