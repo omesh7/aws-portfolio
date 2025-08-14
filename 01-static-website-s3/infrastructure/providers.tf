@@ -1,15 +1,17 @@
 terraform {
   cloud {
-    organization = "aws-porfolio"
+    organization = "aws-portfolio-omesh"
+
     workspaces {
       name = "01-static-website-s3"
+
     }
   }
 
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 6.5.0"
+      version = "~> 6.0"
     }
     cloudflare = {
       source  = "cloudflare/cloudflare"

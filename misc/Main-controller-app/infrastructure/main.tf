@@ -1,4 +1,11 @@
 terraform {
+  cloud {
+    organization = "aws-portfolio-omesh"
+    workspaces {
+      name = "main-controller-app"
+    }
+  }
+
   required_providers {
     klayers = {
       version = "~> 1.0.0"
@@ -6,7 +13,7 @@ terraform {
     }
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 6.5.0"
+      version = "~> 6.0"
     }
   }
 }

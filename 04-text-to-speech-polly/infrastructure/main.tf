@@ -1,10 +1,16 @@
 terraform {
+  cloud {
+    organization = "aws-portfolio-omesh"
+    workspaces {
+      name = "04-text-to-speech-polly"
+    }
+  }
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
       version = "~> 6.0"
     }
-
   }
 }
 
