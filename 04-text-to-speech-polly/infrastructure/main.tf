@@ -31,7 +31,7 @@ provider "aws" {
 locals {
   use_local_archive  = var.environment == "local"
   lambda_filename    = local.use_local_archive ? data.archive_file.lambda_zip[0].output_path : var.lambda_zip_path
-  lambda_source_hash = local.use_local_archive ? data.archive_file.lambda_zip[0].output_base64sha256 : filebase64sha256(var.lambda_zip_path)
+  lambda_source_hash = local.use_local_archive ? data.archive_file.lambda_zip[0].output_base64sha256 : (fileexists(var.lambda_zip_path) ? filebase64sha256(var.lambda_zip_path) : "")
 }
 
 # Conditional archive - only for local development
