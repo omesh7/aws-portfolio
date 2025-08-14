@@ -199,16 +199,3 @@ jobs:
           curl -X GET "$HELLO_URL" \
             --fail --show-error \
             -H "Accept: application/json"
-      
-      - name: Test Lambda via AWS CLI
-        run: |
-          echo "🧪 Testing Lambda function via AWS CLI..."
-          echo '{"requestContext": {"http": {"method": "GET"}}, "rawPath": "/hello"}' > payload.json
-          aws lambda invoke \
-            --function-name "${{ needs.terraform-infrastructure.outputs.lambda_function_name }}" \
-            --payload file://payload.json \
-            --region ${{ env.AWS_REGION }} \
-            response.json
-          
-          echo "Lambda response:"
-          cat response.json | jq '.'
