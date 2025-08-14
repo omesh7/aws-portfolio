@@ -44,7 +44,8 @@ data "archive_file" "lambda_zip" {
 
 # S3 bucket for audio files
 resource "aws_s3_bucket" "polly_audio" {
-  bucket = var.s3_bucket_name
+  bucket        = var.s3_bucket_name
+  force_destroy = true
 }
 
 resource "aws_s3_bucket_public_access_block" "polly_audio" {
