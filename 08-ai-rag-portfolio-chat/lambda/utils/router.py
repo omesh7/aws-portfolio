@@ -1,7 +1,7 @@
 import json
 from typing import Dict, Any
 
-from utils.response import error_response
+from ..utils.response import error_response
 
 
 def route_request(event: Dict[str, Any]) -> Dict[str, Any]:
