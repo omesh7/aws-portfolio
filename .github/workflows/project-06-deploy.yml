@@ -1,0 +1,182 @@
+name: Project 06 - Smart Image Resizer
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        type: choice
+        options: ['deploy', 'destroy']
+        default: 'deploy'
+
+env:
+  AWS_REGION: ap-south-1
+  PROJECT_NAME: 06-resized-images-bucket-aws-portfolio-ci
+
+jobs:
+  build-lambda:
+    name: Build Lambda Package
+    runs-on: ubuntu-latest
+    if: inputs.action == 'deploy'
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: '06-smart-resize-images/lambda/package-lock.json'
+      
+      - name: Install Lambda Dependencies
+        working-directory: 06-smart-resize-images/lambda
+        run: |
+          echo "📦 Installing Lambda dependencies..."
+          npm ci --production --omit=dev
+      
+      - name: Package Lambda Function
+        working-directory: 06-smart-resize-images/lambda
+        run: |
+          echo "📦 Creating Lambda deployment package..."
+          zip -r lambda-package.zip . -x "*.git*" "*.md" "*.txt"
+          ls -la lambda-package.zip
+          echo "✅ Lambda package created successfully"
+      
+      - name: Upload Lambda Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: lambda-package
+          path: 06-smart-resize-images/lambda/lambda-package.zip
+          retention-days: 1
+
+  terraform-infrastructure:
+    name: Terraform Infrastructure
+    runs-on: ubuntu-latest
+    needs: [build-lambda]
+    if: always() && ((inputs.action == 'deploy' && needs.build-lambda.result == 'success') || inputs.action == 'destroy')
+    outputs:
+      api_endpoint: ${{ steps.outputs.outputs.api_endpoint }}
+      lambda_function_name: ${{ steps.outputs.outputs.lambda_function_name }}
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Download Lambda Package
+        if: inputs.action != 'destroy'
+        uses: actions/download-artifact@v4
+        with:
+          name: lambda-package
+          path: 06-smart-resize-images/infrastructure/
+      
+      - name: Create Dummy Lambda Package for Destroy
+        if: inputs.action == 'destroy'
+        working-directory: 06-smart-resize-images/infrastructure
+        run: |
+          echo "Creating dummy lambda package for destroy operation..."
+          echo 'export const handler = async () => ({});' > index.js
+          zip lambda-package.zip index.js
+          rm index.js
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.0
+          terraform_wrapper: false
+      
+      - name: Terraform Init
+        working-directory: 06-smart-resize-images/infrastructure
+        run: |
+          echo "🔧 Initializing Terraform..."
+          terraform init
+      
+      - name: Terraform Validate
+        working-directory: 06-smart-resize-images/infrastructure
+        run: |
+          echo "✅ Validating Terraform configuration..."
+          terraform validate
+      
+      - name: Terraform Apply
+        if: inputs.action == 'deploy'
+        working-directory: 06-smart-resize-images/infrastructure
+        env:
+          TF_VAR_vercel_api_token: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          echo "🚀 Applying Terraform configuration..."
+          terraform apply -auto-approve \
+            -var="environment=ci" \
+            -var="lambda_zip_path=lambda-package.zip" \
+            -var="project_name=${{ env.PROJECT_NAME }}" \
+            -var="aws_region=${{ env.AWS_REGION }}" \
+            -var="vercel_api_token=${{ secrets.VERCEL_TOKEN }}"
+      
+      - name: Terraform Destroy
+        if: inputs.action == 'destroy'
+        working-directory: 06-smart-resize-images/infrastructure
+        env:
+          TF_VAR_vercel_api_token: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          echo "🗑️ Destroying Terraform resources..."
+          terraform destroy -auto-approve \
+            -var="environment=ci" \
+            -var="lambda_zip_path=lambda-package.zip" \
+            -var="project_name=${{ env.PROJECT_NAME }}" \
+            -var="aws_region=${{ env.AWS_REGION }}" \
+            -var="vercel_api_token=${{ secrets.VERCEL_TOKEN }}"
+      
+      - name: Capture Terraform Outputs
+        id: outputs
+        if: inputs.action == 'deploy'
+        working-directory: 06-smart-resize-images/infrastructure
+        run: |
+          echo "📋 Capturing Terraform outputs..."
+          echo "api_endpoint=$(terraform output -raw api_endpoint)" >> $GITHUB_OUTPUT
+          echo "lambda_function_name=$(terraform output -raw lambda_function_name)" >> $GITHUB_OUTPUT
+          terraform output -json | jq '.'
+
+  test-deployment:
+    name: Test Deployment
+    runs-on: ubuntu-latest
+    needs: [terraform-infrastructure]
+    if: inputs.action == 'deploy'
+    
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Test Lambda Health Check
+        run: |
+          API_ENDPOINT="${{ needs.terraform-infrastructure.outputs.api_endpoint }}"
+          HELLO_URL="$API_ENDPOINT/hello"
+          echo "🧪 Testing Lambda health check at: $HELLO_URL"
+          
+          curl -X GET "$HELLO_URL" \
+            --fail --show-error \
+            -H "Accept: application/json"
+      
+      - name: Test Lambda via AWS CLI
+        run: |
+          echo "🧪 Testing Lambda function via AWS CLI..."
+          echo '{"requestContext": {"http": {"method": "GET"}}, "rawPath": "/hello"}' > payload.json
+          aws lambda invoke \
+            --function-name "${{ needs.terraform-infrastructure.outputs.lambda_function_name }}" \
+            --payload file://payload.json \
+            --region ${{ env.AWS_REGION }} \
+            response.json
+          
+          echo "Lambda response:"
+          cat response.json | jq '.'

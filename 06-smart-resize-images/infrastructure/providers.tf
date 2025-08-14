@@ -1,20 +1,20 @@
 
 terraform {
-  cloud {
-    organization = "aws-portfolio-omesh"
-    workspaces {
-      name = "06-smart-resize-images"
-    }
+  backend "s3" {
+    bucket         = "aws-portfolio-terraform-state"
+    key            = "06-smart-resize-images/terraform.tfstate"
+    region         = "ap-south-1"
+    dynamodb_table = "aws-portfolio-terraform-locks"
+    encrypt        = true
   }
-
   required_providers {
     vercel = {
       source  = "vercel/vercel"
-      version = "3.8.0"
+      version = "~>3.8.0"
     }
     aws = {
       source  = "hashicorp/aws"
-      version = "6.7.0"
+      version = "~>6.0"
     }
   }
 }
@@ -23,21 +23,12 @@ provider "aws" {
   region = var.aws_region
 
   default_tags {
-    tags = {
-      Project     = var.project_name
-      Environment = "portfolio"
-      project-no  = "06"
-    }
+    tags = var.tags
   }
 }
 
-
 provider "vercel" {
-  # Or omit this for the api_token to be read
-  # from the VERCEL_API_TOKEN environment variable
   api_token = var.vercel_api_token
-
-  # Optional default team for all resources
-  team = var.team
 }
-    
+
+
