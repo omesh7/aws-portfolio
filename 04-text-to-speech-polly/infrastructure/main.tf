@@ -4,7 +4,6 @@ terraform {
     key            = "04-text-to-speech-polly/terraform.tfstate"
     region         = "ap-south-1"
     dynamodb_table = "aws-portfolio-terraform-locks"
-    use_lockfile   = true
     encrypt        = true
   }
 
