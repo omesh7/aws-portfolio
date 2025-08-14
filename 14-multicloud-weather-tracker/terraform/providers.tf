@@ -1,4 +1,11 @@
 terraform {
+  cloud {
+    organization = "aws-portfolio-omesh"
+    workspaces {
+      name = "14-multicloud-weather-tracker"
+    }
+  }
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"

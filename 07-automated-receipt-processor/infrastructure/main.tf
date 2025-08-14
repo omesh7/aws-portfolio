@@ -1,3 +1,19 @@
+terraform {
+  cloud {
+    organization = "aws-portfolio-omesh"
+    workspaces {
+      name = "07-automated-receipt-processor"
+    }
+  }
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 6.0"
+    }
+  }
+}
+
 provider "aws" {
   region = var.region # or your region
 }
