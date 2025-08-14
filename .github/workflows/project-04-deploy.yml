@@ -36,7 +36,7 @@ jobs:
         working-directory: 04-text-to-speech-polly/lambda
         run: |
           echo "📦 Installing Lambda dependencies..."
-          npm ci --production
+          npm ci --production --omit=dev
       
       - name: Package Lambda Function
         working-directory: 04-text-to-speech-polly/lambda
