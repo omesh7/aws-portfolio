@@ -1,0 +1,32 @@
+cloud-architecture-diagram
+
+title Kinesis ECR ML Pipeline - Real-Time Stream Processing - PROJECT 10
+
+// Infrastructure Provisioning
+Terraform [icon: terraform, label: "Terraform (IaC)"]
+
+// AWS Infrastructure
+AWS Infrastructure [icon: aws-cloud] {
+  ECR Repository [icon: aws-ecr, label: "ECR (Container Registry)"]
+  ECS Fargate [icon: aws-ecs, label: "ECS Fargate (FastAPI Producer)"]
+  Kinesis Stream [icon: aws-kinesis, label: "Kinesis Data Streams"]
+  Lambda Function [icon: aws-lambda, label: "Stream Processor (Python 3.11)"]
+  DynamoDB [icon: aws-dynamodb, label: "DynamoDB (Analytics Data)"]
+  ALB [icon: aws-elb, label: "Application Load Balancer"]
+  CloudWatch [icon: aws-cloudwatch, label: "CloudWatch (Monitoring)"]
+}
+
+// External Services
+Data Producer [icon: user, label: "Data Producer"]
+
+// Terraform Deployment
+Terraform -> AWS Infrastructure: terraform apply
+
+// Real-Time Data Flow
+Data Producer -> ALB: 1. Send events via FastAPI
+ALB -> ECS Fargate: 2. Route to containerized service
+ECS Fargate -> Kinesis Stream: 3. Stream data to Kinesis
+Kinesis Stream -> Lambda Function: 4. Trigger stream processor
+Lambda Function -> DynamoDB: 5. Store processed analytics
+Lambda Function -> CloudWatch: 6. Log metrics & errors
+ECR Repository -> ECS Fargate: 7. Container image deployment

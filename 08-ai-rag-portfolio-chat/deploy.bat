@@ -9,7 +9,9 @@ set AWS_REGION=ap-south-1
 set AWS_ACCOUNT_ID=982534384941
 set PROJECT_NAME=08-rag-portfolio-chat-2-aws-portfolio
 set ECR_REPO=%PROJECT_NAME%-repo
-set IMAGE_TAG=latest
+set IMAGE_TAG=%DATE:~10,4%%DATE:~4,2%-%DATE:~7,2%-%TIME:~0,2%%TIME:~3,2%
+@REM set IMAGE_TAG=LATEST
+
 
 echo [1/6] Creating ECR repository...
 aws ecr describe-repositories --repository-names %ECR_REPO% --region %AWS_REGION% >nul 2>&1
@@ -29,9 +31,12 @@ if errorlevel 1 (
 )
 
 echo [3/6] Building Docker image...
-cd app
+cd lambda
 
+@REM docker buildx build --no-cache --platform linux/amd64 --provenance=false -t %ECR_REPO%:%IMAGE_TAG% .
 docker buildx build --platform linux/amd64 --provenance=false -t %ECR_REPO%:%IMAGE_TAG% .
+
+
 if errorlevel 1 (
     echo ERROR: Failed to build Docker image
     exit /b 1
@@ -46,19 +51,18 @@ if errorlevel 1 (
     echo ERROR: Failed to push image to ECR
     exit /b 1
 )
-
 echo [6/6] Deploying infrastructure with Terraform...
 cd ..\infrastructure
-terraform init
-if errorlevel 1 (
-    echo ERROR: Terraform init failed
-    exit /b 1
-)
 
-terraform plan -var="image_uri=%AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/%ECR_REPO%:%IMAGE_TAG%"
-if errorlevel 1 (
-    echo ERROR: Terraform plan failed
-    exit /b 1
+if not exist ".terraform" (
+    echo Terraform not initialized. Initializing...
+    terraform init
+    if errorlevel 1 (
+        echo ERROR: Terraform init failed
+        exit /b 1
+    )
+) else (
+    echo Terraform already initialized. Skipping init...
 )
 
 terraform apply -auto-approve -var="image_uri=%AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/%ECR_REPO%:%IMAGE_TAG%"

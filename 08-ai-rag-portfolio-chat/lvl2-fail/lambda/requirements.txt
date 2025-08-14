@@ -1,0 +1,9 @@
+langchain-community
+langchain
+langchain-aws
+PyPDF2
+numpy
+boto3
+faiss-cpu
+aws_lambda_powertools
+shortuuid

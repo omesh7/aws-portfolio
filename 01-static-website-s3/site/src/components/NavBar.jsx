@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { ThemeToggle } from "@/components/other/theme-toggle"
 
 import { navLinks } from "../constants";
 
@@ -15,7 +16,7 @@ const NavBar = () => {
       setScrolled(isScrolled);
     };
 
-    // add the event listener to the window
+    // add the event listener to the window 
     window.addEventListener("scroll", handleScroll);
 
     // cleanup the event listener when the component is unmounted
@@ -47,6 +48,8 @@ const NavBar = () => {
             <span>Contact me</span>
           </div>
         </a>
+
+        {/* <ThemeToggle /> */}
       </div>
     </header>
   );
