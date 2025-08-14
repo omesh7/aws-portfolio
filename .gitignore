@@ -91,3 +91,8 @@ venv/
 **/*.zip
 10-KInesis-ECR-ML/other.txt
 
+# Terraform utility scripts
+setup-terraform-cloud.sh
+terraform-init-all.bat
+delete-tfstate.bat
+
