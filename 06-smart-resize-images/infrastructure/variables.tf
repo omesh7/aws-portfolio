@@ -10,32 +10,37 @@ variable "aws_region" {
   default     = "ap-south-1"
 }
 
+variable "environment" {
+  description = "Environment (local or ci)"
+  type        = string
+  default     = "local"
+}
+
+variable "lambda_zip_path" {
+  description = "Path to Lambda deployment package"
+  type        = string
+  default     = "lambda-package.zip"
+}
+
 variable "vercel_api_token" {
-  description = "Vercel API token for deployment"
+  description = "Vercel API token"
   type        = string
   default     = ""
-
+  sensitive   = true
 }
-
-variable "team" {
-  description = "Vercel team identifier"
-  type        = string
-  default     = ""
-
-}
-
 
 variable "vercel_project_name" {
-
-  description = "Project ID for Vercel deployment"
+  description = "Vercel project name"
   type        = string
-  default     = ""
+  default     = "image-resizer-aws-portfolio"
 }
 
-
-variable "vercel_project_id" {
-  description = "Project ID for Vercel deployment"
-  type        = string
-  default     = ""
-
+variable "tags" {
+  description = "Tags to apply to resources"
+  type        = map(string)
+  default = {
+    Project     = "06-resized-images-bucket-aws-portfolio"
+    Environment = "portfolio"
+    project-no  = "06"
+  }
 }
