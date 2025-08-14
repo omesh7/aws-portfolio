@@ -179,9 +179,10 @@ jobs:
       - name: Test Lambda Function via AWS CLI
         run: |
           echo "🧪 Testing Lambda function via AWS CLI..."
+          echo '{"body": "{\"text\": \"AWS CLI test successful!\"}"}' > payload.json
           aws lambda invoke \
             --function-name "${{ needs.terraform-infrastructure.outputs.lambda_function_name }}" \
-            --payload '{"body": "{\"text\": \"AWS CLI test successful!\"}"}' \
+            --payload file://payload.json \
             --region ${{ env.AWS_REGION }} \
             response.json
           
