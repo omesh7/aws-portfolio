@@ -1,11 +1,16 @@
 terraform {
-  required_version = ">= 1.0"
+  cloud {
+    organization = "aws-portfolio-omesh"
+    workspaces {
+      name = "12-kubernetes-python-youtube-summarizer"
+    }
+  }
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
       version = "~> 6.0"
     }
-
   }
 }
 

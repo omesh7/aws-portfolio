@@ -2,10 +2,21 @@
 # This file defines the core AWS infrastructure components
 
 terraform {
+  cloud {
+    organization = "aws-portfolio-omesh"
+    workspaces {
+      name = "13-2048-game-aws-codepipeline"
+    }
+  }
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
       version = "~> 6.0"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.0"
     }
   }
 }

@@ -1,5 +1,12 @@
 
 terraform {
+  cloud {
+    organization = "aws-portfolio-omesh"
+    workspaces {
+      name = "06-smart-resize-images"
+    }
+  }
+
   required_providers {
     vercel = {
       source  = "vercel/vercel"
@@ -10,8 +17,6 @@ terraform {
       version = "6.7.0"
     }
   }
-
-
 }
 
 provider "aws" {

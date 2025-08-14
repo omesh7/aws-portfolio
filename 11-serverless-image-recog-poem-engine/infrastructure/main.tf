@@ -1,4 +1,23 @@
 # -------------------------------
+# Terraform Configuration
+# -------------------------------
+terraform {
+  cloud {
+    organization = "aws-portfolio-omesh"
+    workspaces {
+      name = "11-serverless-image-recog-poem-engine"
+    }
+  }
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 6.0"
+    }
+  }
+}
+
+# -------------------------------
 # Provider Configuration
 # -------------------------------
 provider "aws" {
