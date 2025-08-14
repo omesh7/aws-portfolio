@@ -36,7 +36,7 @@ resource "aws_acm_certificate" "website_cert" {
 
   lifecycle {
     create_before_destroy = true
-    replace_triggered_by = [cloudflare_dns_record.caa_aws]
+    replace_triggered_by  = [cloudflare_dns_record.caa_aws]
   }
 
   tags = {
@@ -194,7 +194,7 @@ resource "cloudflare_dns_record" "caa_aws" {
   name    = "@"
   type    = "CAA"
   ttl     = 300
-  
+
   data = {
     flags = 0
     tag   = "issue"

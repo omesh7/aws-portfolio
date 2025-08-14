@@ -1,0 +1,189 @@
+name: Project 04 - Text-to-Speech Polly
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        type: choice
+        options: ['plan', 'apply', 'destroy']
+        default: 'plan'
+
+env:
+  AWS_REGION: ap-south-1
+  PROJECT_NAME: 04-text-to-speech-polly-ci
+  S3_BUCKET_NAME: polly-tts-audio-bucket-ci-${{ github.run_number }}
+
+jobs:
+  build-lambda:
+    name: Build Lambda Package
+    runs-on: ubuntu-latest
+    if: inputs.action != 'destroy'
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: '04-text-to-speech-polly/lambda/package-lock.json'
+      
+      - name: Install Lambda Dependencies
+        working-directory: 04-text-to-speech-polly/lambda
+        run: |
+          echo "📦 Installing Lambda dependencies..."
+          npm ci --production
+      
+      - name: Package Lambda Function
+        working-directory: 04-text-to-speech-polly/lambda
+        run: |
+          echo "📦 Creating Lambda deployment package..."
+          zip -r lambda-package.zip . -x "*.git*" "*.md" "*.txt"
+          ls -la lambda-package.zip
+          echo "✅ Lambda package created successfully"
+      
+      - name: Upload Lambda Package
+        uses: actions/upload-artifact@v4
+        with:
+          name: lambda-package
+          path: 04-text-to-speech-polly/lambda/lambda-package.zip
+          retention-days: 1
+
+  terraform-infrastructure:
+    name: Terraform Infrastructure
+    runs-on: ubuntu-latest
+    needs: [build-lambda]
+    if: always() && (needs.build-lambda.result == 'success' || inputs.action == 'destroy')
+    outputs:
+      lambda_function_url: ${{ steps.outputs.outputs.lambda_function_url }}
+      lambda_function_name: ${{ steps.outputs.outputs.lambda_function_name }}
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Download Lambda Package
+        if: inputs.action != 'destroy'
+        uses: actions/download-artifact@v4
+        with:
+          name: lambda-package
+          path: 04-text-to-speech-polly/infrastructure/
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.0
+          terraform_wrapper: false
+      
+      - name: Terraform Init
+        working-directory: 04-text-to-speech-polly/infrastructure
+        run: |
+          echo "🔧 Initializing Terraform..."
+          terraform init
+      
+      - name: Terraform Validate
+        working-directory: 04-text-to-speech-polly/infrastructure
+        run: |
+          echo "✅ Validating Terraform configuration..."
+          terraform validate
+      
+      - name: Terraform Plan
+        if: inputs.action == 'plan' || inputs.action == 'apply'
+        working-directory: 04-text-to-speech-polly/infrastructure
+        run: |
+          echo "📋 Planning Terraform deployment..."
+          terraform plan \
+            -var="environment=ci" \
+            -var="lambda_zip_path=lambda-package.zip" \
+            -var="project_name=${{ env.PROJECT_NAME }}" \
+            -var="s3_bucket_name=${{ env.S3_BUCKET_NAME }}"
+      
+      - name: Terraform Apply
+        if: inputs.action == 'apply'
+        working-directory: 04-text-to-speech-polly/infrastructure
+        run: |
+          echo "🚀 Applying Terraform configuration..."
+          terraform apply -auto-approve \
+            -var="environment=ci" \
+            -var="lambda_zip_path=lambda-package.zip" \
+            -var="project_name=${{ env.PROJECT_NAME }}" \
+            -var="s3_bucket_name=${{ env.S3_BUCKET_NAME }}"
+      
+      - name: Terraform Destroy
+        if: inputs.action == 'destroy'
+        working-directory: 04-text-to-speech-polly/infrastructure
+        run: |
+          echo "🗑️ Destroying Terraform resources..."
+          terraform destroy -auto-approve \
+            -var="environment=ci" \
+            -var="lambda_zip_path=lambda-package.zip" \
+            -var="project_name=${{ env.PROJECT_NAME }}" \
+            -var="s3_bucket_name=${{ env.S3_BUCKET_NAME }}"
+      
+      - name: Capture Terraform Outputs
+        id: outputs
+        if: inputs.action == 'apply'
+        working-directory: 04-text-to-speech-polly/infrastructure
+        run: |
+          echo "📋 Capturing Terraform outputs..."
+          echo "lambda_function_url=$(terraform output -raw lambda_function_url)" >> $GITHUB_OUTPUT
+          echo "lambda_function_name=$(terraform output -raw lambda_function_name)" >> $GITHUB_OUTPUT
+          terraform output -json | jq '.'
+
+  test-deployment:
+    name: Test Deployment
+    runs-on: ubuntu-latest
+    needs: [terraform-infrastructure]
+    if: inputs.action == 'apply' && needs.terraform-infrastructure.result == 'success'
+    
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Test Lambda Function URL
+        run: |
+          LAMBDA_URL="${{ needs.terraform-infrastructure.outputs.lambda_function_url }}"
+          echo "🧪 Testing Lambda function at: $LAMBDA_URL"
+          
+          # Test with default text
+          echo "Testing with default text..."
+          curl -X POST "$LAMBDA_URL" \
+            -H "Content-Type: application/json" \
+            -d '{}' \
+            --fail --show-error
+          
+          echo ""
+          
+          # Test with custom text
+          echo "Testing with custom text..."
+          curl -X POST "$LAMBDA_URL" \
+            -H "Content-Type: application/json" \
+            -d '{"text": "Hello from GitHub Actions CI/CD pipeline! This is a test of the Polly text-to-speech service."}' \
+            --fail --show-error
+      
+      - name: Test Lambda Function via AWS CLI
+        run: |
+          echo "🧪 Testing Lambda function via AWS CLI..."
+          aws lambda invoke \
+            --function-name "${{ needs.terraform-infrastructure.outputs.lambda_function_name }}" \
+            --payload '{"body": "{\"text\": \"AWS CLI test successful!\"}"}' \
+            --region ${{ env.AWS_REGION }} \
+            response.json
+          
+          echo "Lambda response:"
+          cat response.json | jq '.'
