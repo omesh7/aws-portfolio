@@ -7,6 +7,7 @@ A sophisticated AI-powered chat system that processes portfolio documents using 
 ## 🎯 Quick Overview for Recruiters
 
 **Key Technical Highlights:**
+
 - **AI/ML Architecture:** RAG (Retrieval-Augmented Generation) implementation
 - **Vector Database:** FAISS for high-performance semantic search
 - **LLM Integration:** AWS Bedrock with Titan embeddings
@@ -29,18 +30,19 @@ graph LR
     E --> F[AWS Bedrock Embeddings]
     F --> G[FAISS Vector Store]
     G --> H[S3 Index Storage]
-    
+
     I[User Query] --> J[Vector Search]
     J --> K[Context Retrieval]
     K --> L[LLM Response]
     L --> M[AI Answer]
-    
+
     N[LangChain] --> D
     N --> E
     N --> F
 ```
 
 **Data Flow:**
+
 1. Documents uploaded to S3 docs/ folder trigger processing
 2. Lambda function loads and processes documents with LangChain
 3. Text split into semantic chunks with overlap
@@ -54,6 +56,7 @@ graph LR
 ## 💼 Technical Implementation
 
 ### AI/ML Stack
+
 - **AWS Bedrock** - Foundation models and embeddings
 - **Titan Embeddings** - High-quality text vectorization
 - **FAISS** - Facebook AI Similarity Search for vector operations
@@ -61,6 +64,7 @@ graph LR
 - **RAG Architecture** - Retrieval-Augmented Generation pattern
 
 ### Document Processing Stack
+
 - **PyPDFLoader** - PDF document extraction
 - **TextLoader** - Plain text file processing
 - **UnstructuredMarkdownLoader** - Markdown document parsing
@@ -68,6 +72,7 @@ graph LR
 - **Vector Embeddings** - Semantic representation generation
 
 ### Cloud Services
+
 - **AWS Lambda** - Serverless document processing
 - **AWS Bedrock** - Managed AI/ML services
 - **S3 Storage** - Document and index storage
@@ -98,22 +103,21 @@ graph LR
 ```
 
 08-ai-rag-portfolio-chat/
-├── app/            
-│   ├── handlers/              
-│   │   ├── add_conversation.py
-│   ├── main.py             
-│   ├── routes.py        
-│   ├── utils.py        
-│   ├── requirements.txt       
-│   └── Dockerfile
-
-
+├── app/  
+│ ├── handlers/  
+│ │ ├── add_conversation.py
+│ ├── main.py  
+│ ├── routes.py  
+│ ├── utils.py  
+│ ├── requirements.txt  
+│ └── Dockerfile
 
 ---
 
 ## 🚀 Core Functionality
 
 ### Document Processing Pipeline
+
 ```python
 def lambda_handler(event, context):
     """
@@ -124,42 +128,43 @@ def lambda_handler(event, context):
         record = event["Records"][0]
         s3_bucket = record["s3"]["bucket"]["name"]
         s3_key = record["s3"]["object"]["key"]
-        
+
         # Validate document location and type
         if not s3_key.startswith("docs/"):
             return {"status": "skipped", "reason": "File not in docs/"}
-        
+
         ext = os.path.splitext(s3_key)[1].lower()
         if ext not in [".pdf", ".txt", ".md"]:
             return {"status": "skipped", "reason": f"Unsupported extension: {ext}"}
-        
+
         # Process document
         request_id = get_unique_id()
         tmp_file = f"/tmp/{request_id}{ext}"
-        
+
         # Download and load document
         s3_client.download_file(Bucket=s3_bucket, Key=s3_key, Filename=tmp_file)
         loader = get_loader(tmp_file, ext)
         pages = loader.load_and_split()
-        
+
         # Create semantic chunks
         chunks = split_text(pages)
-        
+
         # Generate and store vector index
         save_faiss_index(chunks, request_id)
-        
+
         return {
             "status": "success",
             "chunks": len(chunks),
             "key_base": f"indices/{request_id}"
         }
-        
+
     except Exception as e:
         logger.error("Error processing file: %s", str(e), exc_info=True)
         return {"status": "error", "error": str(e)}
 ```
 
 ### Advanced Text Chunking
+
 ```python
 def split_text(pages, chunk_size=1000, chunk_overlap=200):
     """
@@ -175,6 +180,7 @@ def split_text(pages, chunk_size=1000, chunk_overlap=200):
 ```
 
 ### Vector Index Creation
+
 ```python
 def save_faiss_index(documents, request_id):
     """
@@ -182,11 +188,11 @@ def save_faiss_index(documents, request_id):
     """
     # Generate embeddings and create FAISS index
     index = FAISS.from_documents(documents, bedrock_embeddings)
-    
+
     # Save to temporary directory
     with tempfile.TemporaryDirectory() as tmpdir:
         index.save_local(index_name=request_id, folder_path=tmpdir)
-        
+
         # Upload to S3 for persistence
         s3_client.upload_file(
             Filename=os.path.join(tmpdir, request_id + ".faiss"),
@@ -201,6 +207,7 @@ def save_faiss_index(documents, request_id):
 ```
 
 ### Multi-Format Document Loading
+
 ```python
 def get_loader(file_path: str, ext: str):
     """
@@ -222,6 +229,7 @@ def get_loader(file_path: str, ext: str):
 ## 🔧 Configuration & Setup
 
 ### Environment Variables
+
 ```bash
 # AWS Bedrock Configuration
 EMBED_MODEL=amazon.titan-embed-text-v1
@@ -239,6 +247,7 @@ DB_PASSWORD=secure_password
 ```
 
 ### Terraform Infrastructure
+
 ```hcl
 # Lambda Function for Document Processing
 resource "aws_lambda_function" "document_processor" {
@@ -247,14 +256,14 @@ resource "aws_lambda_function" "document_processor" {
   handler       = "lambda_function.lambda_handler"
   timeout       = 300
   memory_size   = 1024
-  
+
   environment {
     variables = {
       BUCKET_NAME = aws_s3_bucket.documents.bucket
       EMBED_MODEL = "amazon.titan-embed-text-v1"
     }
   }
-  
+
   layers = [
     aws_lambda_layer_version.langchain_layer.arn
   ]
@@ -263,7 +272,7 @@ resource "aws_lambda_function" "document_processor" {
 # S3 Event Trigger
 resource "aws_s3_bucket_notification" "document_upload" {
   bucket = aws_s3_bucket.documents.id
-  
+
   lambda_function {
     lambda_function_arn = aws_lambda_function.document_processor.arn
     events             = ["s3:ObjectCreated:*"]
@@ -273,35 +282,30 @@ resource "aws_s3_bucket_notification" "document_upload" {
 ```
 
 ### IAM Permissions
+
 ```json
 {
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": [
-                "bedrock:InvokeModel",
-                "bedrock:InvokeModelWithResponseStream"
-            ],
-            "Resource": "arn:aws:bedrock:*:*:foundation-model/amazon.titan-*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": [
-                "s3:GetObject",
-                "s3:PutObject"
-            ],
-            "Resource": "arn:aws:s3:::ai-rag-portfolio-documents/*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": [
-                "rds:DescribeDBClusters",
-                "rds-data:ExecuteStatement"
-            ],
-            "Resource": "*"
-        }
-    ]
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:InvokeModel",
+        "bedrock:InvokeModelWithResponseStream"
+      ],
+      "Resource": "arn:aws:bedrock:*:*:foundation-model/amazon.titan-*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["s3:GetObject", "s3:PutObject"],
+      "Resource": "arn:aws:s3:::ai-rag-portfolio-documents/*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": ["rds:DescribeDBClusters", "rds-data:ExecuteStatement"],
+      "Resource": "*"
+    }
+  ]
 }
 ```
 
@@ -310,12 +314,14 @@ resource "aws_s3_bucket_notification" "document_upload" {
 ## 🧠 AI/ML Capabilities
 
 ### Retrieval-Augmented Generation (RAG)
+
 - **Semantic Search** - Vector similarity matching for relevant context
 - **Context Injection** - Retrieved documents enhance LLM responses
 - **Hallucination Reduction** - Grounded responses based on actual documents
 - **Dynamic Knowledge** - Real-time document updates without retraining
 
 ### Vector Embeddings
+
 ```python
 # AWS Bedrock Titan Embeddings
 bedrock_embeddings = BedrockEmbeddings(
@@ -330,16 +336,17 @@ embedding_vector = bedrock_embeddings.embed_query("portfolio project details")
 ```
 
 ### FAISS Vector Operations
+
 ```python
 # Similarity search with score threshold
 def semantic_search(query, k=5, score_threshold=0.7):
     query_vector = bedrock_embeddings.embed_query(query)
-    
+
     # FAISS similarity search
     docs_and_scores = index.similarity_search_with_score(
         query, k=k, score_threshold=score_threshold
     )
-    
+
     return [
         {
             "content": doc.page_content,
@@ -351,6 +358,7 @@ def semantic_search(query, k=5, score_threshold=0.7):
 ```
 
 ### Supported Document Types
+
 - **PDF Documents** - Technical documentation, project reports
 - **Markdown Files** - README files, documentation
 - **Text Files** - Code documentation, notes
@@ -361,18 +369,21 @@ def semantic_search(query, k=5, score_threshold=0.7):
 ## 📊 Performance & Scalability
 
 ### Processing Performance
+
 - **Document Processing** - 10-30 seconds per document
 - **Embedding Generation** - 1536-dimensional vectors
 - **Search Latency** - <100ms for semantic queries
 - **Index Size** - ~1MB per 1000 document chunks
 
 ### Scalability Features
+
 - **Concurrent Processing** - Multiple documents simultaneously
 - **Incremental Updates** - Add documents without rebuilding
 - **Distributed Storage** - S3 for unlimited index storage
 - **Auto-scaling Lambda** - Handles traffic spikes
 
 ### Cost Optimization
+
 ```
 AWS Bedrock Embeddings: $0.0001 per 1K tokens
 Lambda Compute: $0.0000166667 per GB-second
@@ -387,6 +398,7 @@ Estimated cost: $0.01 per document processed
 ## 🛡️ Security & Privacy
 
 ### Security Implementation
+
 - **IAM Least Privilege** - Minimal required permissions
 - **VPC Integration** - Private network for database access
 - **Encryption at Rest** - S3 and Aurora encryption
@@ -394,6 +406,7 @@ Estimated cost: $0.01 per document processed
 - **Access Control** - Document-level permissions
 
 ### Privacy Considerations
+
 - **Data Residency** - All processing within AWS region
 - **No Data Retention** - Bedrock doesn't store input data
 - **Audit Logging** - Complete processing history
@@ -404,12 +417,14 @@ Estimated cost: $0.01 per document processed
 ## 🚀 Local Development & Testing
 
 ### Prerequisites
+
 - Python 3.11+ with required packages
 - AWS CLI configured with Bedrock access
 - Terraform CLI for infrastructure
 - Local PostgreSQL for development
 
 ### Development Setup
+
 ```bash
 # Navigate to project
 cd 08-ai-rag-portfolio-chat
@@ -426,6 +441,7 @@ python lambda/lambda_function.py
 ```
 
 ### Testing Commands
+
 ```bash
 # Test Bedrock connectivity
 aws bedrock list-foundation-models --region ap-south-1
@@ -446,6 +462,7 @@ print(result)
 ## 🔍 Monitoring & Analytics
 
 ### CloudWatch Metrics
+
 ```python
 # Custom metrics for RAG performance
 import boto3
@@ -475,6 +492,7 @@ def track_processing_metrics(doc_size, chunks_created, processing_time):
 ```
 
 ### Key Performance Indicators
+
 - **Document Processing Success Rate** - Percentage of successful extractions
 - **Average Chunk Size** - Optimal chunking for context
 - **Embedding Quality** - Vector similarity distributions
@@ -485,12 +503,14 @@ def track_processing_metrics(doc_size, chunks_created, processing_time):
 ## 🎯 Use Cases & Applications
 
 ### Business Applications
+
 - **Knowledge Management** - Organizational document search
 - **Customer Support** - AI-powered help desk
 - **Research Assistant** - Academic paper analysis
 - **Legal Document Review** - Contract and policy analysis
 
 ### Technical Applications
+
 - **Code Documentation** - Intelligent code search
 - **API Documentation** - Interactive API exploration
 - **Technical Writing** - Content generation assistance
@@ -501,6 +521,7 @@ def track_processing_metrics(doc_size, chunks_created, processing_time):
 ## 📈 Future Enhancements
 
 ### Planned Features
+
 - **Multi-modal RAG** - Image and video document support
 - **Real-time Chat** - WebSocket-based conversation
 - **Advanced Filtering** - Metadata-based search refinement
@@ -508,6 +529,7 @@ def track_processing_metrics(doc_size, chunks_created, processing_time):
 - **Custom Models** - Fine-tuned embeddings for domain
 
 ### Advanced Capabilities
+
 - **Graph RAG** - Knowledge graph integration
 - **Hybrid Search** - Combining vector and keyword search
 - **Federated Search** - Multiple knowledge bases
@@ -519,12 +541,14 @@ def track_processing_metrics(doc_size, chunks_created, processing_time):
 ## 📚 Technical Resources
 
 ### Documentation
+
 - [AWS Bedrock Developer Guide](https://docs.aws.amazon.com/bedrock/)
 - [LangChain Documentation](https://python.langchain.com/docs/get_started/introduction)
 - [FAISS Documentation](https://faiss.ai/cpp_api/)
 - [RAG Best Practices](https://docs.aws.amazon.com/bedrock/latest/userguide/retrieval-augmented-generation.html)
 
 ### Research Papers
+
 - [Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks](https://arxiv.org/abs/2005.11401)
 - [Dense Passage Retrieval for Open-Domain Question Answering](https://arxiv.org/abs/2004.04906)
 - [FAISS: A Library for Efficient Similarity Search](https://arxiv.org/abs/1702.08734)

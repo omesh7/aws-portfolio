@@ -7,7 +7,7 @@ echo ========================================
 
 set AWS_REGION=ap-south-1
 set AWS_ACCOUNT_ID=982534384941
-set PROJECT_NAME=08-rag-portfolio-chat-aws-portfolio
+set PROJECT_NAME=08-rag-portfolio-chat-2-aws-portfolio
 set ECR_REPO=%PROJECT_NAME%-repo
 set IMAGE_TAG=latest
 

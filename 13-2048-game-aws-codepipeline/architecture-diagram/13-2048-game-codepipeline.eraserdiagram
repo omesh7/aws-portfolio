@@ -1,0 +1,41 @@
+cloud-architecture-diagram
+
+title 2048 Game - AWS CodePipeline CI/CD - PROJECT 13
+
+// Infrastructure Provisioning
+Terraform [icon: terraform, label: "Terraform (IaC)"]
+
+// Source Control
+GitHub [icon: github, label: "GitHub (Source Code)"]
+
+// AWS Infrastructure
+AWS Infrastructure [icon: aws-cloud] {
+  CodePipeline [icon: aws-codepipeline, label: "CodePipeline (CI/CD)"]
+  CodeBuild Backend [icon: aws-codebuild, label: "CodeBuild (Backend)"]
+  CodeBuild Frontend [icon: aws-codebuild, label: "CodeBuild (Frontend)"]
+  ECR Repository [icon: aws-ecr, label: "ECR (Container Registry)"]
+  ECS Fargate [icon: aws-ecs, label: "ECS Fargate (Flask API)"]
+  ALB [icon: aws-elb, label: "Application Load Balancer"]
+  S3 Bucket [icon: aws-s3, label: "S3 (React Frontend)"]
+  CloudWatch [icon: aws-cloudwatch, label: "CloudWatch (Monitoring)"]
+}
+
+// User Interface
+User [icon: user, label: "User"]
+
+// Terraform Deployment
+Terraform -> AWS Infrastructure: terraform apply
+
+// CI/CD Pipeline Flow
+GitHub -> CodePipeline: 1. Code push trigger
+CodePipeline -> CodeBuild Backend: 2. Build Flask API
+CodeBuild Backend -> ECR Repository: 3. Push Docker image
+ECR Repository -> ECS Fargate: 4. Deploy container
+CodePipeline -> CodeBuild Frontend: 5. Build React app
+CodeBuild Frontend -> S3 Bucket: 6. Deploy static site
+
+// Application Flow
+User -> S3 Bucket: 7. Access React frontend
+User -> ALB: 8. API calls to Flask
+ALB -> ECS Fargate: 9. Route to game logic
+ECS Fargate -> CloudWatch: 10. Application logs

@@ -1,0 +1,35 @@
+cloud-architecture-diagram
+
+title Serverless Image Recognition Poem Engine - AI Creative Content - PROJECT 11
+
+// Infrastructure Provisioning
+Terraform [icon: terraform, label: "Terraform (IaC)"]
+
+// AWS Infrastructure
+AWS Infrastructure [icon: aws-cloud] {
+  S3 Bucket [icon: aws-s3, label: "S3 (Image Storage)"]
+  Lambda Upload [icon: aws-lambda, label: "Upload Handler (Python 3.12)"]
+  Lambda Processor [icon: aws-lambda, label: "Image Processor (Python 3.12)"]
+  AWS Rekognition [icon: aws-rekognition, label: "Rekognition (Computer Vision)"]
+  AWS Bedrock [icon: aws-bedrock, label: "Bedrock Titan (Creative AI)"]
+  CloudWatch [icon: aws-cloudwatch, label: "CloudWatch (Monitoring)"]
+  IAM Role [icon: aws-iam, label: "IAM (Permissions)"]
+}
+
+// User Interface
+User [icon: user, label: "User"]
+
+// Terraform Deployment
+Terraform -> AWS Infrastructure: terraform apply
+
+// Creative AI Pipeline
+User -> Lambda Upload: 1. Request presigned URL
+Lambda Upload -> User: 2. Return secure upload URL
+User -> S3 Bucket: 3. Upload image directly
+S3 Bucket -> Lambda Processor: 4. S3 event trigger (uploads/)
+Lambda Processor -> AWS Rekognition: 5. Analyze image labels
+AWS Rekognition -> Lambda Processor: 6. Return detected objects
+Lambda Processor -> AWS Bedrock: 7. Generate creative poem
+AWS Bedrock -> Lambda Processor: 8. Return generated poem
+Lambda Processor -> S3 Bucket: 9. Save poem to S3
+Lambda Processor -> CloudWatch: 10. Log processing metrics
