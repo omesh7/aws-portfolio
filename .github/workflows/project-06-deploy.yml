@@ -100,6 +100,22 @@ jobs:
           echo "🔧 Initializing Terraform..."
           terraform init
       
+      - name: Validate Vercel Token
+        if: inputs.action == 'deploy'
+        run: |
+          if [ -z "${{ secrets.VERCEL_TOKEN }}" ]; then
+            echo "⚠️ VERCEL_TOKEN is empty - deploying AWS only"
+          else
+            echo "✅ VERCEL_TOKEN is set"
+            # Basic token format validation
+            if [[ "${{ secrets.VERCEL_TOKEN }}" =~ ^[A-Za-z0-9_-]+$ ]]; then
+              echo "✅ Token format appears valid"
+            else
+              echo "❌ Token contains invalid characters"
+              exit 1
+            fi
+          fi
+      
       - name: Terraform Validate
         working-directory: 06-smart-resize-images/infrastructure
         run: |
@@ -113,12 +129,17 @@ jobs:
           TF_VAR_vercel_api_token: ${{ secrets.VERCEL_TOKEN }}
         run: |
           echo "🚀 Applying Terraform configuration..."
+          VERCEL_TOKEN="${{ secrets.VERCEL_TOKEN }}"
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "⚠️ Deploying AWS only (no Vercel token)"
+            VERCEL_TOKEN=""
+          fi
           terraform apply -auto-approve \
             -var="environment=ci" \
             -var="lambda_zip_path=lambda-package.zip" \
             -var="project_name=${{ env.PROJECT_NAME }}" \
             -var="aws_region=${{ env.AWS_REGION }}" \
-            -var="vercel_api_token=${{ secrets.VERCEL_TOKEN }}"
+            -var="vercel_api_token=$VERCEL_TOKEN"
       
       - name: Terraform Destroy
         if: inputs.action == 'destroy'
@@ -127,12 +148,16 @@ jobs:
           TF_VAR_vercel_api_token: ${{ secrets.VERCEL_TOKEN }}
         run: |
           echo "🗑️ Destroying Terraform resources..."
+          VERCEL_TOKEN="${{ secrets.VERCEL_TOKEN }}"
+          if [ -z "$VERCEL_TOKEN" ]; then
+            VERCEL_TOKEN=""
+          fi
           terraform destroy -auto-approve \
             -var="environment=ci" \
             -var="lambda_zip_path=lambda-package.zip" \
             -var="project_name=${{ env.PROJECT_NAME }}" \
             -var="aws_region=${{ env.AWS_REGION }}" \
-            -var="vercel_api_token=${{ secrets.VERCEL_TOKEN }}"
+            -var="vercel_api_token=$VERCEL_TOKEN"
       
       - name: Capture Terraform Outputs
         id: outputs
