@@ -11,7 +11,7 @@ on:
         default: "destroy"
 env:
   AWS_REGION: "ap-south-1"
-  PROJECT_NAME: "serverless-image-recog-poem-engine"
+  PROJECT_NAME: "11-serverless-image-recog-poem-engine"
   ENVIRONMENT: "portfolio"
   TERRAFORM_VERSION: "1.12.0"
   PYTHON_VERSION: "3.12"
@@ -114,11 +114,31 @@ jobs:
           echo " Validating Terraform Configuration"
           terraform validate
 
+      - name: Validate Vercel Token
+        run: |
+          if [ -z "${{ secrets.VERCEL_TOKEN }}" ]; then
+            echo "⚠️ VERCEL_TOKEN is empty - deploying AWS only"
+          else
+            echo "✅ VERCEL_TOKEN is set"
+            # Basic token format validation
+            if [[ "${{ secrets.VERCEL_TOKEN }}" =~ ^[A-Za-z0-9_-]+$ ]]; then
+              echo "✅ Token format appears valid"
+            else
+              echo "❌ Token contains invalid characters"
+              exit 1
+            fi
+          fi
+
       - name: Terraform Apply
         if: inputs.action == 'deploy'
         working-directory: ${{env.PROJECT_PATH}}/infrastructure
         run: |
           echo "🚀 Applying Terraform configuration..."
+          VERCEL_TOKEN="${{ secrets.VERCEL_TOKEN }}"
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "⚠️ Deploying AWS only (no Vercel token)"
+            VERCEL_TOKEN=""
+          fi
           terraform apply -auto-approve \
             -var="environment=ci" \
             -var="aws_region=${{env.AWS_REGION}}" \
@@ -126,7 +146,7 @@ jobs:
             -var="lambda_uploads_zip_path=lambda_upload.zip" \
             -var="lambda_image_recog_zip_path=lambda_image_recog.zip" \
             -var="lambda_get_poem_zip_path=lambda_get_poem.zip" \ 
-            -var="vercel_api_token=${{secrets.VERCEL_TOKEN}}"
+            -var="vercel_api_token=$VERCEL_TOKEN"
   destroy-infrastructure:
     name: Terraform Init and Destroy
     runs-on: ubuntu-latest
@@ -168,6 +188,11 @@ jobs:
         working-directory: ${{env.PROJECT_PATH}}/infrastructure
         run: |
           echo "🗑️ Destroying all Infrastructure..."
+          VERCEL_TOKEN="${{ secrets.VERCEL_TOKEN }}"
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "⚠️ Deploying AWS only (no Vercel token)"
+            VERCEL_TOKEN=""
+          fi
           terraform destroy -auto-approve \
            -var="environment=ci" \
            -var="aws_region=${{env.AWS_REGION}}" \
@@ -175,4 +200,4 @@ jobs:
            -var="lambda_uploads_zip_path=lambda_upload.zip" \
            -var="lambda_image_recog_zip_path=lambda_image_recog.zip" \
            -var="lambda_get_poem_zip_path=lambda_get_poem.zip" \
-           -var="vercel_api_token=${{secrets.VERCEL_TOKEN}}"
+           -var="vercel_api_token=$VERCEL_TOKEN"
