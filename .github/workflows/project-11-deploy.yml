@@ -145,7 +145,7 @@ jobs:
             -var="project_name=${{env.PROJECT_NAME}}" \
             -var="lambda_uploads_zip_path=lambda_upload.zip" \
             -var="lambda_image_recog_zip_path=lambda_image_recog.zip" \
-            -var="lambda_get_poem_zip_path=lambda_get_poem.zip" \ 
+            -var="lambda_get_poem_zip_path=lambda_get_poem.zip" \
             -var="vercel_api_token=$VERCEL_TOKEN"
   destroy-infrastructure:
     name: Terraform Init and Destroy
