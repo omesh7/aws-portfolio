@@ -101,7 +101,6 @@ jobs:
     name: Build Lambda Package
     runs-on: ubuntu-latest
     if: inputs.action != 'destroy'
-
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -111,13 +110,13 @@ jobs:
         with:
           python-version: "3.11"
 
-      - name: Package Lambda Function
+      - name: Zip Lambda
         working-directory: 10-KInesis-ECR-ML/lambda
         run: |
-          echo "📦 Creating Lambda deployment package..."
-          zip -r lambda-package.zip . -x "*.git*" "*.md" "*.txt" "__pycache__/*"
+          echo "📦 Zipping Lambda code..."
+          zip -r lambda-package.zip . -x "*.git*" "*.md" "*.txt" "__pycache__/*" "*.pyc"
           ls -la lambda-package.zip
-          echo "✅ Lambda package created successfully"
+          echo "✅ Lambda package created: $(ls -lh lambda-package.zip | awk '{print $5}')"
 
       - name: Upload Lambda Package
         uses: actions/upload-artifact@v4
@@ -157,10 +156,11 @@ jobs:
         if: inputs.action == 'destroy'
         working-directory: 10-KInesis-ECR-ML/infrastructure
         run: |
-          echo "Creating dummy lambda package for destroy operation..."
-          echo 'def lambda_handler(event, context): return {}' > lambda_function.py
+          echo "📦 Creating dummy lambda package for destroy..."
+          echo 'def lambda_handler(event, context): return {"status": "dummy"}' > lambda_function.py
           zip lambda-package.zip lambda_function.py
           rm lambda_function.py
+          echo "✅ Dummy package created"
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -190,7 +190,8 @@ jobs:
             -var="project_name=${{ env.PROJECT_NAME }}" \
             -var="aws_region=${{ env.AWS_REGION }}" \
             -var="ecr_repository_url=${{ needs.setup-ecr.outputs.ecr_repository_url }}" \
-            -var="image_version=${{ env.IMAGE_TAG }}"
+            -var="image_version=${{ env.IMAGE_TAG }}" \
+            -var="lambda_kinesis_zip_path=lambda-package.zip"
 
       - name: Terraform Apply
         if: inputs.action == 'apply'
@@ -202,7 +203,8 @@ jobs:
             -var="project_name=${{ env.PROJECT_NAME }}" \
             -var="aws_region=${{ env.AWS_REGION }}" \
             -var="ecr_repository_url=${{ needs.setup-ecr.outputs.ecr_repository_url }}" \
-            -var="image_version=${{ env.IMAGE_TAG }}"
+            -var="image_version=${{ env.IMAGE_TAG }}" \
+            -var="lambda_kinesis_zip_path=lambda-package.zip"
 
       - name: Terraform Destroy
         if: inputs.action == 'destroy'
@@ -210,13 +212,14 @@ jobs:
         run: |
           echo "🗑️ Destroying Terraform resources..."
           # Get ECR URL for destroy (if exists)
-          ECR_URL=$(aws ecr describe-repositories --repository-names ${{ env.ECR_REPOSITORY }} --region ${{ env.AWS_REGION }} --query 'repositories[0].repositoryUri' --output text 2>/dev/null || echo "dummy-ecr-url")
+          ECR_URL=$(aws ecr describe-repositories --repository-names ${{ env.ECR_REPOSITORY }} --region ${{ env.AWS_REGION }} --query 'repositories[0].repositoryUri' --output text 2>/dev/null || echo "dummy.dkr.ecr.ap-south-1.amazonaws.com/dummy")
           terraform destroy -auto-approve \
             -var="environment=ci" \
             -var="project_name=${{ env.PROJECT_NAME }}" \
             -var="aws_region=${{ env.AWS_REGION }}" \
             -var="ecr_repository_url=$ECR_URL" \
-            -var="image_version=dummy"
+            -var="image_version=dummy" \
+            -var="lambda_kinesis_zip_path=lambda-package.zip"
 
       - name: Capture Terraform Outputs
         id: outputs
@@ -278,9 +281,15 @@ jobs:
           ALB_DNS="${{ needs.terraform-infrastructure.outputs.alb_dns_name }}"
           if [ ! -z "$ALB_DNS" ]; then
             echo "🧪 Testing ALB at: http://$ALB_DNS"
-            # Wait for ALB to be ready
+            echo "⏳ Waiting for ALB to be ready (60s)..."
             sleep 60
-            curl -f "http://$ALB_DNS" || echo "ALB not ready yet"
+            
+            # Test ALB health
+            if curl -f -s "http://$ALB_DNS" > /dev/null; then
+              echo "✅ ALB is responding"
+            else
+              echo "⚠️ ALB not ready yet (this is normal for new deployments)"
+            fi
           else
             echo "⚠️ No ALB DNS name found"
           fi
@@ -290,8 +299,16 @@ jobs:
           STREAM_NAME="${{ needs.terraform-infrastructure.outputs.kinesis_stream_name }}"
           if [ ! -z "$STREAM_NAME" ]; then
             echo "🧪 Testing Kinesis stream: $STREAM_NAME"
-            aws kinesis describe-stream --stream-name "$STREAM_NAME" --region ${{ env.AWS_REGION }}
-            echo "✅ Kinesis stream is active"
+            
+            # Check stream status
+            STREAM_STATUS=$(aws kinesis describe-stream --stream-name "$STREAM_NAME" --region ${{ env.AWS_REGION }} --query 'StreamDescription.StreamStatus' --output text)
+            echo "📊 Stream Status: $STREAM_STATUS"
+            
+            if [ "$STREAM_STATUS" = "ACTIVE" ]; then
+              echo "✅ Kinesis stream is active and ready"
+            else
+              echo "⚠️ Kinesis stream status: $STREAM_STATUS"
+            fi
           else
             echo "⚠️ No Kinesis stream name found"
           fi
