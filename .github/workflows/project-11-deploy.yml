@@ -20,6 +20,7 @@ env:
 jobs:
   package-lambda-functions:
     name: Package both Lambda functions into zip files
+    if: inputs.action == 'deploy'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -60,6 +61,7 @@ jobs:
 
   deploy-infrastructure:
     name: Deploying Infrastructure using Terraform
+    if: inputs.action == 'deploy'
     needs: package-lambda-functions
     runs-on: ubuntu-latest
     steps:
@@ -74,21 +76,21 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Download Lambda Artifacts(image-recog)
-        if: inputs.action != 'destroy'
+
         uses: actions/download-artifact@v4
         with:
           name: lambda_image_recog_package
           path: ${{env.PROJECT_PATH}}/
 
       - name: Download Lambda Artifacts(upload)
-        if: inputs.action != 'destroy'
+
         uses: actions/download-artifact@v4
         with:
           name: lambda_upload_package
           path: ${{env.PROJECT_PATH}}/
 
       - name: Download Lambda Artifacts(get-poem)
-        if: inputs.action != 'destroy'
+
         uses: actions/download-artifact@v4
         with:
           name: lambda_get_poem_package
