@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-screen;
+  }
+}
+
+@layer components {
+  .glass-effect {
+    @apply bg-white/80 backdrop-blur-sm border border-white/20 shadow-xl;
+  }
+  
+  .poem-text {
+    @apply text-gray-700 leading-relaxed font-medium italic;
+  }
+}

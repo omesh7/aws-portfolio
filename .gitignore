@@ -97,3 +97,7 @@ terraform-init-all.bat
 delete-tfstate.bat
 
 **/infrastructure-local
+
+**/other
+
+.github/own

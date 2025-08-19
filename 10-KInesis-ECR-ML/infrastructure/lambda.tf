@@ -47,23 +47,34 @@ resource "aws_iam_role_policy_attachment" "lambda_attach" {
   policy_arn = aws_iam_policy.lambda_policy.arn
 }
 
+resource "aws_cloudwatch_log_group" "lambda_logs" {
+  name              = "/aws/lambda/${var.project_name}-kinesis-consumer"
+  retention_in_days = 7
+}
+
 resource "aws_lambda_function" "kinesis_consumer" {
-  function_name = "${var.project_name}-kinesis-consumer"
-  role          = aws_iam_role.lambda_exec.arn
-  handler       = "lambda_function.lambda_handler"
-  runtime       = "python3.12"
-  filename      = data.archive_file.lambda_zip.output_path
+  function_name    = "${var.project_name}-kinesis-consumer"
+  role             = aws_iam_role.lambda_exec.arn
+  source_code_hash = local.lambda_kinesis_source_hash
+  filename         = local.lambda_kinesis_filename
+  handler          = "lambda_function.lambda_handler"
+  runtime          = "python3.12"
+  timeout          = 60
+  
+  environment {
+    variables = {
+      DYNAMODB_TABLE = aws_dynamodb_table.anomaly_data.name
+    }
+  }
+  
   lifecycle {
     create_before_destroy = true
   }
+  
+  depends_on = [aws_cloudwatch_log_group.lambda_logs]
 }
 
 
-data "archive_file" "lambda_zip" {
-  type        = "zip"
-  source_dir  = "${path.module}/../lambda"
-  output_path = "${path.module}/../lambda_10_project.zip"
-}
 
 resource "aws_lambda_event_source_mapping" "kinesis_trigger" {
   event_source_arn  = aws_kinesis_stream.anomaly_stream.arn
