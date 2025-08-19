@@ -19,7 +19,7 @@ env:
 
 jobs:
   package-lambda-functions:
-    name: Package both Lambda functions into zip files
+    name: Package Lambda functions into zip files
     if: inputs.action == 'deploy'
     runs-on: ubuntu-latest
     steps:
@@ -76,25 +76,22 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Download Lambda Artifacts(image-recog)
-
         uses: actions/download-artifact@v4
         with:
           name: lambda_image_recog_package
-          path: ${{env.PROJECT_PATH}}/
+          path: ${{env.PROJECT_PATH}}/infrastructure/
 
       - name: Download Lambda Artifacts(upload)
-
         uses: actions/download-artifact@v4
         with:
           name: lambda_upload_package
-          path: ${{env.PROJECT_PATH}}/
+          path: ${{env.PROJECT_PATH}}/infrastructure/
 
       - name: Download Lambda Artifacts(get-poem)
-
         uses: actions/download-artifact@v4
         with:
           name: lambda_get_poem_package
-          path: ${{env.PROJECT_PATH}}/
+          path: ${{env.PROJECT_PATH}}/infrastructure/
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
