@@ -1,0 +1,5 @@
+# Lambda Function URL for image uploads
+VITE_API_URL=https://your-lambda-function-url.lambda-url.ap-south-1.on.aws/
+
+# S3 Bucket name for polling results (optional)
+VITE_BUCKET_NAME=your-bucket-name

@@ -22,18 +22,43 @@ def lambda_handler(event, context):
             logger.warning("No fileName in request")
             return respond(400, {"message": "fileName required"})
 
-        key = f"uploads/{fname}"
+        # Generate unique random poem ID
+        import uuid
+        poem_id = str(uuid.uuid4())[:8]  # Short unique ID
+        
+        key = f"uploads/{poem_id}_{fname}"
         post = s3.generate_presigned_post(
             Bucket=BUCKET,
             Key=key,
-            Fields={"Content-Type": "image/jpeg"},
-            Conditions=[{"Content-Type": "image/jpeg"}],
-            ExpiresIn=60,
+            Fields={
+                "Content-Type": "image/jpeg",
+                "x-amz-meta-poemid": poem_id
+            },
+            Conditions=[
+                {"Content-Type": "image/jpeg"},
+                ["content-length-range", 0, 5242880],  # 5MB max
+                ["starts-with", "$x-amz-meta-poemid", ""]
+            ],
+            ExpiresIn=300,  # 5 minutes
         )
+        
+        # Use regional S3 endpoint to avoid redirects
+        if "s3.amazonaws.com" in post["url"]:
+            post["url"] = post["url"].replace(
+                "s3.amazonaws.com", 
+                "s3.ap-south-1.amazonaws.com"
+            )
         logger.info("Presigned POST created for key %s", key)
 
+        logger.info("Generated poemId: %s for file: %s", poem_id, fname)
+        
         return respond(
-            200, {"uploadUrl": post["url"], "fields": post["fields"], "key": key}
+            200, {
+                "uploadUrl": post["url"], 
+                "fields": post["fields"], 
+                "key": key,
+                "poemId": poem_id
+            }
         )
 
     except ClientError as e:

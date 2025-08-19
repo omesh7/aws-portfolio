@@ -162,16 +162,24 @@ resource "aws_iam_role_policy_attachment" "exec_attach" {
 }
 
 
-resource "aws_iam_role_policy_attachment" "ecs_attach_kinesis_write" {
-  role       = aws_iam_role.ecs_task_execution.name
-  policy_arn = aws_iam_policy.ecs_kinesis_write.arn
-}
+
 
 ######################################################################
 # ECS Cluster, Task Definition, and Service
 ######################################################################
 resource "aws_ecs_cluster" "cluster" {
   name = "${var.project_name}-cluster"
+}
+
+resource "aws_iam_role" "ecs_task_role" {
+  name                  = "${var.project_name}-task-role"
+  assume_role_policy    = data.aws_iam_policy_document.assume_for_ecs.json
+  force_detach_policies = true
+}
+
+resource "aws_iam_role_policy_attachment" "task_attach_kinesis_write" {
+  role       = aws_iam_role.ecs_task_role.name
+  policy_arn = aws_iam_policy.ecs_kinesis_write.arn
 }
 
 resource "aws_ecs_task_definition" "task" {
@@ -181,6 +189,7 @@ resource "aws_ecs_task_definition" "task" {
   cpu                      = "256"
   memory                   = "512"
   execution_role_arn       = aws_iam_role.ecs_task_execution.arn
+  task_role_arn            = aws_iam_role.ecs_task_role.arn
 
   container_definitions = jsonencode([{
     name  = "app"
@@ -198,6 +207,11 @@ resource "aws_ecs_task_definition" "task" {
       }
     }
   }])
+}
+
+resource "aws_cloudwatch_log_group" "ecs_logs" {
+  name              = "/ecs/${var.project_name}"
+  retention_in_days = 7
 }
 
 resource "aws_ecs_service" "service" {
@@ -220,5 +234,5 @@ resource "aws_ecs_service" "service" {
     container_port   = var.app_port
   }
 
-  depends_on = [aws_lb_listener.listener]
+  depends_on = [aws_lb_listener.listener, aws_cloudwatch_log_group.ecs_logs]
 }
