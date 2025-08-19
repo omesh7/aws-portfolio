@@ -7,7 +7,7 @@ variable "aws_region" {
 variable "project_name" {
   description = "Name of the project"
   type        = string
-  default     = "10-kinesis-ecr-ml-ci"
+  default     = "10-kinesis-ecr-ml"
 }
 
 variable "environment" {
@@ -66,4 +66,10 @@ variable "tags" {
     Project     = "kinesis-ecr-10-app"
     project-no  = "10"
   }
+}
+
+variable "lambda_kinesis_zip_path" {
+  description = "Path to the Kinesis Lambda zip file"
+  type        = string
+
 }

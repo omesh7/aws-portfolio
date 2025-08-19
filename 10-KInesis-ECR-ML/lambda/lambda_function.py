@@ -2,9 +2,11 @@ import json
 import boto3
 import base64
 import uuid
+import os
 
 dynamodb = boto3.resource("dynamodb")
-table = dynamodb.Table("anomaly-stream-records")
+table_name = os.environ.get('DYNAMODB_TABLE', 'anomaly-stream-records')
+table = dynamodb.Table(table_name)
 
 
 def lambda_handler(event, context):

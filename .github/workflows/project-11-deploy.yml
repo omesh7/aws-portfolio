@@ -1,0 +1,174 @@
+name: Project 11 - Serverless Image Recog Poem Engine
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Action to Perform"
+        required: true
+        type: choice
+        options: ["deploy", "destroy"]
+        default: "destroy"
+env:
+  AWS_REGION: "ap-south-1"
+  PROJECT_NAME: "serverless-image-recog-poem-engine"
+  ENVIRONMENT: "portfolio"
+  TERRAFORM_VERSION: "1.12.0"
+  PYTHON_VERSION: "3.12"
+  PROJECT_PATH: "11-serverless-image-recog-poem-engine"
+
+jobs:
+  package-lambda-functions:
+    name: Package both Lambda functions into zip files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Zip Lambda Functions
+        id: lambda-zips-id
+        working-directory: ${{env.PROJECT_PATH}}/lambda
+        run: |
+          echo "Zipping Up Image-recog lambda"
+          zip -r lambda_image_recog.zip image_recog/
+          echo "Zipping Up Upload lambda"
+          zip -r lambda_upload.zip upload/
+          echo "Zipping Up Get-poem lambda"
+          zip -r lambda_get_poem.zip get_poem/
+          echo "Lambda Packages Created Successfully"
+
+      - name: Upload Lambda Artifacts(upload)
+        uses: actions/upload-artifact@v4
+        with:
+          name: lambda_upload_package
+          path: ${{env.PROJECT_PATH}}/lambda/lambda_upload.zip
+          retention-days: 1
+
+      - name: Upload Lambda Artifacts(image-recog)
+        uses: actions/upload-artifact@v4
+        with:
+          name: lambda_image_recog_package
+          path: ${{env.PROJECT_PATH}}/lambda/lambda_image_recog.zip
+          retention-days: 1
+
+      - name: Upload Lambda Artifacts(get-poem)
+        uses: actions/upload-artifact@v4
+        with:
+          name: lambda_get_poem_package
+          path: ${{env.PROJECT_PATH}}/lambda/lambda_get_poem.zip
+          retention-days: 1
+
+  deploy-infrastructure:
+    name: Deploying Infrastructure using Terraform
+    needs: package-lambda-functions
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Download Lambda Artifacts(image-recog)
+        if: inputs.action != 'destroy'
+        uses: actions/download-artifact@v4
+        with:
+          name: lambda_image_recog_package
+          path: ${{env.PROJECT_PATH}}/
+
+      - name: Download Lambda Artifacts(upload)
+        if: inputs.action != 'destroy'
+        uses: actions/download-artifact@v4
+        with:
+          name: lambda_upload_package
+          path: ${{env.PROJECT_PATH}}/
+
+      - name: Download Lambda Artifacts(get-poem)
+        if: inputs.action != 'destroy'
+        uses: actions/download-artifact@v4
+        with:
+          name: lambda_get_poem_package
+          path: ${{env.PROJECT_PATH}}/
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{env.TERRAFORM_VERSION}}
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        working-directory: ${{env.PROJECT_PATH}}/infrastructure
+        run: |
+          echo "🔧 Initializing Terraform..."
+          terraform init -input=false
+
+      - name: Terraform Validate
+        working-directory: ${{env.PROJECT_PATH}}/infrastructure
+        run: |
+          echo " Validating Terraform Configuration"
+          terraform validate
+
+      - name: Terraform Apply
+        if: inputs.action == 'deploy'
+        working-directory: ${{env.PROJECT_PATH}}/infrastructure
+        run: |
+          echo "🚀 Applying Terraform configuration..."
+          terraform apply -auto-approve \
+            -var="environment=ci" \
+            -var="aws_region=${{env.AWS_REGION}}" \
+            -var="project_name=${{env.PROJECT_NAME}}" \
+            -var="lambda_uploads_zip_path=lambda_upload.zip" \
+            -var="lambda_image_recog_zip_path=lambda_image_recog.zip" \
+            -var="lambda_get_poem_zip_path=lambda_get_poem.zip"
+  destroy-infrastructure:
+    name: Terraform Init and Destroy
+    runs-on: ubuntu-latest
+    if: inputs.action == 'destroy'
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Creating Dummy Zip Packages if  Doesnt Exists
+        if: inputs.action == 'destroy'
+        working-directory: ${{env.PROJECT_PATH}}/infrastructure
+        run: |
+          echo "Creating Dummy lambda to destroy"
+          echo 'def lambda_handler(event,context): return {}' > lambda_function.py
+          zip -r lambda_upload.zip lambda_function.py
+          zip -r lambda_image_recog.zip lambda_function.py
+          zip -r lambda_get_poem.zip lambda_function.py
+          rm lambda_function.py
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{env.TERRAFORM_VERSION}}
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        working-directory: ${{env.PROJECT_PATH}}/infrastructure
+        run: |
+          echo "🔧 Initializing Terraform for destroy..."
+          terraform init -input=false
+
+      - name: Terraform Destroy
+        working-directory: ${{env.PROJECT_PATH}}/infrastructure
+        run: |
+          echo "🗑️ Destroying all Infrastructure..."
+          terraform destroy -auto-approve \
+           -var="environment=ci" \
+           -var="aws_region=${{env.AWS_REGION}}" \
+           -var="project_name=${{env.PROJECT_NAME}}" \
+           -var="lambda_uploads_zip_path=lambda_upload.zip" \
+           -var="lambda_image_recog_zip_path=lambda_image_recog.zip" \
+           -var="lambda_get_poem_zip_path=lambda_get_poem.zip"
