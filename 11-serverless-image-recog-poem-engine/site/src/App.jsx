@@ -61,8 +61,13 @@ function App() {
       
       if (!response.ok) {
         const errorText = await response.text()
-        console.error('Upload API error:', errorText)
-        throw new Error(`Failed to get upload URL: ${response.status} ${errorText}`)
+        console.error('Upload API error:', {
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries()),
+          body: errorText
+        })
+        throw new Error(`API Error ${response.status}: ${errorText || response.statusText}`)
       }
 
       const { uploadUrl, fields, key, poemId } = await response.json()
