@@ -80,11 +80,6 @@ def lambda_handler(event, context):
 def respond(status, body):
     return {
         "statusCode": status,
-        "headers": {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type, Accept, Authorization"
-        },
+    
         "body": json.dumps(body),
     }
