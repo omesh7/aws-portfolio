@@ -31,11 +31,11 @@ jobs:
         working-directory: ${{env.PROJECT_PATH}}/lambda
         run: |
           echo "Zipping Up Image-recog lambda"
-          zip -r lambda_image_recog.zip image_recog/
+          cd image_recog && zip -r ../lambda_image_recog.zip . && cd ..
           echo "Zipping Up Upload lambda"
-          zip -r lambda_upload.zip upload/
+          cd upload && zip -r ../lambda_upload.zip . && cd ..
           echo "Zipping Up Get-poem lambda"
-          zip -r lambda_get_poem.zip get_poem/
+          cd get_poem && zip -r ../lambda_get_poem.zip . && cd ..
           echo "Lambda Packages Created Successfully"
 
       - name: Upload Lambda Artifacts(upload)
