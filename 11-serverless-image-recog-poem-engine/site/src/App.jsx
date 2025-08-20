@@ -16,6 +16,8 @@ function App() {
   const [poem, setPoem] = useState('')
   const [labels, setLabels] = useState([])
   const [error, setError] = useState('')
+  const [isProcessing, setIsProcessing] = useState(false)
+  const [cancelProcessing, setCancelProcessing] = useState(false)
 
   // Check if environment variables are missing
   if (!UPLOADS_API_URL || !GET_POEM_API_URL) {
@@ -44,6 +46,8 @@ function App() {
     try {
       setError('')
       setCurrentStep(1)
+      setIsProcessing(true)
+      setCancelProcessing(false)
       setUploadedImage(URL.createObjectURL(file))
 
       // Get presigned URL
@@ -92,6 +96,7 @@ function App() {
     } catch (err) {
       setError(err.message)
       setCurrentStep(0)
+      setIsProcessing(false)
     }
   }
 
@@ -101,7 +106,15 @@ function App() {
 
     // Wait 8 seconds first (processing usually takes 8-12 seconds)
     console.log('Waiting 8 seconds for processing to complete...')
-    await new Promise(resolve => setTimeout(resolve, 8000))
+    
+    // Wait with cancellation support
+    for (let i = 0; i < 80; i++) { // 8 seconds = 80 * 100ms
+      if (cancelProcessing) {
+        console.log('Processing cancelled by user')
+        return
+      }
+      await new Promise(resolve => setTimeout(resolve, 100))
+    }
 
     const poll = async () => {
       try {
@@ -115,6 +128,7 @@ function App() {
           setLabels(data.labels || [])
           setPoem(data.poem || 'No poem generated')
           setCurrentStep(3)
+          setIsProcessing(false)
           return
         }
 
@@ -123,14 +137,22 @@ function App() {
           throw new Error(`Server error: ${data.error || 'Unknown error'}`)
         }
 
+        if (cancelProcessing) {
+          console.log('Polling cancelled by user')
+          return
+        }
+        
         if (attempts < maxAttempts) {
           setTimeout(poll, 1000) // Poll every second
         } else {
           throw new Error('Timeout waiting for poem generation')
         }
       } catch (err) {
-        setError(err.message)
-        setCurrentStep(0)
+        if (!cancelProcessing) {
+          setError(err.message)
+          setCurrentStep(0)
+        }
+        setIsProcessing(false)
       }
     }
 
@@ -143,6 +165,15 @@ function App() {
     setPoem('')
     setLabels([])
     setError('')
+    setIsProcessing(false)
+    setCancelProcessing(false)
+  }
+
+  const stopProcessing = () => {
+    setCancelProcessing(true)
+    setIsProcessing(false)
+    setCurrentStep(0)
+    setError('Processing stopped by user')
   }
 
   return (
@@ -211,10 +242,22 @@ function App() {
                 <h3 className="text-xl font-semibold text-gray-800 mb-2">
                   {steps[currentStep].description}
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-gray-600 mb-4">
                   {currentStep === 1 && "Our AI is analyzing the visual elements in your image..."}
                   {currentStep === 2 && "Creating a beautiful poem inspired by what we found..."}
                 </p>
+                
+                {isProcessing && (
+                  <button
+                    onClick={stopProcessing}
+                    className="px-6 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors duration-200 flex items-center gap-2 mx-auto"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    Stop Processing
+                  </button>
+                )}
               </motion.div>
             )}
 
