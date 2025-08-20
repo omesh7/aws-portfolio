@@ -14,8 +14,11 @@ BUCKET = os.environ["BUCKET_NAME"]  # Must be set in Lambda env
 
 def lambda_handler(event, context):
     logger.info("Event: %s", json.dumps(event))
-    logger.info("Environment variables: BUCKET_NAME=%s", os.environ.get("BUCKET_NAME", "NOT_SET"))
-    
+    logger.info(
+        "Environment variables: BUCKET_NAME=%s",
+        os.environ.get("BUCKET_NAME", "NOT_SET"),
+    )
+
     # Handle CORS preflight
     if event.get("requestContext", {}).get("http", {}).get("method") == "OPTIONS":
         return respond(200, {"message": "OK"})
@@ -29,41 +32,39 @@ def lambda_handler(event, context):
 
         # Generate unique random poem ID
         import uuid
+
         poem_id = str(uuid.uuid4())[:8]  # Short unique ID
-        
+
         key = f"uploads/{poem_id}_{fname}"
         post = s3.generate_presigned_post(
             Bucket=BUCKET,
             Key=key,
-            Fields={
-                "Content-Type": "image/jpeg",
-                "x-amz-meta-poemid": poem_id
-            },
+            Fields={"Content-Type": "image/jpeg", "x-amz-meta-poemid": poem_id},
             Conditions=[
                 {"Content-Type": "image/jpeg"},
                 ["content-length-range", 0, 5242880],  # 5MB max
-                ["starts-with", "$x-amz-meta-poemid", ""]
+                ["starts-with", "$x-amz-meta-poemid", ""],
             ],
             ExpiresIn=300,  # 5 minutes
         )
-        
+
         # Use regional S3 endpoint to avoid redirects
         if "s3.amazonaws.com" in post["url"]:
             post["url"] = post["url"].replace(
-                "s3.amazonaws.com", 
-                "s3.ap-south-1.amazonaws.com"
+                "s3.amazonaws.com", "s3.ap-south-1.amazonaws.com"
             )
         logger.info("Presigned POST created for key %s", key)
 
         logger.info("Generated poemId: %s for file: %s", poem_id, fname)
-        
+
         return respond(
-            200, {
-                "uploadUrl": post["url"], 
-                "fields": post["fields"], 
+            200,
+            {
+                "uploadUrl": post["url"],
+                "fields": post["fields"],
                 "key": key,
-                "poemId": poem_id
-            }
+                "poemId": poem_id,
+            },
         )
 
     except ClientError as e:
@@ -80,11 +81,5 @@ def lambda_handler(event, context):
 def respond(status, body):
     return {
         "statusCode": status,
-        "headers": {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-            "Access-Control-Allow-Headers": "Content-Type, Accept, Authorization"
-        },
         "body": json.dumps(body),
     }
