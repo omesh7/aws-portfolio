@@ -99,9 +99,9 @@ function App() {
     const maxAttempts = 20 // 20 polling attempts max
     let attempts = 0
 
-    // Wait 8 seconds first (processing usually takes 8-12 seconds)
-    console.log('Waiting 8 seconds for processing to complete...')
-    await new Promise(resolve => setTimeout(resolve, 8000))
+    // Wait 15 seconds first (processing takes 8-12 seconds + cold start)
+    console.log('Waiting 15 seconds for processing to complete (including cold start)...')
+    await new Promise(resolve => setTimeout(resolve, 15000))
 
     const poll = async () => {
       try {
