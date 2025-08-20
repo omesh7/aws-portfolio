@@ -131,11 +131,6 @@ jobs:
         working-directory: ${{env.PROJECT_PATH}}/infrastructure
         run: |
           echo "🚀 Applying Terraform configuration..."
-          VERCEL_TOKEN="${{ secrets.VERCEL_TOKEN }}"
-          if [ -z "$VERCEL_TOKEN" ]; then
-            echo "⚠️ Deploying AWS only (no Vercel token)"
-            VERCEL_TOKEN=""
-          fi
           terraform apply -auto-approve \
             -var="environment=ci" \
             -var="aws_region=${{env.AWS_REGION}}" \
@@ -143,7 +138,7 @@ jobs:
             -var="lambda_uploads_zip_path=lambda_upload.zip" \
             -var="lambda_image_recog_zip_path=lambda_image_recog.zip" \
             -var="lambda_get_poem_zip_path=lambda_get_poem.zip" \
-            -var="vercel_api_token=$VERCEL_TOKEN"
+            -var="vercel_api_token=${{ secrets.VERCEL_TOKEN }}"
   destroy-infrastructure:
     name: Terraform Init and Destroy
     runs-on: ubuntu-latest
