@@ -16,6 +16,10 @@ table = dynamodb.Table(TABLE_NAME)
 def lambda_handler(event, context):
     logger.info("Get poem request: %s", json.dumps(event))
     
+    # Handle CORS preflight
+    if event.get("requestContext", {}).get("http", {}).get("method") == "OPTIONS":
+        return respond(200, {"message": "OK"})
+    
     try:
 
         # Extract poem ID from query parameters
@@ -65,7 +69,10 @@ def respond(status, body):
     return {
         "statusCode": status,
         "headers": {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Accept, Authorization"
         },
         "body": json.dumps(body),
     }
