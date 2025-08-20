@@ -30,6 +30,7 @@ variable "lambda_image_recog_zip_path" {
   default     = ""
 }
 
+
 variable "lambda_get_poem_zip_path" {
   description = "Path to get poem lambda zip file"
   type        = string

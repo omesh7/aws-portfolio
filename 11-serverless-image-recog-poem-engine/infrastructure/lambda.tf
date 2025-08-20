@@ -96,8 +96,8 @@ resource "aws_lambda_function" "image_recog" {
 
 resource "aws_lambda_function" "get_poem" {
   function_name    = "${var.project_name}-get-poem-handler"
-  filename         = local.use_local_archive ? data.archive_file.get_poem_lambda[0].output_path : var.lambda_get_poem_zip_path
-  source_code_hash = local.use_local_archive ? data.archive_file.get_poem_lambda[0].output_base64sha256 : (fileexists(var.lambda_get_poem_zip_path) ? filebase64sha256(var.lambda_get_poem_zip_path) : "")
+  filename         = local.lambda_get_poem_filename
+  source_code_hash = local.lambda_get_poem_source_hash
   handler          = "lambda_function.lambda_handler"
   runtime          = "python3.12"
   role             = aws_iam_role.get_poem_lambda_role.arn
