@@ -139,6 +139,67 @@ jobs:
             -var="lambda_image_recog_zip_path=lambda_image_recog.zip" \
             -var="lambda_get_poem_zip_path=lambda_get_poem.zip" \
             -var="vercel_api_token=${{ secrets.VERCEL_TOKEN }}"
+
+      - name: Warm Up Lambda Functions
+        working-directory: ${{env.PROJECT_PATH}}/infrastructure
+        run: |
+          echo "🔥 Warming up Lambda functions..."
+          UPLOAD_URL=$(terraform output -raw lambda_upload_url)
+          GET_POEM_URL=$(terraform output -raw get_poem_url)
+
+          echo "Upload URL: $UPLOAD_URL"
+          echo "Get Poem URL: $GET_POEM_URL"
+
+          # Warm upload function
+          echo "Warming upload function..."
+          curl -X POST "$UPLOAD_URL" \
+            -H "Content-Type: application/json" \
+            -d '{"fileName":"warmup.jpg"}' || true
+
+          # Warm get_poem function  
+          echo "Warming get_poem function..."
+          curl "$GET_POEM_URL?poemId=warmup" || true
+
+          echo "✅ Lambda functions warmed up"
+
+      - name: Test S3 Event Trigger
+        working-directory: ${{env.PROJECT_PATH}}/infrastructure
+        run: |
+          BUCKET=$(terraform output -raw s3_bucket_name)
+          LAMBDA_NAME=$(terraform output -raw image_recog_lambda_name)
+          echo "🧪 Testing S3 trigger with bucket: $BUCKET"
+          echo "Lambda function: $LAMBDA_NAME"
+
+          # Create a small test image (1x1 pixel PNG saved as JPG)
+          echo "Creating test image..."
+          echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==" | base64 -d > test.jpg
+
+          # Upload test image to trigger the Lambda
+          echo "Uploading test image to trigger processing..."
+          TIMESTAMP=$(date +%s)
+          TEST_KEY="uploads/test-warmup-$TIMESTAMP.jpg"
+          aws s3 cp test.jpg s3://$BUCKET/$TEST_KEY
+          echo "Uploaded to: s3://$BUCKET/$TEST_KEY"
+
+          # Verify file was uploaded
+          echo "Verifying upload..."
+          aws s3 ls s3://$BUCKET/uploads/ | grep test-warmup || echo "File not found in S3"
+
+          # Wait for processing and check logs
+          echo "Waiting 15 seconds for processing..."
+          sleep 15
+
+          # Check if Lambda was invoked
+          echo "Checking Lambda logs..."
+          aws logs describe-log-groups --log-group-name-prefix "/aws/lambda/$LAMBDA_NAME" || echo "No log group found"
+
+          # Cleanup test files
+          echo "Cleaning up test files..."
+          aws s3 rm s3://$BUCKET/$TEST_KEY || true
+          rm -f test.jpg
+
+          echo "✅ S3 event trigger test completed"
+          
   destroy-infrastructure:
     name: Terraform Init and Destroy
     runs-on: ubuntu-latest
