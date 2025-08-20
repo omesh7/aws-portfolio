@@ -14,6 +14,11 @@ BUCKET = os.environ["BUCKET_NAME"]  # Must be set in Lambda env
 
 def lambda_handler(event, context):
     logger.info("Event: %s", json.dumps(event))
+    logger.info("Environment variables: BUCKET_NAME=%s", os.environ.get("BUCKET_NAME", "NOT_SET"))
+    
+    # Handle CORS preflight
+    if event.get("requestContext", {}).get("http", {}).get("method") == "OPTIONS":
+        return respond(200, {"message": "OK"})
 
     try:
         body = json.loads(event.get("body", "{}"))
@@ -63,18 +68,23 @@ def lambda_handler(event, context):
 
     except ClientError as e:
         logger.error("AWS ClientError: %s", e, exc_info=True)
-        return respond(500, {"message": "Error creating upload URL"})
-    except json.JSONDecodeError:
-        logger.error("Invalid JSON body", exc_info=True)
-        return respond(400, {"message": "Invalid JSON"})
+        return respond(500, {"message": f"AWS Error: {str(e)}"})
+    except json.JSONDecodeError as e:
+        logger.error("Invalid JSON body: %s", e, exc_info=True)
+        return respond(400, {"message": f"Invalid JSON: {str(e)}"})
     except Exception as e:
-        logger.exception("Unexpected error")
-        return respond(500, {"message": "Internal server error"})
+        logger.exception("Unexpected error: %s", str(e))
+        return respond(500, {"message": f"Internal server error: {str(e)}"})
 
 
 def respond(status, body):
     return {
         "statusCode": status,
-        "headers": {"Content-Type": "application/json"},
+        "headers": {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+            "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+            "Access-Control-Allow-Headers": "Content-Type, Accept, Authorization"
+        },
         "body": json.dumps(body),
     }
