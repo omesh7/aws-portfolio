@@ -47,13 +47,28 @@ function App() {
       setUploadedImage(URL.createObjectURL(file))
 
       // Get presigned URL
+      console.log('Calling upload API:', UPLOADS_API_URL)
       const response = await fetch(UPLOADS_API_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
         body: JSON.stringify({ fileName: file.name })
       })
 
-      if (!response.ok) throw new Error('Failed to get upload URL')
+      console.log('Upload API response:', response.status, response.statusText)
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error('Upload API error:', {
+          status: response.status,
+          statusText: response.statusText,
+          headers: Object.fromEntries(response.headers.entries()),
+          body: errorText
+        })
+        throw new Error(`API Error ${response.status}: ${errorText || response.statusText}`)
+      }
 
       const { uploadUrl, fields, key, poemId } = await response.json()
 
