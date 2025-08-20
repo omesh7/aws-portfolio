@@ -81,8 +81,12 @@ function App() {
   }
 
   const pollForPoem = async (poemId) => {
-    const maxAttempts = 30 // 30 seconds max
+    const maxAttempts = 20 // 20 polling attempts max
     let attempts = 0
+
+    // Wait 8 seconds first (processing usually takes 8-12 seconds)
+    console.log('Waiting 8 seconds for processing to complete...')
+    await new Promise(resolve => setTimeout(resolve, 8000))
 
     const poll = async () => {
       try {
