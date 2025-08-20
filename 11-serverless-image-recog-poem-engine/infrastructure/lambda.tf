@@ -153,10 +153,12 @@ resource "aws_lambda_function_url" "get_poem_url" {
   authorization_type = "NONE"
 
   cors {
-    allow_origins = ["*"]
-    allow_methods = ["*"]
-    allow_headers = ["content-type", "x-amz-date", "authorization", "x-api-key", "x-amz-security-token"]
-    max_age       = 86400
+    allow_origins     = ["*"]
+    allow_methods     = ["GET", "POST"]
+    allow_headers     = ["*"]
+    expose_headers    = ["date", "keep-alive"]
+    max_age           = 86400
+    allow_credentials = false
   }
 }
 
@@ -168,9 +170,11 @@ resource "aws_lambda_function_url" "uploads_url" {
   authorization_type = "NONE"
 
   cors {
-    allow_origins = ["*"]
-    allow_methods = ["*"]
-    allow_headers = ["content-type", "x-amz-date", "authorization", "x-api-key", "x-amz-security-token"]
-    max_age       = 86400
+    allow_origins     = ["*"]
+    allow_methods     = ["GET", "POST"]
+    allow_headers     = ["*"]
+    expose_headers    = ["date", "keep-alive"]
+    max_age           = 86400
+    allow_credentials = false
   }
 }
