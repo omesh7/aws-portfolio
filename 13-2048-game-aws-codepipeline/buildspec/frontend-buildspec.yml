@@ -9,14 +9,12 @@ phases:
       - echo "=== FRONTEND BUILD STARTED ==="
       - echo "Build started on $(date)"
       - echo "Current directory is $(pwd)"
-      # Display environment variables for debugging
-      - echo "Environment variables are"
+      - echo "Environment variables"
       - echo "API_URL is $API_URL"
       - echo "S3_BUCKET is $S3_BUCKET"
       - echo "AWS_DEFAULT_REGION is $AWS_DEFAULT_REGION"
   build:
     commands:
-      # Navigate to project and frontend directories
       - echo "=== NAVIGATING TO PROJECT ==="
       - cd 13-2048-game-aws-codepipeline
       - echo "Project directory is $(pwd)"
@@ -25,40 +23,32 @@ phases:
       - cd frontend
       - echo "Frontend directory is $(pwd)"
       - ls -la
-      # Install Node.js dependencies
       - echo "=== INSTALLING DEPENDENCIES ==="
       - npm install
       - echo "Dependencies installed successfully"
-      # Create environment file with dynamic API URL
-      # This is crucial - the API URL comes from the load balancer DNS
       - echo "=== CREATING ENVIRONMENT FILE ==="
       - echo "VITE_API_URL=$API_URL" > .env
       - echo "Environment file created"
       - cat .env
-      # Build the React application
       - echo "=== BUILDING APPLICATION ==="
       - npm run build
       - echo "Build completed successfully"
-      # Verify build output
       - echo "=== VERIFYING BUILD OUTPUT ==="
       - ls -la dist/
       - echo "Build artifacts"
       - find dist/ -type f -exec ls -lh {} \;
   post_build:
     commands:
-      # Deploy built files to S3 static website
       - echo "=== DEPLOYING TO S3 ==="
       - echo "Syncing to bucket $S3_BUCKET"
       - aws s3 sync dist/ s3://$S3_BUCKET --delete --exact-timestamps
       - echo "S3 sync completed"
-      # Verify deployment
       - echo "=== VERIFYING DEPLOYMENT ==="
       - aws s3 ls s3://$S3_BUCKET --recursive --human-readable
       - echo "=== FRONTEND BUILD COMPLETED ==="
       - echo "Frontend URL is http://$S3_BUCKET.s3-website.$AWS_DEFAULT_REGION.amazonaws.com"
       - echo "Build completed on $(date)"
-# Store build artifacts (optional, mainly for debugging)
 artifacts:
   files:
-    - '**/*'
-  base-directory: '13-2048-game-aws-codepipeline/frontend/dist'
+    - "**/*"
+  base-directory: "13-2048-game-aws-codepipeline/frontend/dist"
