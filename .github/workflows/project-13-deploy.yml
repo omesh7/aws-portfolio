@@ -136,35 +136,47 @@ jobs:
         working-directory: 13-2048-game-aws-codepipeline/infrastructure
 
       - name: Stop ECS service
-        if: steps.resources.outputs.ecs_cluster != '' && steps.resources.outputs.ecs_service != ''
+        continue-on-error: true
         run: |
-          aws ecs update-service --cluster ${{ steps.resources.outputs.ecs_cluster }} --service ${{ steps.resources.outputs.ecs_service }} --desired-count 0
+          if [ -n "${{ steps.resources.outputs.ecs_cluster }}" ] && [ -n "${{ steps.resources.outputs.ecs_service }}" ]; then
+            aws ecs update-service --cluster ${{ steps.resources.outputs.ecs_cluster }} --service ${{ steps.resources.outputs.ecs_service }} --desired-count 0 || echo "ECS service already stopped or not found"
+          fi
 
       - name: Empty S3 bucket
-        if: steps.resources.outputs.s3_bucket != ''
+        continue-on-error: true
         run: |
-          aws s3 rm s3://${{ steps.resources.outputs.s3_bucket }} --recursive
+          if [ -n "${{ steps.resources.outputs.s3_bucket }}" ]; then
+            aws s3 rm s3://${{ steps.resources.outputs.s3_bucket }} --recursive || echo "S3 bucket already empty or not found"
+          fi
 
       - name: Delete ECR images
-        if: steps.resources.outputs.ecr_repo != ''
+        continue-on-error: true
         run: |
-          REPO_NAME=$(echo "${{ steps.resources.outputs.ecr_repo }}" | cut -d'/' -f2)
-          aws ecr list-images --repository-name $REPO_NAME --query "imageIds[*]" --output json > /tmp/images.json 2>/dev/null || echo "[]" > /tmp/images.json
-          if [ -s /tmp/images.json ] && [ "$(cat /tmp/images.json)" != "[]" ]; then
-            aws ecr batch-delete-image --repository-name $REPO_NAME --image-ids file:///tmp/images.json
+          if [ -n "${{ steps.resources.outputs.ecr_repo }}" ]; then
+            REPO_NAME=$(echo "${{ steps.resources.outputs.ecr_repo }}" | cut -d'/' -f2)
+            aws ecr list-images --repository-name $REPO_NAME --query "imageIds[*]" --output json > /tmp/images.json 2>/dev/null || echo "[]" > /tmp/images.json
+            if [ -s /tmp/images.json ] && [ "$(cat /tmp/images.json)" != "[]" ]; then
+              aws ecr batch-delete-image --repository-name $REPO_NAME --image-ids file:///tmp/images.json || echo "ECR images already deleted or not found"
+            fi
           fi
 
       - name: Stop CodePipeline
+        continue-on-error: true
         run: |
           PIPELINE_NAME="${{ env.PROJECT_NAME }}-pipeline"
-          EXECUTION_ID=$(aws codepipeline get-pipeline-state --name $PIPELINE_NAME --query "stageStates[0].latestExecution.pipelineExecutionId" --output text 2>/dev/null || echo "")
-          if [ -n "$EXECUTION_ID" ] && [ "$EXECUTION_ID" != "None" ]; then
-            aws codepipeline stop-pipeline-execution --pipeline-name $PIPELINE_NAME --pipeline-execution-id $EXECUTION_ID
+          if aws codepipeline get-pipeline --name $PIPELINE_NAME >/dev/null 2>&1; then
+            EXECUTION_ID=$(aws codepipeline get-pipeline-state --name $PIPELINE_NAME --query "stageStates[0].latestExecution.pipelineExecutionId" --output text 2>/dev/null || echo "")
+            if [ -n "$EXECUTION_ID" ] && [ "$EXECUTION_ID" != "None" ] && [ "$EXECUTION_ID" != "null" ]; then
+              aws codepipeline stop-pipeline-execution --pipeline-name $PIPELINE_NAME --pipeline-execution-id $EXECUTION_ID || echo "Pipeline execution already stopped"
+            fi
+          else
+            echo "Pipeline not found or already deleted"
           fi
 
       - name: Destroy infrastructure
+        continue-on-error: true
         run: |
-          terraform destroy -auto-approve
+          terraform destroy -auto-approve || echo "Infrastructure already destroyed or not found"
         working-directory: 13-2048-game-aws-codepipeline/infrastructure
 
       - name: Display results
