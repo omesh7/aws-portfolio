@@ -1,9 +1,10 @@
 terraform {
-  cloud {
-    organization = "aws-portfolio-omesh"
-    workspaces {
-      name = "12-kubernetes-python-youtube-summarizer"
-    }
+  backend "s3" {
+    bucket         = "aws-portfolio-terraform-state"
+    key            = "12-kubernetes-python-youtube-summarizer/terraform.tfstate"
+    region         = "ap-south-1"
+    dynamodb_table = "aws-portfolio-terraform-locks"
+    encrypt        = true
   }
 
   required_providers {

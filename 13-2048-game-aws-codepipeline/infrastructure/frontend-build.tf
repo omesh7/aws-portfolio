@@ -2,6 +2,10 @@ resource "aws_codebuild_project" "frontend" {
   name         = "${var.project_name}-frontend-build"
   description  = "Build and deploy frontend for 2048 Game"
   service_role = aws_iam_role.codebuild_role.arn
+  
+  lifecycle {
+    prevent_destroy = false
+  }
 
   artifacts {
     type = "CODEPIPELINE"
