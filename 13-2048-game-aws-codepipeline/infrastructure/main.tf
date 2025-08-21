@@ -1,40 +1,4 @@
-# Main Terraform configuration for 2048 Game CI/CD Pipeline
-# This file defines the core AWS infrastructure components
 
-terraform {
-  cloud {
-    organization = "aws-portfolio-omesh"
-    workspaces {
-      name = "13-2048-game-aws-codepipeline"
-    }
-  }
-
-  required_providers {
-    aws = {
-      source  = "hashicorp/aws"
-      version = "~> 6.0"
-    }
-    random = {
-      source  = "hashicorp/random"
-      version = "~> 3.0"
-    }
-  }
-}
-
-# Configure AWS provider with default tags for resource management
-provider "aws" {
-  region = var.aws_region
-  default_tags {
-    tags = var.tags
-  }
-}
-
-# Random string for unique resource naming to avoid conflicts
-resource "random_string" "suffix" {
-  length  = 8
-  special = false
-  upper   = false
-}
 
 # ============================================================================
 # CONTAINER REGISTRY
@@ -255,6 +219,10 @@ resource "aws_lb" "main" {
   # Enable deletion protection in production
   enable_deletion_protection = false
 
+  lifecycle {
+    prevent_destroy = false
+  }
+
   tags = {
     Name        = "${var.project_name}-alb"
     Description = "Application Load Balancer for 2048 game API"
@@ -318,6 +286,10 @@ resource "aws_ecs_cluster" "game_cluster" {
     value = "enabled"
   }
 
+  lifecycle {
+    prevent_destroy = false
+  }
+
   tags = {
     Name        = "${var.project_name}-cluster"
     Description = "ECS cluster for 2048 game"
@@ -357,6 +329,10 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
 resource "aws_cloudwatch_log_group" "ecs" {
   name              = "/ecs/${var.project_name}"
   retention_in_days = 3 # Keep logs for 30 days
+
+  lifecycle {
+    prevent_destroy = false
+  }
 
   tags = {
     Name        = "${var.project_name}-logs"
@@ -447,6 +423,10 @@ resource "aws_ecs_service" "main" {
 
   # Ensure ALB listener is created before service
   depends_on = [aws_lb_listener.web]
+
+  lifecycle {
+    prevent_destroy = false
+  }
 
   tags = {
     Name        = "${var.project_name}-service"
