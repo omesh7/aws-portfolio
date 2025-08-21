@@ -1,0 +1,172 @@
+name: Project 13 - 2048 Game CI/CD Pipeline
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Action to perform"
+        required: true
+        default: "deploy"
+        type: choice
+        options:
+          - deploy
+          - destroy
+
+env:
+  AWS_REGION: ap-south-1
+  PROJECT_NAME: proj-13-2048-game-cp
+  TERRAFORM_VERSION: 1.5.0
+
+jobs:
+  deploy:
+    if: github.event.inputs.action == 'deploy'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 13-2048-game-aws-codepipeline
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Test Docker build
+        run: |
+          docker build -f docker/Dockerfile -t 2048-game-local .
+
+      - name: Create Terraform variables file
+        run: |
+          cat > infrastructure/terraform.tfvars << EOF
+          aws_region = "${{ env.AWS_REGION }}"
+          project_name = "${{ env.PROJECT_NAME }}"
+          github_owner = "${{ github.repository_owner }}"
+          github_repo = "aws-portfolio"
+          github_token = "${{ secrets.G_TOKEN }}"
+          EOF
+
+      - name: Deploy infrastructure
+        run: |
+          cd infrastructure
+          terraform init
+          terraform apply -auto-approve
+
+      - name: Get outputs
+        id: outputs
+        run: |
+          echo "ecr_repo=$(terraform output -raw ecr_repository_url)" >> $GITHUB_OUTPUT
+          echo "ecs_cluster=$(terraform output -raw ecs_cluster_name)" >> $GITHUB_OUTPUT
+          echo "ecs_service=$(terraform output -raw ecs_service_name)" >> $GITHUB_OUTPUT
+          echo "s3_bucket=$(terraform output -raw s3_bucket_name)" >> $GITHUB_OUTPUT
+          echo "api_url=$(terraform output -raw api_url)" >> $GITHUB_OUTPUT
+        working-directory: 13-2048-game-aws-codepipeline/infrastructure
+
+      - name: Deploy initial container
+        run: |
+          aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.outputs.outputs.ecr_repo }}
+          docker tag 2048-game-local:latest ${{ steps.outputs.outputs.ecr_repo }}:latest
+          docker push ${{ steps.outputs.outputs.ecr_repo }}:latest
+          aws ecs update-service --cluster ${{ steps.outputs.outputs.ecs_cluster }} --service ${{ steps.outputs.outputs.ecs_service }} --force-new-deployment
+
+      - name: Deploy placeholder frontend
+        run: |
+          mkdir -p frontend/dist
+          echo '<html><body><h1>2048 Game</h1><p>CodePipeline will build and deploy the full application.</p></body></html>' > frontend/dist/index.html
+          aws s3 sync frontend/dist/ s3://${{ steps.outputs.outputs.s3_bucket }} --delete
+
+      - name: Display results
+        run: |
+          echo "✅ Infrastructure deployed!"
+          echo "Frontend: http://${{ steps.outputs.outputs.s3_bucket }}.s3-website.${{ env.AWS_REGION }}.amazonaws.com"
+          echo "API: ${{ steps.outputs.outputs.api_url }}"
+          echo "CodePipeline will handle future deployments"
+
+  destroy:
+    if: github.event.inputs.action == 'destroy'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: 13-2048-game-aws-codepipeline
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - name: Create Terraform variables file
+        run: |
+          cat > infrastructure/terraform.tfvars << EOF
+          aws_region = "${{ env.AWS_REGION }}"
+          project_name = "${{ env.PROJECT_NAME }}"
+          github_owner = "${{ github.repository_owner }}"
+          github_repo = "aws-portfolio"
+          github_token = "${{ secrets.G_TOKEN }}"
+          EOF
+
+      - name: Get resources
+        id: resources
+        continue-on-error: true
+        run: |
+          terraform init
+          echo "ecr_repo=$(terraform output -raw ecr_repository_url 2>/dev/null || echo '')" >> $GITHUB_OUTPUT
+          echo "ecs_cluster=$(terraform output -raw ecs_cluster_name 2>/dev/null || echo '')" >> $GITHUB_OUTPUT
+          echo "ecs_service=$(terraform output -raw ecs_service_name 2>/dev/null || echo '')" >> $GITHUB_OUTPUT
+          echo "s3_bucket=$(terraform output -raw s3_bucket_name 2>/dev/null || echo '')" >> $GITHUB_OUTPUT
+        working-directory: 13-2048-game-aws-codepipeline/infrastructure
+
+      - name: Stop ECS service
+        if: steps.resources.outputs.ecs_cluster != '' && steps.resources.outputs.ecs_service != ''
+        run: |
+          aws ecs update-service --cluster ${{ steps.resources.outputs.ecs_cluster }} --service ${{ steps.resources.outputs.ecs_service }} --desired-count 0
+
+      - name: Empty S3 bucket
+        if: steps.resources.outputs.s3_bucket != ''
+        run: |
+          aws s3 rm s3://${{ steps.resources.outputs.s3_bucket }} --recursive
+
+      - name: Delete ECR images
+        if: steps.resources.outputs.ecr_repo != ''
+        run: |
+          REPO_NAME=$(echo "${{ steps.resources.outputs.ecr_repo }}" | cut -d'/' -f2)
+          aws ecr list-images --repository-name $REPO_NAME --query "imageIds[*]" --output json > /tmp/images.json 2>/dev/null || echo "[]" > /tmp/images.json
+          if [ -s /tmp/images.json ] && [ "$(cat /tmp/images.json)" != "[]" ]; then
+            aws ecr batch-delete-image --repository-name $REPO_NAME --image-ids file:///tmp/images.json
+          fi
+
+      - name: Stop CodePipeline
+        run: |
+          PIPELINE_NAME="${{ env.PROJECT_NAME }}-pipeline"
+          EXECUTION_ID=$(aws codepipeline get-pipeline-state --name $PIPELINE_NAME --query "stageStates[0].latestExecution.pipelineExecutionId" --output text 2>/dev/null || echo "")
+          if [ -n "$EXECUTION_ID" ] && [ "$EXECUTION_ID" != "None" ]; then
+            aws codepipeline stop-pipeline-execution --pipeline-name $PIPELINE_NAME --pipeline-execution-id $EXECUTION_ID
+          fi
+
+      - name: Destroy infrastructure
+        run: |
+          terraform destroy -auto-approve
+        working-directory: 13-2048-game-aws-codepipeline/infrastructure
+
+      - name: Display results
+        run: |
+          echo "✅ All resources destroyed!"

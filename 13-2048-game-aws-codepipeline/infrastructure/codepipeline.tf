@@ -13,8 +13,13 @@ resource "aws_s3_bucket_versioning" "codepipeline_artifacts" {
 
 # CodeBuild Service Role
 resource "aws_iam_role" "codebuild_role" {
-  name = "${var.project_name}-codebuild-role"
-
+  name                  = "${var.project_name}-codebuild-role"
+  force_detach_policies = true
+  
+  lifecycle {
+    prevent_destroy = false
+  }
+  
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -108,6 +113,10 @@ resource "aws_iam_role_policy" "codebuild_policy" {
 resource "aws_codebuild_project" "build_project" {
   name         = "${var.project_name}-build"
   service_role = aws_iam_role.codebuild_role.arn
+  
+  lifecycle {
+    prevent_destroy = false
+  }
 
   artifacts {
     type = "CODEPIPELINE"
@@ -164,7 +173,12 @@ resource "aws_codebuild_project" "build_project" {
 
 # CodePipeline Service Role
 resource "aws_iam_role" "codepipeline_role" {
-  name = "${var.project_name}-codepipeline-role"
+  name                  = "${var.project_name}-codepipeline-role"
+  force_detach_policies = true
+  
+  lifecycle {
+    prevent_destroy = false
+  }
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -218,6 +232,10 @@ resource "aws_iam_role_policy" "codepipeline_policy" {
 resource "aws_codepipeline" "pipeline" {
   name     = "${var.project_name}-pipeline"
   role_arn = aws_iam_role.codepipeline_role.arn
+  
+  lifecycle {
+    prevent_destroy = false
+  }
 
   artifact_store {
     location = aws_s3_bucket.codepipeline_artifacts.bucket
