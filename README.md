@@ -80,10 +80,11 @@ graph TB
 - **Features:** Real-time image processing, multiple formats
 - **UI:** shadcn/ui, drag-and-drop, responsive design
 
-#### **13. 2048 Game - Full CI/CD Pipeline**
-- **Stack:** React, Flask, Docker, Terraform
-- **AWS:** CodePipeline, ECS Fargate, ALB, S3
-- **Features:** Complete game logic, automated deployment
+#### **13. 2048 Game - Full CI/CD Pipeline + Grafana Monitoring**
+- **Stack:** React, Flask, Docker, Terraform, Grafana
+- **AWS:** CodePipeline, ECS Fargate, ALB, S3, CloudWatch
+- **Features:** Complete game logic, automated deployment, real-time monitoring
+- **Monitoring:** Grafana dashboards with CloudWatch streaming
 - **Demo:** [Live Game](http://project-13-2048-game-codepp-frontend.s3-website.ap-south-1.amazonaws.com)
 
 #### **14. Multi-Cloud Weather App - Disaster Recovery**

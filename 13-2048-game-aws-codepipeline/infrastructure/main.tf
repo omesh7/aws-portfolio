@@ -1,5 +1,3 @@
-
-
 # ============================================================================
 # CONTAINER REGISTRY
 # ============================================================================
@@ -27,7 +25,7 @@ resource "aws_ecr_repository" "game_2048" {
 
 # S3 bucket for hosting the React frontend as a static website
 resource "aws_s3_bucket" "frontend" {
-  bucket        = "${var.project_name}-frontend"
+  bucket        = "${var.project_name}-frontend-${random_string.suffix.result}"
   force_destroy = true # Allow deletion even with objects
 }
 
@@ -90,7 +88,7 @@ resource "aws_vpc" "main" {
   enable_dns_support   = true
 
   tags = {
-    Name        = "${var.project_name}-vpc"
+    Name        = "${var.project_name}-vpc-${random_string.suffix.result}"
     Description = "VPC for 2048 game infrastructure"
   }
 }
@@ -100,7 +98,7 @@ resource "aws_internet_gateway" "main" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = "${var.project_name}-igw"
+    Name = "${var.project_name}-igw-${random_string.suffix.result}"
   }
 }
 
@@ -113,7 +111,7 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true # Auto-assign public IPs
 
   tags = {
-    Name = "${var.project_name}-public-subnet-${count.index + 1}"
+    Name = "${var.project_name}-public-subnet-${count.index + 1}-${random_string.suffix.result}"
     Type = "Public"
   }
 }
@@ -129,7 +127,7 @@ resource "aws_route_table" "public" {
   }
 
   tags = {
-    Name = "${var.project_name}-public-rt"
+    Name = "${var.project_name}-public-rt-${random_string.suffix.result}"
   }
 }
 
@@ -146,7 +144,7 @@ resource "aws_route_table_association" "public" {
 
 # Security group for Application Load Balancer
 resource "aws_security_group" "alb" {
-  name_prefix = "${var.project_name}-alb-"
+  name_prefix = "${var.project_name}-alb-${random_string.suffix.result}-"
   vpc_id      = aws_vpc.main.id
   description = "Security group for Application Load Balancer"
 
@@ -169,14 +167,14 @@ resource "aws_security_group" "alb" {
   }
 
   tags = {
-    Name        = "${var.project_name}-alb-sg"
+    Name        = "${var.project_name}-alb-sg-${random_string.suffix.result}"
     Description = "Security group for ALB - allows HTTP from internet"
   }
 }
 
 # Security group for ECS service
 resource "aws_security_group" "ecs_service" {
-  name_prefix = "${var.project_name}-ecs-"
+  name_prefix = "${var.project_name}-ecs-${random_string.suffix.result}-"
   vpc_id      = aws_vpc.main.id
   description = "Security group for ECS service"
 
@@ -199,7 +197,7 @@ resource "aws_security_group" "ecs_service" {
   }
 
   tags = {
-    Name        = "${var.project_name}-ecs-sg"
+    Name        = "${var.project_name}-ecs-sg-${random_string.suffix.result}"
     Description = "Security group for ECS - allows traffic from ALB only"
   }
 }
@@ -210,7 +208,7 @@ resource "aws_security_group" "ecs_service" {
 
 # Application Load Balancer for distributing traffic to ECS tasks
 resource "aws_lb" "main" {
-  name               = "${var.project_name}-alb"
+  name               = "${var.project_name}-alb-${random_string.suffix.result}"
   internal           = false # Internet-facing
   load_balancer_type = "application"
   security_groups    = [aws_security_group.alb.id]
@@ -224,14 +222,14 @@ resource "aws_lb" "main" {
   }
 
   tags = {
-    Name        = "${var.project_name}-alb"
+    Name        = "${var.project_name}-alb-${random_string.suffix.result}"
     Description = "Application Load Balancer for 2048 game API"
   }
 }
 
 # Target group for ECS tasks
 resource "aws_lb_target_group" "app" {
-  name        = "${var.project_name}-tg"
+  name        = "${var.project_name}-tg-${random_string.suffix.result}"
   port        = var.app_port
   protocol    = "HTTP"
   vpc_id      = aws_vpc.main.id
@@ -251,7 +249,7 @@ resource "aws_lb_target_group" "app" {
   }
 
   tags = {
-    Name        = "${var.project_name}-tg"
+    Name        = "${var.project_name}-tg-${random_string.suffix.result}"
     Description = "Target group for ECS tasks"
   }
 }
@@ -268,7 +266,7 @@ resource "aws_lb_listener" "web" {
   }
 
   tags = {
-    Name = "${var.project_name}-listener"
+    Name = "${var.project_name}-listener-${random_string.suffix.result}"
   }
 }
 
@@ -278,7 +276,7 @@ resource "aws_lb_listener" "web" {
 
 # ECS cluster for running containerized applications
 resource "aws_ecs_cluster" "game_cluster" {
-  name = "${var.project_name}-cluster"
+  name = "${var.project_name}-cluster-${random_string.suffix.result}"
 
   # Enable container insights for monitoring
   setting {
@@ -291,14 +289,14 @@ resource "aws_ecs_cluster" "game_cluster" {
   }
 
   tags = {
-    Name        = "${var.project_name}-cluster"
+    Name        = "${var.project_name}-cluster-${random_string.suffix.result}"
     Description = "ECS cluster for 2048 game"
   }
 }
 
 # IAM role for ECS task execution (required for Fargate)
 resource "aws_iam_role" "ecs_task_execution_role" {
-  name = "${var.project_name}-ecs-task-execution-role"
+  name = "${var.project_name}-ecs-task-execution-role-${random_string.suffix.result}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -314,7 +312,7 @@ resource "aws_iam_role" "ecs_task_execution_role" {
   })
 
   tags = {
-    Name        = "${var.project_name}-ecs-execution-role"
+    Name        = "${var.project_name}-ecs-execution-role-${random_string.suffix.result}"
     Description = "IAM role for ECS task execution"
   }
 }
@@ -327,7 +325,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
 
 # CloudWatch log group for ECS tasks
 resource "aws_cloudwatch_log_group" "ecs" {
-  name              = "/ecs/${var.project_name}"
+  name              = "/ecs/${var.project_name}-${random_string.suffix.result}"
   retention_in_days = 3 # Keep logs for 30 days
 
   lifecycle {
@@ -335,14 +333,14 @@ resource "aws_cloudwatch_log_group" "ecs" {
   }
 
   tags = {
-    Name        = "${var.project_name}-logs"
+    Name        = "${var.project_name}-logs-${random_string.suffix.result}"
     Description = "CloudWatch logs for ECS tasks"
   }
 }
 
 # ECS task definition for the Flask API
 resource "aws_ecs_task_definition" "app" {
-  family                   = "${var.project_name}-task"
+  family                   = "${var.project_name}-task-${random_string.suffix.result}"
   execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
   network_mode             = "awsvpc" # Required for Fargate
   requires_compatibilities = ["FARGATE"]
@@ -394,14 +392,14 @@ resource "aws_ecs_task_definition" "app" {
   ])
 
   tags = {
-    Name        = "${var.project_name}-task-def"
+    Name        = "${var.project_name}-task-def-${random_string.suffix.result}"
     Description = "ECS task definition for Flask API"
   }
 }
 
 # ECS service to run and maintain desired number of tasks
 resource "aws_ecs_service" "main" {
-  name            = "${var.project_name}-service"
+  name            = "${var.project_name}-service-${random_string.suffix.result}"
   cluster         = aws_ecs_cluster.game_cluster.id
   task_definition = aws_ecs_task_definition.app.arn
   desired_count   = 1
@@ -429,7 +427,7 @@ resource "aws_ecs_service" "main" {
   }
 
   tags = {
-    Name        = "${var.project_name}-service"
+    Name        = "${var.project_name}-service-${random_string.suffix.result}"
     Description = "ECS service for 2048 game API"
   }
 }

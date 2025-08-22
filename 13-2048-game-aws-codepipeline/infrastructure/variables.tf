@@ -41,3 +41,23 @@ variable "app_port" {
   type        = number
   default     = 8080
 }
+
+variable "grafana_url" {
+  description = "Grafana instance URL (e.g., https://your-org.grafana.net)"
+  type        = string
+}
+
+variable "grafana_auth" {
+  description = "Grafana API key for authentication"
+  type        = string
+  sensitive   = true
+}
+
+variable "aws_role_arn" {
+  description = "AWS IAM role ARN for Grafana CloudWatch access"
+  type        = string
+  sensitive   = true
+  #https://YOUR_GRAFANA_INSTANCE.grafana.net/a/grafana-csp-app/aws/configuration/accounts/create
+}
+
+
