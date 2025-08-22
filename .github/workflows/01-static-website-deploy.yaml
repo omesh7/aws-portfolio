@@ -1,50 +1,181 @@
-name: Deploy Project 1 - Static Website to S3
+name: Project 01 - Static Website
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - '01-static-website-s3/site/**'
-      - '.github/workflows/project1_staticwebsite.yml'
   workflow_dispatch:
-      
+    inputs:
+      action:
+        description: 'Action to perform'
+        required: true
+        type: choice
+        options: ['deploy', 'destroy']
+        default: 'deploy'
+
+env:
+  AWS_REGION: ap-south-1
+  PROJECT_NAME: 01-static-website-aws-portfolio-ci
 
 jobs:
-  deploy:
+  build-site:
+    name: Build Static Site
     runs-on: ubuntu-latest
-
+    if: inputs.action == 'deploy'
+    
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
         with:
-          node-version: 18
-
-      - name: Install dependencies
-        run: npm install
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: '01-static-website-s3/site/package-lock.json'
+      
+      - name: Install Dependencies
         working-directory: 01-static-website-s3/site
-
-      - name: Build Vite site
-        run: npm run build
+        run: |
+          echo "📦 Installing dependencies..."
+          npm ci
+      
+      - name: Build Site
         working-directory: 01-static-website-s3/site
-        env:
-          VITE_APP_EMAILJS_SERVICE_ID: ${{ secrets.VITE_APP_EMAILJS_SERVICE_ID }}
-          VITE_APP_EMAILJS_TEMPLATE_ID: ${{ secrets.VITE_APP_EMAILJS_TEMPLATE_ID_PROJECT_01_STATIC_SITE }}
-          VITE_APP_EMAILJS_PUBLIC_KEY: ${{ secrets.VITE_APP_EMAILJS_PUBLIC_KEY }}
+        run: |
+          echo "🏗️ Building static site..."
+          npm run build
+          ls -la dist/
+          echo "✅ Site built successfully"
+      
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-build
+          path: 01-static-website-s3/site/dist/
+          retention-days: 1
 
-      - name: Verify build output
-        run: ls -la 01-static-website-s3/site/dist
+  terraform-infrastructure:
+    name: Terraform Infrastructure
+    runs-on: ubuntu-latest
+    needs: [build-site]
+    if: always() && ((inputs.action == 'deploy' && needs.build-site.result == 'success') || inputs.action == 'destroy')
+    outputs:
+      s3_bucket_name: ${{ steps.outputs.outputs.s3_bucket_name }}
+      cloudfront_distribution_id: ${{ steps.outputs.outputs.cloudfront_distribution_id }}
+      website_url: ${{ steps.outputs.outputs.website_url }}
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.6.0
+          terraform_wrapper: false
+      
+      - name: Terraform Init
+        working-directory: 01-static-website-s3/infrastructure
+        run: |
+          echo "🔧 Initializing Terraform..."
+          terraform init
+      
+      - name: Terraform Validate
+        working-directory: 01-static-website-s3/infrastructure
+        run: |
+          echo "✅ Validating Terraform configuration..."
+          terraform validate
+      
+      - name: Terraform Apply
+        if: inputs.action == 'deploy'
+        working-directory: 01-static-website-s3/infrastructure
+        run: |
+          echo "🚀 Applying Terraform configuration..."
+          CLOUDFLARE_TOKEN="${{ secrets.CLOUDFLARE_API_TOKEN }}"
+          CLOUDFLARE_ZONE="${{ secrets.CLOUDFLARE_ZONE_ID }}"
+          ENABLE_DOMAIN="false"
+          
+          if [ ! -z "$CLOUDFLARE_TOKEN" ] && [ ! -z "$CLOUDFLARE_ZONE" ]; then
+            echo "✅ Cloudflare credentials found - enabling custom domain"
+            ENABLE_DOMAIN="true"
+          else
+            echo "⚠️ Cloudflare credentials not found - using CloudFront domain only"
+          fi
+          
+          terraform apply -auto-approve \
+            -var="environment=ci" \
+            -var="project_name=${{ env.PROJECT_NAME }}" \
+            -var="aws_region=${{ env.AWS_REGION }}" \
+            -var="cloudflare_api_token=${CLOUDFLARE_TOKEN:-}" \
+            -var="cloudflare_zone_id=${CLOUDFLARE_ZONE:-}" \
+            -var="enable_custom_domain=$ENABLE_DOMAIN" \
+            -var="subdomain=portfolio"
+      
+      - name: Terraform Destroy
+        if: inputs.action == 'destroy'
+        working-directory: 01-static-website-s3/infrastructure
+        run: |
+          echo "🗑️ Destroying Terraform resources..."
+          terraform destroy -auto-approve \
+            -var="environment=ci" \
+            -var="project_name=${{ env.PROJECT_NAME }}" \
+            -var="aws_region=${{ env.AWS_REGION }}" \
+            -var="cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -var="cloudflare_zone_id=${{ secrets.CLOUDFLARE_ZONE_ID }}" \
+            -var="enable_custom_domain=true" \
+            -var="subdomain=portfolio"
+      
+      - name: Capture Terraform Outputs
+        id: outputs
+        if: inputs.action == 'deploy'
+        working-directory: 01-static-website-s3/infrastructure
+        run: |
+          echo "📋 Capturing Terraform outputs..."
+          echo "s3_bucket_name=$(terraform output -raw s3_bucket_name)" >> $GITHUB_OUTPUT
+          echo "cloudfront_distribution_id=$(terraform output -raw cloudfront_distribution_id)" >> $GITHUB_OUTPUT
+          echo "website_url=$(terraform output -raw website_url)" >> $GITHUB_OUTPUT
+          terraform output -json | jq '.'
 
+  deploy-site:
+    name: Deploy Site to S3
+    runs-on: ubuntu-latest
+    needs: [terraform-infrastructure]
+    if: inputs.action == 'deploy'
+    
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+      
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: site-build
+          path: ./dist
+      
       - name: Deploy to S3
-        uses: jakejarvis/s3-sync-action@master
-        with:
-          args: --delete
-        env:
-          AWS_S3_BUCKET: ${{ secrets.S3_BUCKET_NAME_STATIC_PROJECT_01 }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          SOURCE_DIR: 01-static-website-s3/site/dist
+        run: |
+          echo "🚀 Deploying to S3 bucket: ${{ needs.terraform-infrastructure.outputs.s3_bucket_name }}"
+          aws s3 sync ./dist/ s3://${{ needs.terraform-infrastructure.outputs.s3_bucket_name }}/ --delete
+          echo "✅ Site deployed successfully"
+      
+      - name: Invalidate CloudFront
+        run: |
+          echo "🔄 Invalidating CloudFront distribution: ${{ needs.terraform-infrastructure.outputs.cloudfront_distribution_id }}"
+          aws cloudfront create-invalidation \
+            --distribution-id ${{ needs.terraform-infrastructure.outputs.cloudfront_distribution_id }} \
+            --paths "/*"
+          echo "✅ CloudFront cache invalidated"
+      
+      - name: Display Website URL
+        run: |
+          echo "🌐 Website deployed successfully!"
+          echo "URL: ${{ needs.terraform-infrastructure.outputs.website_url }}"

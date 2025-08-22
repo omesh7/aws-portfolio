@@ -1,13 +1,11 @@
 terraform {
-  cloud {
-    organization = "aws-portfolio-omesh"
-
-    workspaces {
-      name = "01-static-website-s3"
-
-    }
+  backend "s3" {
+    bucket         = "aws-portfolio-terraform-state"
+    key            = "01-static-website-s3/terraform.tfstate"
+    region         = "ap-south-1"
+    dynamodb_table = "aws-portfolio-terraform-locks"
+    encrypt        = true
   }
-
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -15,22 +13,16 @@ terraform {
     }
     cloudflare = {
       source  = "cloudflare/cloudflare"
-      version = "~> 5.7.1"
+      version = "~> 5.0"
     }
   }
-
-
 }
 
 provider "aws" {
   region = var.aws_region
+
   default_tags {
-    tags = {
-      Project    = var.project_name
-      Owner      = var.project_owner
-      Env        = var.environment
-      project-no = "01"
-    }
+    tags = var.tags
   }
 }
 
@@ -38,17 +30,12 @@ provider "aws" {
 provider "aws" {
   alias  = "us_east_1"
   region = "us-east-1"
+
   default_tags {
-    tags = {
-      Project    = var.project_name
-      Owner      = var.project_owner
-      Env        = var.environment
-      project-no = "01"
-    }
+    tags = var.tags
   }
 }
 
 provider "cloudflare" {
   api_token = var.cloudflare_api_token
-
 }

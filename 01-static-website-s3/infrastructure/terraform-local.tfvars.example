@@ -1,0 +1,14 @@
+# Local development configuration
+aws_region               = "ap-south-1"
+project_name            = "01-project-aws-portfolio-local"
+github_deploy_user_arn  = ""
+subdomain               = "static-local"
+environment             = "local"
+
+# Cloudflare Configuration
+cloudflare_api_token = "your_cloudflare_api_token"
+cloudflare_zone_id   = "your_cloudflare_zone_id"
+
+# Local file upload
+upload_site_files = true
+site_source_dir   = "../site/dist"
