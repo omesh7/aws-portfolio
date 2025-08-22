@@ -37,3 +37,13 @@ output "target_group_arn" {
   description = "ALB target group ARN"
   value       = aws_lb_target_group.app.arn
 }
+
+output "grafana_dashboard_url" {
+  description = "Grafana dashboard URL"
+  value       = "${var.grafana_url}/d/${grafana_dashboard.game_monitoring.uid}"
+}
+
+output "monitoring_setup" {
+  description = "Monitoring setup information"
+  value       = "Grafana dashboard created with CloudWatch data source"
+}

@@ -1,5 +1,12 @@
+# AWS Configuration
 aws_region = "ap-south-1"
-project_name = "project-13-2048-game-aws-codepipeline"
+
+# GitHub Configuration
 github_owner = "your-github-username"
-github_repo = "aws-portfolio"
-github_token = "ghp_your_github_personal_access_token"
+github_repo  = "aws-portfolio"
+github_token = "your-github-token"
+
+# Grafana Configuration (Grafana Cloud - free tier)
+grafana_url   = "https://your-org.grafana.net"
+grafana_auth  = "your-grafana-api-key"
+aws_role_arn  = "arn:aws:iam::YOUR-ACCOUNT-ID:role/GrafanaLabsCloudWatchIntegration"
