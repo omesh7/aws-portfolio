@@ -64,7 +64,7 @@ Multi-Cloud Weather Tracker Status
 ===================================
 Infrastructure Status:
 Lambda: Deployed
-Weather App: https://weather.your-domain.com
+Weather App: https://weather.portfolio.your-domain.com
 
 Testing endpoints...
 ✅ API: Working

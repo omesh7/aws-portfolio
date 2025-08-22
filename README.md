@@ -89,7 +89,7 @@ graph TB
 
 #### **14. Multi-Cloud Weather App - Disaster Recovery**
 - **Stack:** Vanilla JS, Node.js, Terraform
-- **Clouds:** AWS (primary), Azure (backup), Cloudflare
+- **Clouds:** AWS (primary), Google Cloud (backup), Cloudflare
 - **Features:** Automated failover, health monitoring
 - **Demo:** [weather.portfolio.omesh.site](https://weather.portfolio.omesh.site)
 
@@ -181,7 +181,7 @@ User Request → API Gateway → Lambda → DynamoDB/S3
 ### **Infrastructure as Code**
 ```
 Terraform Configuration
-├── Multi-cloud support (AWS + Azure)
+├── Multi-cloud support (AWS + Google Cloud)
 ├── Modular design patterns
 ├── State management
 ├── Automated deployments
@@ -228,7 +228,7 @@ Enterprise Security
 
 ### **Business Value**
 - 🎯 **Scalability** - 1000+ concurrent users supported
-- 🎯 **Multi-Cloud** - Disaster recovery with AWS + Azure
+- 🎯 **Multi-Cloud** - Disaster recovery with AWS + Google Cloud
 - 🎯 **AI Integration** - RAG, computer vision, NLP capabilities
 - 🎯 **Real-World Applications** - Production-ready solutions
 - 🎯 **Enterprise Ready** - Security, monitoring, compliance
@@ -426,7 +426,7 @@ Multi-Layer Security:
 - 🏆 **Security First:** Zero incidents, enterprise-grade practices
 
 ### **Innovation & Leadership**
-- 🚀 **Multi-Cloud Strategy:** AWS + Azure disaster recovery
+- 🚀 **Multi-Cloud Strategy:** AWS + Google Cloud disaster recovery
 - 🚀 **AI Integration:** RAG systems, computer vision, NLP
 - 🚀 **DevOps Automation:** Complete CI/CD with Infrastructure as Code
 - 🚀 **Full-Stack Expertise:** Frontend, backend, infrastructure, AI/ML
