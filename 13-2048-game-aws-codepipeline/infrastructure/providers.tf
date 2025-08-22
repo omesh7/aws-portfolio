@@ -17,6 +17,10 @@ terraform {
       source  = "hashicorp/random"
       version = "~> 3.0"
     }
+    grafana = {
+      source  = "grafana/grafana"
+      version = "~> 2.0"
+    }
   }
 }
 
@@ -26,6 +30,12 @@ provider "aws" {
   default_tags {
     tags = var.tags
   }
+}
+
+# Configure Grafana provider (use Grafana Cloud free tier)
+provider "grafana" {
+  url  = var.grafana_url
+  auth = var.grafana_auth
 }
 
 

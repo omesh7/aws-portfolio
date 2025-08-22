@@ -1,0 +1,102 @@
+{
+  "dashboard": {
+    "id": null,
+    "title": "2048 Game Monitoring",
+    "tags": ["aws", "ecs", "2048-game"],
+    "timezone": "browser",
+    "panels": [
+      {
+        "id": 1,
+        "title": "ALB Request Count",
+        "type": "stat",
+        "targets": [
+          {
+            "datasource": "CloudWatch",
+            "namespace": "AWS/ApplicationELB",
+            "metricName": "RequestCount",
+            "dimensions": {
+              "LoadBalancer": "${load_balancer_arn_suffix}"
+            },
+            "statistics": ["Sum"],
+            "period": "300"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+      },
+      {
+        "id": 2,
+        "title": "ALB Response Time",
+        "type": "timeseries",
+        "targets": [
+          {
+            "datasource": "CloudWatch",
+            "namespace": "AWS/ApplicationELB",
+            "metricName": "TargetResponseTime",
+            "dimensions": {
+              "LoadBalancer": "${load_balancer_arn_suffix}"
+            },
+            "statistics": ["Average"],
+            "period": "300"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+      },
+      {
+        "id": 3,
+        "title": "ECS CPU Utilization",
+        "type": "timeseries",
+        "targets": [
+          {
+            "datasource": "CloudWatch",
+            "namespace": "AWS/ECS",
+            "metricName": "CPUUtilization",
+            "dimensions": {
+              "ServiceName": "${ecs_service_name}",
+              "ClusterName": "${ecs_cluster_name}"
+            },
+            "statistics": ["Average"],
+            "period": "300"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8}
+      },
+      {
+        "id": 4,
+        "title": "ECS Memory Utilization",
+        "type": "timeseries",
+        "targets": [
+          {
+            "datasource": "CloudWatch",
+            "namespace": "AWS/ECS",
+            "metricName": "MemoryUtilization",
+            "dimensions": {
+              "ServiceName": "${ecs_service_name}",
+              "ClusterName": "${ecs_cluster_name}"
+            },
+            "statistics": ["Average"],
+            "period": "300"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8}
+      },
+      {
+        "id": 5,
+        "title": "Application Logs",
+        "type": "logs",
+        "targets": [
+          {
+            "datasource": "CloudWatch Logs",
+            "logGroups": ["/ecs/proj-13-2048-game-cp"],
+            "region": "ap-south-1"
+          }
+        ],
+        "gridPos": {"h": 8, "w": 24, "x": 0, "y": 16}
+      }
+    ],
+    "time": {
+      "from": "now-1h",
+      "to": "now"
+    },
+    "refresh": "30s"
+  }
+}

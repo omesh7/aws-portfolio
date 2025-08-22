@@ -1,0 +1,20 @@
+apiVersion: 1
+
+datasources:
+  - name: CloudWatch
+    type: cloudwatch
+    access: proxy
+    jsonData:
+      authType: default
+      defaultRegion: ap-south-1
+    isDefault: true
+  
+  - name: CloudWatch Logs
+    type: cloudwatch
+    access: proxy
+    jsonData:
+      authType: default
+      defaultRegion: ap-south-1
+      logGroups:
+        - name: /ecs/proj-13-2048-game-cp
+        - name: /ecs/proj-13-2048-game-cp-grafana
