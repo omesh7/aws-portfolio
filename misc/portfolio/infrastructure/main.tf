@@ -12,30 +12,29 @@ resource "vercel_project" "portfolio" {
   }
 }
 
-# Environment Variables
-resource "vercel_project_environment_variable" "emailjs_service_id" {
+resource "vercel_project_environment_variables" "env_vars" {
   count      = var.vercel_api_token != "" ? 1 : 0
   project_id = vercel_project.portfolio[0].id
-  key        = "NEXT_PUBLIC_EMAILJS_SERVICE_ID"
-  value      = var.emailjs_service_id
-  target     = ["production", "preview", "development"]
+  variables = [
+    {
+      key    = "NEXT_PUBLIC_EMAILJS_SERVICE_ID"
+      value  = var.emailjs_service_id
+      target = ["production", "preview", "development"]
+    },
+    {
+      key    = "NEXT_PUBLIC_EMAILJS_TEMPLATE_ID"
+      value  = var.emailjs_template_id
+      target = ["production", "preview", "development"]
+    },
+    {
+      key    = "NEXT_PUBLIC_EMAILJS_PUBLIC_KEY"
+      value  = var.emailjs_public_key
+      target = ["production", "preview", "development"]
+    },
+  ]
 }
 
-resource "vercel_project_environment_variable" "emailjs_template_id" {
-  count      = var.vercel_api_token != "" ? 1 : 0
-  project_id = vercel_project.portfolio[0].id
-  key        = "NEXT_PUBLIC_EMAILJS_TEMPLATE_ID"
-  value      = var.emailjs_template_id
-  target     = ["production", "preview", "development"]
-}
 
-resource "vercel_project_environment_variable" "emailjs_public_key" {
-  count      = var.vercel_api_token != "" ? 1 : 0
-  project_id = vercel_project.portfolio[0].id
-  key        = "NEXT_PUBLIC_EMAILJS_PUBLIC_KEY"
-  value      = var.emailjs_public_key
-  target     = ["production", "preview", "development"]
-}
 
 # Vercel Deployment
 resource "vercel_deployment" "portfolio_deploy" {
@@ -47,9 +46,7 @@ resource "vercel_deployment" "portfolio_deploy" {
 
   depends_on = [
     vercel_project.portfolio,
-    vercel_project_environment_variable.emailjs_service_id,
-    vercel_project_environment_variable.emailjs_template_id,
-    vercel_project_environment_variable.emailjs_public_key
+    vercel_project_environment_variables.env_vars
   ]
 }
 
@@ -68,6 +65,6 @@ resource "cloudflare_dns_record" "portfolio_dns" {
   name    = var.subdomain
   type    = "CNAME"
   content = var.vercel_api_token != "" ? "cname.vercel-dns.com" : "placeholder.vercel-dns.com"
-  ttl     = 60
+  ttl     = 1
   proxied = true
 }

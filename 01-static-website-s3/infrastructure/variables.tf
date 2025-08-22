@@ -1,54 +1,65 @@
+variable "project_name" {
+  description = "Name of the project"
+  type        = string
+  default     = "01-static-website-aws-portfolio"
+}
+
 variable "aws_region" {
-  description = "The AWS region where the S3 bucket will be created."
+  description = "AWS region"
   type        = string
   default     = "ap-south-1"
-
 }
 
-variable "project_name" {
-  description = "The name of the project, used for naming resources."
+variable "environment" {
+  description = "Environment (local or ci)"
   type        = string
-  default     = "01-project-aws-portfolio"
-
+  default     = "local"
 }
-
-variable "github_deploy_user_arn" {
-  description = "The ARN of the GitHub deploy user."
-  type        = string
-  default     = "" # Set this to the actual ARN of your GitHub deploy user
-}
-
-
 
 variable "cloudflare_api_token" {
-  type        = string
   description = "Cloudflare API token"
+  type        = string
+  default     = ""
   sensitive   = true
 }
 
 variable "cloudflare_zone_id" {
-  type        = string
   description = "Cloudflare Zone ID"
+  type        = string
+  default     = ""
   sensitive   = true
 }
 
 variable "subdomain" {
+  description = "Subdomain to point to CloudFront"
   type        = string
-  description = "Subdomain to point to S3 (like www or static)"
   default     = "portfolio"
 }
 
-
-variable "project_owner" {
-  description = "The owner of the project, used for tagging resources."
-  type        = string
-  default     = ""
-
+variable "enable_custom_domain" {
+  description = "Enable custom domain with Cloudflare"
+  type        = bool
+  default     = false
 }
 
-variable "environment" {
-  description = "The environment for the project (e.g., dev, staging, prod)."
-  type        = string
-  default     = "portfolio"
+variable "upload_site_files" {
+  description = "Whether to upload site files from local dist folder"
+  type        = bool
+  default     = false
+}
 
+variable "site_source_dir" {
+  description = "Local directory containing built site files"
+  type        = string
+  default     = "../site/dist"
+}
+
+variable "tags" {
+  description = "Tags to apply to resources"
+  type        = map(string)
+  default = {
+    Project     = "01-static-website-aws-portfolio"
+    Environment = "portfolio"
+    project-no  = "01"
+  }
 }
