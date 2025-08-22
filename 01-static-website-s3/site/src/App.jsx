@@ -1,53 +1,59 @@
-import Testimonials from "./sections/Testimonials";
-import Footer from "./sections/Footer";
-import Contact from "./sections/Contact";
-import TechStack from "./sections/TechStack";
-import Experience from "./sections/Experience";
-import Hero from "./sections/Hero";
-import ShowcaseSection from "./sections/ShowcaseSection";
-import LogoShowcase from "./sections/LogoShowcase";
-import FeatureCards from "./sections/FeatureCards";
-import Navbar from "./components/NavBar";
+import { useState } from 'react'
+import './App.css'
 
-import { useEffect } from "react"
-import { gsap } from "gsap"
-import { ScrollTrigger } from "gsap/ScrollTrigger"
-import { ThemeProvider } from "@/components/other/theme-provider"
+function App() {
+  const [count, setCount] = useState(0)
 
+  return (
+    <div className="app">
+      <header className="header">
+        <h1>🚀 Static Website Demo</h1>
+        <p>Project 01 - AWS S3 + CloudFront + Custom Domain</p>
+      </header>
 
-// Register GSAP plugins
-if (typeof window !== "undefined") {
-  gsap.registerPlugin(ScrollTrigger)
+      <main className="main">
+        <section className="hero">
+          <h2>Simple Static Site Deployment</h2>
+          <p>This demonstrates a basic static website hosted on AWS S3 with CloudFront CDN and custom domain.</p>
+          
+          <div className="counter-section">
+            <button onClick={() => setCount((count) => count + 1)}>
+              Count is {count}
+            </button>
+            <p>Click the button to test React functionality</p>
+          </div>
+        </section>
+
+        <section className="features">
+          <h3>🛠️ Tech Stack</h3>
+          <ul>
+            <li>⚡ Vite + React</li>
+            <li>☁️ AWS S3 Static Hosting</li>
+            <li>🌐 CloudFront CDN</li>
+            <li>🔒 SSL Certificate (ACM)</li>
+            <li>🌍 Custom Domain (Cloudflare DNS)</li>
+            <li>🚀 Infrastructure as Code (Terraform)</li>
+          </ul>
+        </section>
+
+        <section className="architecture">
+          <h3>📐 Architecture</h3>
+          <p>User → CloudFront → S3 Bucket → Static Files</p>
+          <div className="architecture-flow">
+            <div className="step">🌐 Domain</div>
+            <div className="arrow">→</div>
+            <div className="step">☁️ CloudFront</div>
+            <div className="arrow">→</div>
+            <div className="step">🪣 S3</div>
+          </div>
+        </section>
+      </main>
+
+      <footer className="footer">
+        <p>© 2025 AWS Portfolio Project 01 - Static Website Demo</p>
+      </footer>
+    </div>
+  )
 }
 
-export default function App() {
-  useEffect(() => {
-    // Initialize smooth scrolling and global animations
-    gsap.set("body", { overflow: "visible" })
-
-    // Refresh ScrollTrigger on load
-    ScrollTrigger.refresh()
-
-    return () => {
-      ScrollTrigger.getAll().forEach((trigger) => trigger.kill())
-    }
-  }, [])
-  return (<>
-    <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
-
-      <Navbar />
-      <Hero />
-      <ShowcaseSection />
-      <LogoShowcase />
-      <FeatureCards />
-      <Experience />
-      <TechStack />
-      <Testimonials />
-      <Contact />
-      <Footer />
-    </ThemeProvider>
-
-  </>);
-};
-
-
+export default App
