@@ -1,0 +1,14 @@
+# Vercel Configuration
+vercel_api_token = "your_vercel_api_token_here"
+
+# Cloudflare Configuration
+cloudflare_api_token = "your_cloudflare_api_token_here"
+cloudflare_zone_id   = "your_cloudflare_zone_id_here"
+
+# Domain Configuration
+subdomain = "portfolio"
+
+# EmailJS Configuration
+emailjs_service_id  = "service_f32qsrg"
+emailjs_template_id = "template_f3gt8zp"
+emailjs_public_key  = "9ZEGNpRtasCotXfen"

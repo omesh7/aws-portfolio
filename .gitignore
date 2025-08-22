@@ -1,9 +1,11 @@
 # Ignore all node_modules anywhere
 **/node_modules/
 
-# Ignore all .env files anywhere
+# Ignore all .env files anywhere (CRITICAL SECURITY)
 **/.env
 **/.env.*
+!**/.env.example
+!**/.env.template
 
 # Logs
 logs
@@ -58,18 +60,23 @@ dist-ssr
 *.sw?
 *.csv
 
+# Terraform files (CRITICAL SECURITY)
 .terraform/
 *.tfstate
+*.tfstate.*
 *.tfstate.backup
-# *.tfvars
+# Uncomment the line below to ignore all tfvars files
+*.tfvars
+!*.tfvars.example
+!*.tfvars.template
 *.tfvars.json
 .terraformrc
 terraform.rc
 *.override.tf
 *.tfplan
 .envrc
-*.tfstate.*.backup
 secrets.auto.tfvars
+!secrets.auto.tfvars.example
 *.terraform.tfstate.lock.info
 *.terraform.lock.hcl
 
