@@ -1,5 +1,5 @@
 resource "aws_codebuild_project" "frontend" {
-  name         = "${var.project_name}-frontend-build"
+  name         = "${var.project_name}-frontend-build-${random_string.suffix.result}"
   description  = "Build and deploy frontend for 2048 Game"
   service_role = aws_iam_role.codebuild_role.arn
   
@@ -39,6 +39,6 @@ resource "aws_codebuild_project" "frontend" {
   }
 
   tags = {
-    Name = "${var.project_name}-frontend-build"
+    Name = "${var.project_name}-frontend-build-${random_string.suffix.result}"
   }
 }
