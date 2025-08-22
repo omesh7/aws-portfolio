@@ -14,8 +14,23 @@ output "domain_name" {
 }
 
 output "weather_app_url" {
-  description = "Weather app URL"
+  description = "Weather app URL (Primary - AWS)"
   value       = "https://${var.subdomain}.${data.cloudflare_zone.zone.name}"
+}
+
+output "weather_app_backup_url" {
+  description = "Weather app backup URL (Secondary - GCP)"
+  value       = "https://${var.subdomain}-backup.${data.cloudflare_zone.zone.name}"
+}
+
+output "gcp_load_balancer_ip" {
+  description = "Google Cloud Load Balancer IP"
+  value       = module.gcp_infrastructure.load_balancer_ip
+}
+
+output "gcp_cdn_url" {
+  description = "Google Cloud CDN direct URL"
+  value       = module.gcp_infrastructure.cdn_url
 }
 
 

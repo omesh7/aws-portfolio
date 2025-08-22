@@ -43,33 +43,24 @@ data "cloudflare_zone" "zone" {
 
 
 # ============================================================================
-# AZURE RESOURCES - Commented out for AWS-only deployment
+# GOOGLE CLOUD RESOURCES - Commented out for AWS-only deployment
 # Uncomment this entire section when ready to deploy multicloud setup
 # ============================================================================
 
-# module "azure_infrastructure" {
-#   source = "./modules/azure"
-#
-#   domain_name    = "${var.subdomain}.${data.cloudflare_zone.zone.name}"
-#   azure_location = var.azure_location
-#   resource_group = var.azure_resource_group
-# }
+module "gcp_infrastructure" {
+  source = "./modules/gcp"
 
-# resource "azurerm_resource_group" "main" {
-#   name     = var.azure_resource_group
-#   location = var.azure_location
-#
-#   tags = {
-#     environment = "production"
-#     project     = "weather-tracker"
-#   }
-# }
+  domain_name         = "${var.subdomain}-backup.${data.cloudflare_zone.zone.name}"
+  gcp_region          = var.gcp_region
+  gcp_project_id      = var.gcp_project_id
+  lambda_function_url = aws_lambda_function_url.weather_tracker_url.function_url
+}
 
-# resource "cloudflare_dns_record" "secondary" {
-#   zone_id = var.cloudflare_zone_id
-#   name    = "${var.subdomain}-backup"
-#   type    = "CNAME"
-#   content = module.azure_infrastructure.cdn_endpoint_fqdn
-#   ttl     = 60
-#   proxied = false
-# }
+resource "cloudflare_dns_record" "secondary" {
+  zone_id = var.cloudflare_zone_id
+  name    = "${var.subdomain}-backup"
+  type    = "A"
+  content = module.gcp_infrastructure.load_balancer_ip
+  ttl     = 60
+  proxied = false
+}

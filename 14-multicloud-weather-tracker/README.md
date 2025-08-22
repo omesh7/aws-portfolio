@@ -2,7 +2,7 @@
 
 **Resilient Weather Application with Multi-Cloud Disaster Recovery**
 
-A production-ready serverless weather application demonstrating enterprise-grade multi-cloud architecture using AWS and Azure, with automated failover capabilities and zero-downtime disaster recovery.
+A production-ready serverless weather application demonstrating enterprise-grade multi-cloud architecture using AWS and Google Cloud, with automated failover capabilities and zero-downtime disaster recovery.
 
 ## 🎯 Quick Overview for Recruiters
 
@@ -11,7 +11,7 @@ A production-ready serverless weather application demonstrating enterprise-grade
 - **Backend:** AWS Lambda + Node.js 18 (Serverless architecture)
 - **Infrastructure:** Terraform IaC with multi-cloud modules
 - **Primary Cloud:** AWS (Lambda, S3, CloudFront, Route53)
-- **Secondary Cloud:** Azure (Functions, Blob Storage, CDN) - Ready to enable
+- **Secondary Cloud:** Google Cloud (Cloud Functions, Cloud Storage, Cloud CDN) - Ready to enable
 - **DNS & Failover:** Cloudflare with automated health checks
 - **API Integration:** OpenWeatherMap REST API
 - **Deployment:** Cross-platform automation scripts (Windows/Linux)
@@ -27,29 +27,29 @@ graph TB
     A[User Request] --> B[Cloudflare DNS]
     B --> C{Health Check}
     C -->|Healthy| D[AWS Primary]
-    C -->|Failed| E[Azure Secondary]
+    C -->|Failed| E[Google Cloud Secondary]
     
     D --> F[CloudFront CDN]
     F --> G[S3 Static Hosting]
     F --> H[Lambda Function]
     H --> I[OpenWeather API]
     
-    E --> J[Azure CDN]
-    J --> K[Blob Storage]
-    J --> L[Azure Functions]
+    E --> J[Cloud CDN]
+    J --> K[Cloud Storage]
+    J --> L[Cloud Functions]
     L --> I
     
     M[Terraform] --> N[AWS Infrastructure]
-    M --> O[Azure Infrastructure]
+    M --> O[Google Cloud Infrastructure]
     M --> P[Cloudflare DNS]
 ```
 
 **Data Flow:**
 1. User accesses weather.your-domain.com
 2. Cloudflare DNS performs health check on primary AWS endpoint
-3. Routes traffic to healthy infrastructure (AWS primary or Azure backup)
-4. Static frontend served from CDN (CloudFront/Azure CDN)
-5. API calls routed to serverless functions (Lambda/Azure Functions)
+3. Routes traffic to healthy infrastructure (AWS primary or Google Cloud backup)
+4. Static frontend served from CDN (CloudFront/Cloud CDN)
+5. API calls routed to serverless functions (Lambda/Cloud Functions)
 6. Weather data fetched from OpenWeatherMap API
 7. Automatic failover if primary infrastructure fails
 
@@ -61,19 +61,19 @@ graph TB
 - **Vanilla JavaScript** - Modern ES6+ features, no framework dependencies
 - **CSS3** - Responsive design with flexbox and grid
 - **Progressive Enhancement** - Works without JavaScript for basic functionality
-- **CDN Delivery** - Global content distribution via CloudFront/Azure CDN
+- **CDN Delivery** - Global content distribution via CloudFront/Cloud CDN
 - **HTTPS Enforced** - SSL/TLS encryption with automatic certificate management
 
 ### Backend Architecture
 - **AWS Lambda** - Serverless compute with Node.js 18 runtime
-- **Azure Functions** - Secondary serverless compute (ready to enable)
+- **Cloud Functions** - Secondary serverless compute (ready to enable)
 - **RESTful API** - Clean API design with proper HTTP status codes
 - **CORS Configuration** - Cross-origin resource sharing properly configured
 - **Environment Variables** - Secure API key management
 
 ### Infrastructure as Code
 - **Terraform** - Multi-cloud infrastructure provisioning
-- **Modular Design** - Reusable AWS and Azure modules
+- **Modular Design** - Reusable AWS and Google Cloud modules
 - **State Management** - Terraform state with proper locking
 - **Resource Tagging** - Consistent tagging strategy across clouds
 - **Cost Optimization** - Pay-per-use serverless model
@@ -98,7 +98,7 @@ graph TB
 - OpenWeatherMap API key (free tier)
 
 # Optional for multi-cloud
-- Azure CLI (for secondary cloud)
+- Google Cloud CLI (for secondary cloud)
 ```
 
 ### Configuration
@@ -148,18 +148,18 @@ scripts/linux/test-failover.sh      # Linux
 - **DNS:** Route53 health checks
 - **SSL:** ACM certificate management
 
-### Enable Azure Secondary (Optional)
-Uncomment Azure resources in:
+### Enable Google Cloud Secondary (Optional)
+Uncomment Google Cloud resources in:
 ```hcl
 # terraform/main.tf
-module "azure_infrastructure" {
-  source = "./modules/azure"
+module "gcp_infrastructure" {
+  source = "./modules/gcp"
   # ... configuration
 }
 
 # terraform/outputs.tf
-output "azure_storage_account" {
-  value = module.azure_infrastructure.storage_account_name
+output "gcp_storage_bucket" {
+  value = module.gcp_infrastructure.storage_bucket_name
 }
 ```
 
@@ -187,7 +187,7 @@ output "azure_storage_account" {
 ├── terraform/                  # Infrastructure as Code
 │   ├── modules/               # Reusable modules
 │   │   ├── aws/               # AWS infrastructure
-│   │   └── azure/             # Azure infrastructure
+│   │   └── gcp/               # Google Cloud infrastructure
 │   ├── main.tf                # Main configuration
 │   ├── variables.tf           # Input variables
 │   ├── outputs.tf             # Output values
@@ -250,7 +250,7 @@ scripts/linux/test-failover.sh
 
 ### Manual Testing Scenarios
 1. **Primary Infrastructure Failure** - Disable AWS Lambda
-2. **DNS Failover** - Verify Azure traffic routing
+2. **DNS Failover** - Verify Google Cloud traffic routing
 3. **SSL Certificate** - Validate HTTPS enforcement
 4. **API Rate Limiting** - Test OpenWeather API limits
 5. **Cross-Browser** - Validate frontend compatibility

@@ -1,19 +1,19 @@
 terraform {
-  cloud {
-    organization = "aws-portfolio-omesh"
-    workspaces {
-      name = "14-multicloud-weather-tracker"
-    }
+  backend "s3" {
+    bucket         = "aws-portfolio-terraform-state"
+    key            = "14-multicloud-weather-tracker/terraform.tfstate"
+    region         = "ap-south-1"
+    dynamodb_table = "aws-portfolio-terraform-locks"
+    encrypt        = true
   }
-
   required_providers {
     aws = {
       source  = "hashicorp/aws"
       version = "~> 6.0"
     }
-    azurerm = {
-      source  = "hashicorp/azurerm"
-      version = "~> 4.0"
+    google = {
+      source  = "hashicorp/google"
+      version = "~> 6.0"
     }
     cloudflare = {
       source  = "cloudflare/cloudflare"
@@ -40,11 +40,9 @@ provider "aws" {
   }
 }
 
-provider "azurerm" {
-  features {
-
-  }
-
+provider "google" {
+  project = var.gcp_project_id
+  region  = var.gcp_region
 }
 
 provider "cloudflare" {
