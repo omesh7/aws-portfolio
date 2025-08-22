@@ -10,6 +10,7 @@ import TechStack from "@/components/TechStack"
 import Certifications from "@/components/Certifications"
 import Experience from "@/components/Experience"
 import Contact from "@/components/Contact"
+import ContactForm from "@/components/ContactForm"
 import Footer from "@/components/Footer"
 
 // Register GSAP plugins
@@ -39,6 +40,7 @@ export default function Home() {
       <Certifications />
       <Experience />
       <Contact />
+      <ContactForm />
       <Footer />
     </main>
   )
