@@ -4,16 +4,15 @@ variable "aws_region" {
   default     = "ap-south-1"
 }
 
-variable "azure_location" {
-  description = "Azure location for secondary deployment"
+variable "gcp_region" {
+  description = "Google Cloud region for secondary deployment"
   type        = string
-  default     = "East US"
+  default     = "us-central1"
 }
 
-variable "azure_resource_group" {
-  description = "Azure resource group name"
+variable "gcp_project_id" {
+  description = "Google Cloud project ID"
   type        = string
-  default     = "weather-tracker-rg"
 }
 
 variable "project_name" {
