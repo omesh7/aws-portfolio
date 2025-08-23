@@ -142,7 +142,7 @@ jobs:
             -var="cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}" \
             -var="cloudflare_zone_id=${{ secrets.CLOUDFLARE_ZONE_ID }}" \
             -var="cloudflare_site=omesh.site" \
-            -var="subdomain=resize-image"
+            -var="subdomain=image-recog"
 
       - name: Warm Up Lambda Functions
         working-directory: ${{env.PROJECT_PATH}}/infrastructure
@@ -248,4 +248,4 @@ jobs:
            -var="cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}" \
            -var="cloudflare_zone_id=${{ secrets.CLOUDFLARE_ZONE_ID }}" \
            -var="cloudflare_site=omesh.site" \
-           -var="subdomain=resize-image"
+           -var="subdomain=image-recog"

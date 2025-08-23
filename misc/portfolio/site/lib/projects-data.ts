@@ -1,13 +1,13 @@
 export interface Project {
-  id: string
-  title: string
-  category: string
-  description: string
-  achievement: string
-  techStack: string[]
-  deployable: boolean
-  liveUrl?: string
-  githubUrl?: string
+  id: string;
+  title: string;
+  category: string;
+  description: string;
+  achievement: string;
+  techStack: string[];
+  deployable: boolean;
+  liveUrl?: string;
+  githubUrl?: string;
 }
 
 export const projects: Project[] = [
@@ -18,7 +18,15 @@ export const projects: Project[] = [
     description:
       "React 19 portfolio with Three.js animations, global CDN distribution, and automated CI/CD deployment pipeline.",
     achievement: "Global CDN with SSL automation and performance optimization",
-    techStack: ["React 19", "Three.js", "Vite", "Terraform", "S3", "CloudFront", "GitHub Actions"],
+    techStack: [
+      "React 19",
+      "Three.js",
+      "Vite",
+      "Terraform",
+      "S3",
+      "CloudFront",
+      "GitHub Actions",
+    ],
     deployable: false,
     liveUrl: "https://portfolio.omesh.site",
     githubUrl: "https://github.com/omesh7/portfolio",
@@ -30,7 +38,14 @@ export const projects: Project[] = [
     description:
       "Serverless bulk email processing system with CSV parsing, delivery tracking, and comprehensive error handling.",
     achievement: "1000+ emails/batch processing with cost-effective scaling",
-    techStack: ["TypeScript", "Lambda", "SES", "S3", "CloudWatch", "Node.js 18"],
+    techStack: [
+      "TypeScript",
+      "Lambda",
+      "SES",
+      "S3",
+      "CloudWatch",
+      "Node.js 18",
+    ],
     deployable: true,
     githubUrl: "https://github.com/omesh7/mass-email-system",
   },
@@ -38,7 +53,8 @@ export const projects: Project[] = [
     id: "alexa-skill",
     title: "Custom Alexa Skill",
     category: "Voice Interface",
-    description: "Voice-activated portfolio queries with custom intents and natural language processing capabilities.",
+    description:
+      "Voice-activated portfolio queries with custom intents and natural language processing capabilities.",
     achievement: "Natural language processing with voice UI design",
     techStack: ["Node.js", "Alexa Skills Kit", "Lambda", "Voice UI"],
     deployable: true,
@@ -48,7 +64,8 @@ export const projects: Project[] = [
     id: "text-to-speech",
     title: "Text-to-Speech Generator",
     category: "AI/ML Services",
-    description: "Real-time audio generation with multiple voice options, MP3 conversion, and public URL distribution.",
+    description:
+      "Real-time audio generation with multiple voice options, MP3 conversion, and public URL distribution.",
     achievement: "AI-powered speech synthesis with scalable processing",
     techStack: ["Node.js", "Amazon Polly", "Lambda", "S3", "API Gateway"],
     deployable: true,
@@ -61,7 +78,13 @@ export const projects: Project[] = [
     description:
       "Custom ML implementation using collaborative filtering on 1GB Spotify dataset for user-based recommendations.",
     achievement: "Custom ML implementation with large dataset processing",
-    techStack: ["Python", "Pandas", "Scikit-learn", "Collaborative Filtering", "Amazon Personalize"],
+    techStack: [
+      "Python",
+      "Pandas",
+      "Scikit-learn",
+      "Collaborative Filtering",
+      "Amazon Personalize",
+    ],
     deployable: false,
     githubUrl: "https://github.com/omesh7/recommendation-engine",
   },
@@ -72,7 +95,14 @@ export const projects: Project[] = [
     description:
       "High-performance image processing with multiple formats, custom dimensions, and modern responsive UI.",
     achievement: "High-performance image processing with modern frontend",
-    techStack: ["Next.js 15", "React 19", "Sharp", "TypeScript", "Lambda", "S3"],
+    techStack: [
+      "Next.js 15",
+      "React 19",
+      "Sharp",
+      "TypeScript",
+      "Lambda",
+      "S3",
+    ],
     deployable: true,
     liveUrl: "https://resize.omesh.site",
     githubUrl: "https://github.com/omesh7/image-resizer",
@@ -84,7 +114,14 @@ export const projects: Project[] = [
     description:
       "OCR-powered receipt analysis with automated data extraction, parsing, and structured storage for expense tracking.",
     achievement: "Document AI with automated data processing",
-    techStack: ["Python", "Textract", "Lambda", "DynamoDB", "S3", "API Gateway"],
+    techStack: [
+      "Python",
+      "Textract",
+      "Lambda",
+      "DynamoDB",
+      "S3",
+      "API Gateway",
+    ],
     deployable: true,
     githubUrl: "https://github.com/omesh7/receipt-processor",
   },
@@ -94,8 +131,16 @@ export const projects: Project[] = [
     category: "Conversational AI",
     description:
       "Advanced AI chatbot with vector database integration for intelligent portfolio Q&A and context-aware responses.",
-    achievement: "Advanced AI integration with vector search and RAG architecture",
-    techStack: ["Python", "LangChain", "OpenAI", "Vector Embeddings", "Lambda", "DynamoDB"],
+    achievement:
+      "Advanced AI integration with vector search and RAG architecture",
+    techStack: [
+      "Python",
+      "LangChain",
+      "OpenAI",
+      "Vector Embeddings",
+      "Lambda",
+      "DynamoDB",
+    ],
     deployable: true,
     githubUrl: "https://github.com/omesh7/rag-portfolio-chat",
   },
@@ -116,7 +161,8 @@ export const projects: Project[] = [
     category: "Real-Time Processing",
     description:
       "Real-time data ingestion and processing pipeline with containerized ML models and scalable streaming architecture.",
-    achievement: "Real-time analytics with containerized ML and stream processing",
+    achievement:
+      "Real-time analytics with containerized ML and stream processing",
     techStack: ["Python", "Docker", "Kinesis", "ECR", "Lambda", "DynamoDB"],
     deployable: true,
     githubUrl: "https://github.com/omesh7/kinesis-ml-pipeline",
@@ -128,8 +174,16 @@ export const projects: Project[] = [
     description:
       "Computer vision combined with generative AI to analyze images and create contextual poetry based on detected scenes.",
     achievement: "Computer vision + generative AI for creative applications",
-    techStack: ["Python", "Rekognition", "OpenAI", "Lambda", "S3", "API Gateway"],
+    techStack: [
+      "Python",
+      "Rekognition",
+      "OpenAI",
+      "Lambda",
+      "S3",
+      "API Gateway",
+    ],
     deployable: true,
+    liveUrl: "https://image-recog.omesh.site/",
     githubUrl: "https://github.com/omesh7/image-recognition-poem",
   },
   {
@@ -149,8 +203,16 @@ export const projects: Project[] = [
     category: "DevOps Automation",
     description:
       "Full-stack game with enterprise CI/CD pipeline, automated testing, multi-stage deployment, and rollback capabilities.",
-    achievement: "Enterprise CI/CD with automated testing and deployment automation",
-    techStack: ["React", "Vite", "Python Flask", "Docker", "CodePipeline", "CodeBuild"],
+    achievement:
+      "Enterprise CI/CD with automated testing and deployment automation",
+    techStack: [
+      "React",
+      "Vite",
+      "Python Flask",
+      "Docker",
+      "CodePipeline",
+      "CodeBuild",
+    ],
     deployable: true,
     liveUrl: "https://2048.omesh.site",
     githubUrl: "https://github.com/omesh7/2048-game-cicd",
@@ -162,9 +224,17 @@ export const projects: Project[] = [
     description:
       "Multi-cloud architecture with automated failover, health monitoring, and zero-downtime disaster recovery across AWS and Azure.",
     achievement: "Enterprise disaster recovery with multi-cloud architecture",
-    techStack: ["JavaScript", "Node.js", "Terraform", "AWS", "Azure", "Cloudflare", "Route53"],
+    techStack: [
+      "JavaScript",
+      "Node.js",
+      "Terraform",
+      "AWS",
+      "Azure",
+      "Cloudflare",
+      "Route53",
+    ],
     deployable: true,
     liveUrl: "https://weather.portfolio.omesh.site",
     githubUrl: "https://github.com/omesh7/multi-cloud-weather",
   },
-]
+];
