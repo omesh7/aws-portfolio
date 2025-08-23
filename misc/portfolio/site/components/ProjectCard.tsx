@@ -1,11 +1,11 @@
 "use client"
 
-import { useState } from "react"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { ExternalLink, Github, Play, Square, Loader2 } from "lucide-react"
+import { ExternalLink, Github } from "lucide-react"
+import { DeploymentStatus } from "@/components/DeploymentStatus"
+import { githubAPI } from "@/lib/github-api"
 import type { Project } from "@/lib/projects-data"
 
 interface ProjectCardProps {
@@ -14,71 +14,7 @@ interface ProjectCardProps {
 }
 
 const ProjectCard = ({ project }: ProjectCardProps) => {
-  const [isStarting, setIsStarting] = useState(false)
-  const [isStopping, setIsStopping] = useState(false)
-  const [isRunning, setIsRunning] = useState(false)
-  const [progress, setProgress] = useState(0)
-  const [currentStep, setCurrentStep] = useState("")
-  const [showProgress, setShowProgress] = useState(false)
-
-  const simulateProgress = async (steps: string[], isStarting: boolean) => {
-    setShowProgress(true)
-    setProgress(0)
-
-    for (let i = 0; i < steps.length; i++) {
-      setCurrentStep(steps[i])
-      setProgress(((i + 1) / steps.length) * 100)
-
-      // Simulate time for each step
-      await new Promise((resolve) => setTimeout(resolve, 800))
-    }
-
-    // Hide progress after completion
-    setTimeout(() => {
-      setShowProgress(false)
-      setCurrentStep("")
-      setProgress(0)
-    }, 1000)
-  }
-
-  const handleStart = async () => {
-    setIsStarting(true)
-    try {
-      console.log(`Starting infrastructure for ${project.title}`)
-
-      const steps = project.deploymentSteps || [
-        "Preparing infrastructure",
-        "Running Terraform",
-        "Terraform applied",
-        "Code building starting",
-        "Deployment in progress",
-        "Done, deployed",
-      ]
-
-      await simulateProgress(steps, true)
-      setIsRunning(true)
-    } catch (error) {
-      console.error("Failed to start infrastructure:", error)
-    } finally {
-      setIsStarting(false)
-    }
-  }
-
-  const handleStop = async () => {
-    setIsStopping(true)
-    try {
-      console.log(`Stopping infrastructure for ${project.title}`)
-
-      const stopSteps = ["Stopping services", "Draining connections", "Destroying resources", "Cleanup complete"]
-
-      await simulateProgress(stopSteps, false)
-      setIsRunning(false)
-    } catch (error) {
-      console.error("Failed to stop infrastructure:", error)
-    } finally {
-      setIsStopping(false)
-    }
-  }
+  const isDeployable = githubAPI.isProjectDeployable(project.id)
 
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 bg-card/50 backdrop-blur-sm border-border/50">
@@ -90,9 +26,9 @@ const ProjectCard = ({ project }: ProjectCardProps) => {
             </CardTitle>
             <CardDescription className="mt-2 text-sm">{project.category}</CardDescription>
           </div>
-          {project.deployable && (
-            <Badge variant={isRunning ? "default" : "secondary"} className="ml-2 shrink-0">
-              {isRunning ? "Running" : "Deployable"}
+          {isDeployable && (
+            <Badge variant="default" className="ml-2 shrink-0">
+              Deployable
             </Badge>
           )}
         </div>
@@ -117,15 +53,9 @@ const ProjectCard = ({ project }: ProjectCardProps) => {
           </div>
         </div>
 
-        {showProgress && (
-          <div className="space-y-2 p-3 bg-muted/50 rounded-lg border">
-            <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Deployment Progress</span>
-              <span className="text-sm text-muted-foreground">{Math.round(progress)}%</span>
-            </div>
-            <Progress value={progress} className="h-2" />
-            <p className="text-xs text-muted-foreground">{currentStep}</p>
-          </div>
+        {/* Deployment Status for deployable projects */}
+        {isDeployable && (
+          <DeploymentStatus project={project} compact={true} />
         )}
 
         <div>
@@ -158,60 +88,22 @@ const ProjectCard = ({ project }: ProjectCardProps) => {
 
       <CardFooter className="pt-4 border-t border-border/50">
         <div className="flex gap-2 w-full">
-          {project.deployable ? (
-            <>
-              {/* Infrastructure Control Buttons */}
-              <div className="flex gap-2 flex-1">
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={handleStart}
-                  disabled={isStarting || isRunning || showProgress}
-                  className="flex-1"
-                >
-                  {isStarting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Play className="h-4 w-4 mr-2" />}
-                  {isStarting ? "Starting..." : "Start"}
-                </Button>
-
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleStop}
-                  disabled={isStopping || !isRunning || showProgress}
-                  className="flex-1 bg-transparent"
-                >
-                  {isStopping ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Square className="h-4 w-4 mr-2" />}
-                  {isStopping ? "Stopping..." : "Stop"}
-                </Button>
-              </div>
-
-              {/* GitHub Button - Always present for deployable projects */}
-              <Button variant="outline" size="sm" asChild className="shrink-0 bg-transparent">
-                <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
-                  <Github className="h-4 w-4" />
-                </a>
-              </Button>
-            </>
-          ) : (
-            <>
-              {/* Non-deployable projects - Live Demo and GitHub */}
-              {project.liveUrl && (
-                <Button variant="default" size="sm" asChild className="flex-1">
-                  <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Live Demo
-                  </a>
-                </Button>
-              )}
-
-              <Button variant="outline" size="sm" asChild className={project.liveUrl ? "shrink-0" : "flex-1"}>
-                <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
-                  <Github className="h-4 w-4 mr-2" />
-                  {project.liveUrl ? "" : "View Code"}
-                </a>
-              </Button>
-            </>
+          {/* Live Demo and GitHub buttons for all projects */}
+          {project.liveUrl && (
+            <Button variant="default" size="sm" asChild className="flex-1">
+              <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="h-4 w-4 mr-2" />
+                Live Demo
+              </a>
+            </Button>
           )}
+
+          <Button variant="outline" size="sm" asChild className={project.liveUrl ? "shrink-0" : "flex-1"}>
+            <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
+              <Github className="h-4 w-4 mr-2" />
+              {project.liveUrl ? "" : "View Code"}
+            </a>
+          </Button>
         </div>
       </CardFooter>
     </Card>

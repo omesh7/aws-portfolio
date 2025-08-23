@@ -57,3 +57,15 @@ output "vercel_deployment_url" {
   description = "The URL of the Vercel deployment for the image Recog project"
   sensitive   = true
 }
+
+
+
+# Cloudflare DNS Record
+resource "cloudflare_dns_record" "portfolio_dns" {
+  zone_id = var.cloudflare_zone_id
+  name    = var.cloudflare_site
+  type    = "CNAME"
+  content = var.vercel_api_token != "" ? "cname.vercel-dns.com" : "placeholder.vercel-dns.com"
+  ttl     = 1
+  proxied = true
+}

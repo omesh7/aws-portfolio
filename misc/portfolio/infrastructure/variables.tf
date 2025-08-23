@@ -54,3 +54,22 @@ variable "emailjs_public_key" {
   type        = string
   sensitive   = true
 }
+
+variable "github_token" {
+  description = "GitHub Personal Access Token for API access"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "github_repo_owner" {
+  description = "GitHub repository owner"
+  type        = string
+  default     = "omesh7"
+}
+
+variable "github_repo_name" {
+  description = "GitHub repository name"
+  type        = string
+  default     = "aws-portfolio"
+}
