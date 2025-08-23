@@ -68,5 +68,10 @@ variable "cloudflare_site" {
   description = "Cloudflare Site Main Domain (e.g., example.com)"
   type        = string
   default     = "example.com"
+}
 
+variable "subdomain" {
+  description = "Subdomain for the project (e.g., resize-image)"
+  type        = string
+  default     = "resize-image"
 }
