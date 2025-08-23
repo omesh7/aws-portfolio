@@ -36,6 +36,12 @@ resource "vercel_project_environment_variables" "env_s" {
 }
 
 
+resource "vercel_project_domain" "custom_domain" {
+  count      = var.vercel_api_token != "" ? 1 : 0
+  project_id = vercel_project.image_recog[0].id
+  domain     = "${var.subdomain}.${var.cloudflare_site}"
+}
+
 resource "vercel_deployment" "image_recog_deploy" {
   count             = var.vercel_api_token != "" ? 1 : 0
   project_id        = vercel_project.image_recog[0].id
@@ -45,7 +51,8 @@ resource "vercel_deployment" "image_recog_deploy" {
 
   depends_on = [
     vercel_project.image_recog,
-    vercel_project_environment_variables.env_s
+    vercel_project_environment_variables.env_s,
+    vercel_project_domain.custom_domain
   ]
 }
 
@@ -63,7 +70,7 @@ output "vercel_deployment_url" {
 # Cloudflare DNS Record
 resource "cloudflare_dns_record" "portfolio_dns" {
   zone_id = var.cloudflare_zone_id
-  name    = var.cloudflare_site
+  name    = var.subdomain
   type    = "CNAME"
   content = var.vercel_api_token != "" ? "cname.vercel-dns.com" : "placeholder.vercel-dns.com"
   ttl     = 1
