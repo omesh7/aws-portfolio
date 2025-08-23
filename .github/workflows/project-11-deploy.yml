@@ -138,7 +138,11 @@ jobs:
             -var="lambda_uploads_zip_path=lambda_upload.zip" \
             -var="lambda_image_recog_zip_path=lambda_image_recog.zip" \
             -var="lambda_get_poem_zip_path=lambda_get_poem.zip" \
-            -var="vercel_api_token=${{ secrets.VERCEL_TOKEN }}"
+            -var="vercel_api_token=${{ secrets.VERCEL_TOKEN }}" \
+            -var="cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+            -var="cloudflare_zone_id=${{ secrets.CLOUDFLARE_ZONE_ID }}" \
+            -var="cloudflare_site=omesh.site" \
+            -var="subdomain=resize-image"
 
       - name: Warm Up Lambda Functions
         working-directory: ${{env.PROJECT_PATH}}/infrastructure
@@ -240,4 +244,8 @@ jobs:
            -var="lambda_uploads_zip_path=lambda_upload.zip" \
            -var="lambda_image_recog_zip_path=lambda_image_recog.zip" \
            -var="lambda_get_poem_zip_path=lambda_get_poem.zip" \
-           -var="vercel_api_token=$VERCEL_TOKEN"
+           -var="vercel_api_token=$VERCEL_TOKEN" \
+           -var="cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}" \
+           -var="cloudflare_zone_id=${{ secrets.CLOUDFLARE_ZONE_ID }}" \
+           -var="cloudflare_site=omesh.site" \
+           -var="subdomain=resize-image"
