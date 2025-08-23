@@ -45,3 +45,13 @@ provider "vercel" {
   api_token = var.vercel_api_token
 
 }
+
+
+provider "cloudflare" {
+  api_token = var.cloudflare_api_token
+}
+
+
+data "cloudflare_zone" "zone" {
+  zone_id = var.cloudflare_zone_id
+}
