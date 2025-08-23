@@ -153,7 +153,7 @@ resource "aws_lambda_function_url" "get_poem_url" {
   authorization_type = "NONE"
 
   cors {
-    allow_origins     = ["*"]
+    allow_origins     = ["https://${var.subdomain}.${var.cloudflare_site}"]
     allow_methods     = ["GET", "POST"]
     allow_headers     = ["*"]
     expose_headers    = ["date", "keep-alive"]
@@ -170,7 +170,7 @@ resource "aws_lambda_function_url" "uploads_url" {
   authorization_type = "NONE"
 
   cors {
-    allow_origins     = ["*"]
+    allow_origins     = ["https://${var.subdomain}.${var.cloudflare_site}"]
     allow_methods     = ["GET", "POST"]
     allow_headers     = ["*"]
     expose_headers    = ["date", "keep-alive"]
