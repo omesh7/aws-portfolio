@@ -31,6 +31,21 @@ resource "vercel_project_environment_variables" "env_vars" {
       value  = var.emailjs_public_key
       target = ["production", "preview", "development"]
     },
+    {
+      key    = "NEXT_PUBLIC_GITHUB_TOKEN"
+      value  = var.github_token
+      target = ["production", "preview", "development"]
+    },
+    {
+      key    = "NEXT_PUBLIC_GITHUB_REPO_OWNER"
+      value  = var.github_repo_owner
+      target = ["production", "preview", "development"]
+    },
+    {
+      key    = "NEXT_PUBLIC_GITHUB_REPO_NAME"
+      value  = var.github_repo_name
+      target = ["production", "preview", "development"]
+    },
   ]
 }
 

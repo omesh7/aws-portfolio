@@ -7,8 +7,8 @@ on:
         description: "Action to perform"
         required: true
         type: choice
-        options: ["plan", "apply", "destroy"]
-        default: "plan"
+        options: ["deploy", "destroy"]
+        default: "deploy"
 
 env:
   AWS_REGION: ap-south-1
@@ -20,7 +20,7 @@ jobs:
   setup-ecr:
     name: Setup ECR Repository
     runs-on: ubuntu-latest
-    if: inputs.action != 'destroy'
+    if: inputs.action == 'deploy'
     outputs:
       ecr_repository_url: ${{ steps.ecr-setup.outputs.ecr_repository_url }}
 
@@ -58,7 +58,7 @@ jobs:
     name: Build and Push Docker Image
     runs-on: ubuntu-latest
     needs: [setup-ecr]
-    if: inputs.action != 'destroy'
+    if: inputs.action == 'deploy'
     outputs:
       image_uri: ${{ steps.build.outputs.image_uri }}
 
@@ -100,7 +100,7 @@ jobs:
   build-lambda:
     name: Build Lambda Package
     runs-on: ubuntu-latest
-    if: inputs.action != 'destroy'
+    if: inputs.action == 'deploy'
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -129,7 +129,7 @@ jobs:
     name: Terraform Infrastructure
     runs-on: ubuntu-latest
     needs: [setup-ecr, build-and-push-docker, build-lambda]
-    if: always() && ((inputs.action != 'destroy' && needs.setup-ecr.result == 'success' && needs.build-and-push-docker.result == 'success' && needs.build-lambda.result == 'success') || inputs.action == 'destroy')
+    if: always() && ((inputs.action == 'deploy' && needs.setup-ecr.result == 'success' && needs.build-and-push-docker.result == 'success' && needs.build-lambda.result == 'success') || inputs.action == 'destroy')
     outputs:
       alb_dns_name: ${{ steps.outputs.outputs.alb_dns_name }}
       kinesis_stream_name: ${{ steps.outputs.outputs.kinesis_stream_name }}
@@ -146,7 +146,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
 
       - name: Download Lambda Package
-        if: inputs.action != 'destroy'
+        if: inputs.action == 'deploy'
         uses: actions/download-artifact@v4
         with:
           name: lambda-package
@@ -180,21 +180,8 @@ jobs:
           echo "✅ Validating Terraform configuration..."
           terraform validate
 
-      - name: Terraform Plan
-        if: inputs.action == 'plan' || inputs.action == 'apply'
-        working-directory: 10-KInesis-ECR-ML/infrastructure
-        run: |
-          echo "📋 Planning Terraform deployment..."
-          terraform plan \
-            -var="environment=ci" \
-            -var="project_name=${{ env.PROJECT_NAME }}" \
-            -var="aws_region=${{ env.AWS_REGION }}" \
-            -var="ecr_repository_url=${{ needs.setup-ecr.outputs.ecr_repository_url }}" \
-            -var="image_version=${{ env.IMAGE_TAG }}" \
-            -var="lambda_kinesis_zip_path=lambda-package.zip"
-
       - name: Terraform Apply
-        if: inputs.action == 'apply'
+        if: inputs.action == 'deploy'
         working-directory: 10-KInesis-ECR-ML/infrastructure
         run: |
           echo "🚀 Applying Terraform configuration..."
@@ -223,7 +210,7 @@ jobs:
 
       - name: Capture Terraform Outputs
         id: outputs
-        if: inputs.action == 'apply'
+        if: inputs.action == 'deploy'
         working-directory: 10-KInesis-ECR-ML/infrastructure
         run: |
           echo "📋 Capturing Terraform outputs..."
