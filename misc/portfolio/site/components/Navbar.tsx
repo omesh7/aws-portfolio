@@ -3,8 +3,9 @@
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { ThemeToggle } from "@/components/theme-toggle"
-import { Menu, X } from "lucide-react"
+import { Menu, X, Activity } from "lucide-react"
 import { AnimatedThemeToggler } from "@/components/magicui/AnimatedThemeToggler";
+import Link from "next/link"
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -41,6 +42,12 @@ const Navbar = () => {
             <Button variant="ghost" onClick={() => scrollToSection("projects")}>
               Projects
             </Button>
+            <Button variant="ghost" asChild>
+              <Link href="/deployments">
+                <Activity className="h-4 w-4 mr-2" />
+                Deployments
+              </Link>
+            </Button>
             <Button variant="ghost" onClick={() => scrollToSection("certifications")}>
               Certifications
             </Button>
@@ -69,6 +76,12 @@ const Navbar = () => {
             <div className="px-2 pt-2 pb-3 space-y-1">
               <Button variant="ghost" className="w-full justify-start" onClick={() => scrollToSection("projects")}>
                 Projects
+              </Button>
+              <Button variant="ghost" className="w-full justify-start" asChild>
+                <Link href="/deployments" onClick={() => setIsMobileMenuOpen(false)}>
+                  <Activity className="h-4 w-4 mr-2" />
+                  Deployments
+                </Link>
               </Button>
               <Button
                 variant="ghost"

@@ -7,8 +7,8 @@ on:
         description: 'Action to perform'
         required: true
         type: choice
-        options: ['plan', 'apply', 'destroy']
-        default: 'plan'
+        options: ['deploy', 'destroy']
+        default: 'deploy'
 
 env:
   AWS_REGION: ap-south-1
@@ -19,7 +19,7 @@ jobs:
   build-lambda:
     name: Build Lambda Package
     runs-on: ubuntu-latest
-    if: inputs.action != 'destroy'
+    if: inputs.action == 'deploy'
     
     steps:
       - name: Checkout Repository
@@ -73,7 +73,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
       
       - name: Download Lambda Package
-        if: inputs.action != 'destroy'
+        if: inputs.action == 'deploy'
         uses: actions/download-artifact@v4
         with:
           name: lambda-package
@@ -106,20 +106,8 @@ jobs:
           echo "✅ Validating Terraform configuration..."
           terraform validate
       
-      - name: Terraform Plan
-        if: inputs.action == 'plan' || inputs.action == 'apply'
-        working-directory: 07-automated-receipt-processor/infrastructure
-        run: |
-          echo "📋 Planning Terraform deployment..."
-          terraform plan \
-            -var="environment=ci" \
-            -var="lambda_zip_path=lambda-package.zip" \
-            -var="project_name=${{ env.PROJECT_NAME }}" \
-            -var="aws_region=${{ env.AWS_REGION }}" \
-            -var="s3_bucket_name=${{ env.S3_BUCKET_NAME }}"
-      
       - name: Terraform Apply
-        if: inputs.action == 'apply'
+        if: inputs.action == 'deploy'
         working-directory: 07-automated-receipt-processor/infrastructure
         run: |
           echo "🚀 Applying Terraform configuration..."
@@ -144,7 +132,7 @@ jobs:
       
       - name: Capture Terraform Outputs
         id: outputs
-        if: inputs.action == 'apply'
+        if: inputs.action == 'deploy'
         working-directory: 07-automated-receipt-processor/infrastructure
         run: |
           echo "📋 Capturing Terraform outputs..."

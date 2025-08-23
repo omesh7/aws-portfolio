@@ -49,3 +49,24 @@ variable "vercel_project_name" {
   default     = "serverless-poem-engine"
   sensitive   = false
 }
+
+
+
+variable "cloudflare_api_token" {
+  description = "Cloudflare API token"
+  type        = string
+  sensitive   = true
+}
+
+variable "cloudflare_zone_id" {
+  description = "Cloudflare Zone ID"
+  type        = string
+  sensitive   = true
+}
+
+variable "cloudflare_site" {
+  description = "Cloudflare Site Main Domain (e.g., example.com)"
+  type        = string
+  default     = "example.com"
+
+}
