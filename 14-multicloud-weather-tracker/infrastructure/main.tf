@@ -33,6 +33,10 @@ resource "cloudflare_dns_record" "primary" {
   content = module.aws_infrastructure.cloudfront_domain
   ttl     = 60
   proxied = false
+
+  lifecycle {
+    ignore_changes = [content]
+  }
 }
 
 

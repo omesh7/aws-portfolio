@@ -75,4 +75,8 @@ resource "cloudflare_dns_record" "portfolio_dns" {
   content = var.vercel_api_token != "" ? "cname.vercel-dns.com" : "placeholder.vercel-dns.com"
   ttl     = 1
   proxied = true
+
+  lifecycle {
+    ignore_changes = [content]
+  }
 }

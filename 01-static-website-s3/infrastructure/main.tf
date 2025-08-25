@@ -143,22 +143,19 @@ resource "aws_cloudfront_distribution" "website_distribution" {
   tags = var.tags
 }
 
-# Check if DNS record already exists
-data "cloudflare_dns_records" "existing_dns" {
-  count   = var.enable_custom_domain ? 1 : 0
-  zone_id = var.cloudflare_zone_id
-  name    = var.subdomain
-}
-
-# Cloudflare DNS Record pointing to CloudFront (only if it doesn't exist)
+# Cloudflare DNS Record pointing to CloudFront
 resource "cloudflare_dns_record" "site_dns" {
-  count   = var.enable_custom_domain && length(try(data.cloudflare_dns_records.existing_dns[0].records, [])) == 0 ? 1 : 0
+  count   = var.enable_custom_domain ? 1 : 0
   zone_id = var.cloudflare_zone_id
   name    = var.subdomain
   type    = "CNAME"
   content = aws_cloudfront_distribution.website_distribution.domain_name
   ttl     = 60
   proxied = false
+
+  lifecycle {
+    ignore_changes = [content]
+  }
 }
 
 # Environment-based site file upload
