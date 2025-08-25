@@ -1,9 +1,12 @@
 terraform {
-  cloud {
-    organization = "aws-portfolio-omesh"
-    workspaces {
-      name = "08-ai-rag-portfolio-chat"
-    }
+  backend "s3" {
+    bucket         = "aws-portfolio-terraform-state"
+    key            = "08-ai-rag-portfolio-chat/terraform.tfstate"
+    region         = "ap-south-1"
+    dynamodb_table = "aws-portfolio-terraform-locks"
+    encrypt        = true
+    use_lockfile   = true
+
   }
 
   required_providers {
