@@ -127,7 +127,7 @@ const ProjectCard = ({ project, status, onAction, isLoading }: {
 
         {status.lastUpdated && (
           <div className="text-xs text-muted-foreground">
-            Updated: {new Date(status.lastUpdated).toLocaleString()}
+            Updated: {new Date(status.lastUpdated).toISOString().replace('T', ' ').slice(0, 19)}
           </div>
         )}
       </CardContent>
@@ -140,6 +140,7 @@ export function DeploymentDashboard() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
+  const [isClient, setIsClient] = useState(false);
 
   const deployableProjects = projects.filter(p => githubAPI.isProjectDeployable(p.id));
   const nonDeployableProjects = projects.filter(p => !githubAPI.isProjectDeployable(p.id));
@@ -152,6 +153,8 @@ export function DeploymentDashboard() {
       const statuses = await githubAPI.getAllProjectStatuses();
       setProjectStatuses(statuses);
       setLastRefresh(new Date());
+      // Add minimum loading time for better UX
+      await new Promise(resolve => setTimeout(resolve, 1000));
     } catch (err) {
       setError('Failed to fetch deployment statuses');
       console.error('Status fetch error:', err);
@@ -181,6 +184,7 @@ export function DeploymentDashboard() {
 
   // Auto-refresh for active deployments
   useEffect(() => {
+    setIsClient(true);
     fetchAllStatuses();
 
     const interval = setInterval(() => {
@@ -227,14 +231,23 @@ export function DeploymentDashboard() {
             Manage and monitor your AWS project deployments
           </p>
         </div>
-        <Button
-          onClick={fetchAllStatuses}
-          disabled={isLoading}
-          variant="outline"
-        >
-          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-          Refresh All
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            onClick={() => window.location.href = '/'}
+            variant="outline"
+          >
+            <ExternalLink className="h-4 w-4 mr-2" />
+            Home
+          </Button>
+          <Button
+            onClick={fetchAllStatuses}
+            disabled={isLoading}
+            variant="outline"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+            Refresh All
+          </Button>
+        </div>
       </div>
 
       {error && (
@@ -335,8 +348,12 @@ export function DeploymentDashboard() {
       </Tabs>
 
       <div className="text-xs text-muted-foreground text-center">
-        Last updated: {lastRefresh.toLocaleString()}
-        {activeCount > 0 && " • Auto-refreshing active deployments"}
+        {isClient && (
+          <>
+            Last updated: {lastRefresh.toISOString().replace('T', ' ').slice(0, 19)}
+            {activeCount > 0 && " • Auto-refreshing active deployments"}
+          </>
+        )}
       </div>
     </div>
   );

@@ -24,14 +24,72 @@ This portfolio site now includes real-time GitHub Actions integration for deploy
 
 ## Setup Instructions
 
-### 1. GitHub Personal Access Token
+### 1. GitHub CLI Setup & Authentication
 
-Create a GitHub Personal Access Token with the following permissions:
-- `repo` (Full control of private repositories)
-- `workflow` (Update GitHub Action workflows)
-- `actions:read` (Read access to actions and workflows)
+#### Install GitHub CLI
+```bash
+# Windows (using winget)
+winget install --id GitHub.cli
 
-### 2. Environment Variables
+# Windows (using Chocolatey)
+choco install gh
+
+# macOS
+brew install gh
+
+# Linux (Ubuntu/Debian)
+curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+sudo apt update
+sudo apt install gh
+```
+
+#### Authenticate with GitHub
+```bash
+# Login to GitHub (opens browser for authentication)
+gh auth login
+
+# Select options:
+# ? What account do you want to log into? GitHub.com
+# ? What is your preferred protocol for Git operations? HTTPS
+# ? Authenticate Git with your GitHub credentials? Yes
+# ? How would you like to authenticate GitHub CLI? Login with a web browser
+
+# Verify authentication
+gh auth status
+```
+
+### 2. Create Personal Access Token
+
+#### Option A: Using GitHub CLI (Recommended)
+```bash
+# Create token with required scopes
+gh auth refresh -h github.com -s repo,workflow,actions:read
+
+# Or create a new token specifically for this project
+gh auth token
+```
+
+#### Option B: Manual Creation via GitHub Web Interface
+1. Go to GitHub Settings → Developer settings → Personal access tokens → Tokens (classic)
+2. Click "Generate new token (classic)"
+3. Set expiration and select scopes:
+   - ✅ `repo` (Full control of private repositories)
+   - ✅ `workflow` (Update GitHub Action workflows) 
+   - ✅ `actions:read` (Read access to actions and workflows)
+4. Click "Generate token"
+5. Copy the token immediately (it won't be shown again)
+
+#### Verify Token Permissions
+```bash
+# Test API access with your token
+curl -H "Authorization: token YOUR_TOKEN_HERE" https://api.github.com/user
+
+# Test workflow access
+gh api repos/omesh7/aws-portfolio/actions/workflows
+```
+
+### 3. Environment Variables
 
 Add to your `.env.local` file:
 

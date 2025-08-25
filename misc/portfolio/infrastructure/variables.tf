@@ -59,7 +59,7 @@ variable "github_token" {
   description = "GitHub Personal Access Token for API access"
   type        = string
   sensitive   = true
-  default     = ""
+
 }
 
 variable "github_repo_owner" {
