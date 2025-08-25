@@ -17,10 +17,12 @@ import {
   ExternalLink,
   Play,
   Trash2,
-  AlertCircle
+  AlertCircle,
+  Shield
 } from "lucide-react";
 import { githubAPI, DeploymentStatus } from "@/lib/github-api";
 import { projects, Project } from "@/lib/projects-data";
+import { AuthModal } from "@/components/AuthModal";
 
 interface ProjectStatusCard {
   project: Project;
@@ -44,11 +46,12 @@ const StatusIcon = ({ status }: { status: DeploymentStatus['status'] }) => {
   }
 };
 
-const ProjectCard = ({ project, status, onAction, isLoading }: {
+const ProjectCard = ({ project, status, onAction, isLoading, isAuthenticated }: {
   project: Project;
   status: DeploymentStatus;
   onAction: (projectId: string, action: 'deploy' | 'destroy') => void;
   isLoading: boolean;
+  isAuthenticated: boolean;
 }) => {
   const isDeployable = githubAPI.isProjectDeployable(project.id);
   const canDeploy = status.status === 'idle' || status.status === 'completed' || status.status === 'failed';
@@ -87,7 +90,7 @@ const ProjectCard = ({ project, status, onAction, isLoading }: {
           <div className="flex gap-1">
             <Button
               onClick={() => onAction(project.id, 'deploy')}
-              disabled={!canDeploy || isLoading}
+              disabled={!canDeploy || isLoading || !isAuthenticated}
               size="sm"
               variant="outline"
               className="flex-1 text-xs"
@@ -98,7 +101,7 @@ const ProjectCard = ({ project, status, onAction, isLoading }: {
             
             <Button
               onClick={() => onAction(project.id, 'destroy')}
-              disabled={!canDestroy || isLoading}
+              disabled={!canDestroy || isLoading || !isAuthenticated}
               size="sm"
               variant="outline"
               className="flex-1 text-xs"
@@ -141,6 +144,9 @@ export function DeploymentDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date());
   const [isClient, setIsClient] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authToken, setAuthToken] = useState<string | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   const deployableProjects = projects.filter(p => githubAPI.isProjectDeployable(p.id));
   const nonDeployableProjects = projects.filter(p => !githubAPI.isProjectDeployable(p.id));
@@ -164,22 +170,53 @@ export function DeploymentDashboard() {
   };
 
   const handleAction = async (projectId: string, action: 'deploy' | 'destroy') => {
+    if (!isAuthenticated || !authToken) {
+      setShowAuthModal(true);
+      return;
+    }
+
     try {
-      const success = await githubAPI.triggerDeployment(projectId, action);
-      if (success) {
-        // Update status to queued immediately
-        setProjectStatuses(prev => ({
-          ...prev,
-          [projectId]: { ...prev[projectId], status: 'queued' }
-        }));
-        // Refresh after a delay
-        setTimeout(fetchAllStatuses, 2000);
-      } else {
-        setError(`Failed to trigger ${action} for ${projectId}`);
+      const response = await fetch('/api/deploy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectId, action, token: authToken }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          setIsAuthenticated(false);
+          setAuthToken(null);
+          setShowAuthModal(true);
+          setError('Session expired. Please authenticate again.');
+        } else {
+          setError(data.error || `Failed to trigger ${action}`);
+        }
+        return;
       }
+
+      // Update status to queued immediately
+      setProjectStatuses(prev => ({
+        ...prev,
+        [projectId]: { ...prev[projectId], status: 'queued' }
+      }));
+      // Refresh after a delay
+      setTimeout(fetchAllStatuses, 2000);
     } catch (err) {
       setError(`Error triggering ${action}: ${err}`);
     }
+  };
+
+  const handleAuthenticated = (token: string) => {
+    setAuthToken(token);
+    setIsAuthenticated(true);
+    setError(null);
+  };
+
+  const handleLogout = () => {
+    setIsAuthenticated(false);
+    setAuthToken(null);
   };
 
   // Auto-refresh for active deployments
@@ -239,14 +276,33 @@ export function DeploymentDashboard() {
             <ExternalLink className="h-4 w-4 mr-2" />
             Home
           </Button>
-          <Button
-            onClick={fetchAllStatuses}
-            disabled={isLoading}
-            variant="outline"
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh All
-          </Button>
+          {isAuthenticated ? (
+            <>
+              <Button
+                onClick={handleLogout}
+                variant="outline"
+              >
+                <Shield className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
+              <Button
+                onClick={fetchAllStatuses}
+                disabled={isLoading}
+                variant="outline"
+              >
+                <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                Refresh All
+              </Button>
+            </>
+          ) : (
+            <Button
+              onClick={() => setShowAuthModal(true)}
+              variant="outline"
+            >
+              <Shield className="h-4 w-4 mr-2" />
+              Authenticate
+            </Button>
+          )}
         </div>
       </div>
 
@@ -327,6 +383,7 @@ export function DeploymentDashboard() {
                 status={projectStatuses[project.id] || { status: 'idle' }}
                 onAction={handleAction}
                 isLoading={isLoading}
+                isAuthenticated={isAuthenticated}
               />
             ))}
           </div>
@@ -341,6 +398,7 @@ export function DeploymentDashboard() {
                 status={{ status: 'idle' }}
                 onAction={handleAction}
                 isLoading={false}
+                isAuthenticated={isAuthenticated}
               />
             ))}
           </div>
@@ -355,6 +413,12 @@ export function DeploymentDashboard() {
           </>
         )}
       </div>
+
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onAuthenticated={handleAuthenticated}
+      />
     </div>
   );
 }
