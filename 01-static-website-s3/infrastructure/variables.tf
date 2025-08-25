@@ -26,33 +26,22 @@ variable "cloudflare_api_token" {
 variable "cloudflare_zone_id" {
   description = "Cloudflare Zone ID"
   type        = string
-  default     = ""
   sensitive   = true
 }
 
 variable "subdomain" {
   description = "Subdomain to point to CloudFront"
   type        = string
-  default     = "portfolio"
+  default     = "static"
 }
 
 variable "enable_custom_domain" {
   description = "Enable custom domain with Cloudflare"
   type        = bool
-  default     = false
+  default     = true
 }
 
-variable "upload_site_files" {
-  description = "Whether to upload site files from local dist folder"
-  type        = bool
-  default     = false
-}
-
-variable "site_source_dir" {
-  description = "Local directory containing built site files"
-  type        = string
-  default     = "../site/dist"
-}
+# File uploads handled by CI/CD pipeline
 
 variable "tags" {
   description = "Tags to apply to resources"

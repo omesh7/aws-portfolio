@@ -5,8 +5,13 @@ resource "archive_file" "lambda_zip" {
 
 }
 
+# Random hex for unique resource naming
+resource "random_id" "resource_suffix" {
+  byte_length = 4
+}
+
 resource "aws_iam_role" "lambda_exec" {
-  name = "${var.project_name}-lambda-exec-role"
+  name = "${var.project_name}-lambda-exec-role-${random_id.resource_suffix.hex}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
@@ -27,7 +32,7 @@ resource "aws_iam_role_policy_attachment" "lambda_basic" {
 
 
 resource "aws_lambda_function" "weather_tracker" {
-  function_name    = "${var.project_name}-weather-tracker"
+  function_name    = "${var.project_name}-weather-tracker-${random_id.resource_suffix.hex}"
   handler          = "index.handler"
   runtime          = "nodejs18.x"
   role             = aws_iam_role.lambda_exec.arn
