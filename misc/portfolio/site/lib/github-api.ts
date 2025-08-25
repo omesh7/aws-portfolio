@@ -30,16 +30,12 @@ interface ProjectMapping {
 }
 
 const PROJECT_MAPPINGS: ProjectMapping = {
-  "mass-email-system": {
-    workflowFile: "02-mass-email-deploy.yml",
-    displayName: "Mass Email System",
-  },
-  "alexa-skill": {
-    workflowFile: "03-alexa-skill-deploy.yml",
-    displayName: "Alexa Skill",
+  "static-portfolio": {
+    workflowFile: "project-01-deploy.yml",
+    displayName: "Static Portfolio Website",
   },
   "text-to-speech": {
-    workflowFile: "04-polly-tts.yml",
+    workflowFile: "project-04-deploy.yml",
     displayName: "Text-to-Speech",
   },
   "image-resizer": {
@@ -49,10 +45,6 @@ const PROJECT_MAPPINGS: ProjectMapping = {
   "receipt-processor": {
     workflowFile: "project-07-deploy.yml",
     displayName: "Receipt Processor",
-  },
-  "rag-portfolio-chat": {
-    workflowFile: "project-08-deploy.yml",
-    displayName: "AI RAG Chat",
   },
   "kinesis-ml-pipeline": {
     workflowFile: "project-10-deploy.yml",
@@ -65,10 +57,6 @@ const PROJECT_MAPPINGS: ProjectMapping = {
   "2048-game-cicd": {
     workflowFile: "project-13-deploy.yml",
     displayName: "2048 Game CI/CD",
-  },
-  "multi-cloud-weather": {
-    workflowFile: "project-14-deploy.yml",
-    displayName: "Multi-Cloud Weather",
   },
 };
 
@@ -115,12 +103,15 @@ class GitHubAPIService {
       }
 
       const latestRun = runs.data.workflow_runs[0];
-      const status = this.mapWorkflowStatus(latestRun.status, latestRun.conclusion);
-      
+      const status = this.mapWorkflowStatus(
+        latestRun.status,
+        latestRun.conclusion
+      );
+
       // Get current step if run is in progress
       let currentStep = undefined;
       let progress = 0;
-      
+
       if (status === "in_progress") {
         const steps = await this.getWorkflowSteps(latestRun.id);
         currentStep = this.getCurrentStep(steps);
@@ -214,7 +205,7 @@ class GitHubAPIService {
         for (const step of job.steps || []) {
           steps.push({
             name: step.name,
-            status: step.status as WorkflowStep['status'],
+            status: step.status as WorkflowStep["status"],
             conclusion: step.conclusion || undefined,
             started_at: step.started_at || undefined,
             completed_at: step.completed_at || undefined,
@@ -229,35 +220,42 @@ class GitHubAPIService {
   }
 
   private getCurrentStep(steps: WorkflowStep[]): string {
-    const inProgressStep = steps.find(step => step.status === 'in_progress');
+    const inProgressStep = steps.find((step) => step.status === "in_progress");
     if (inProgressStep) {
       return inProgressStep.name;
     }
-    
-    const lastCompletedStep = steps.filter(step => step.status === 'completed').pop();
+
+    const lastCompletedStep = steps
+      .filter((step) => step.status === "completed")
+      .pop();
     if (lastCompletedStep) {
       return `Completed: ${lastCompletedStep.name}`;
     }
-    
-    return 'Starting...';
+
+    return "Starting...";
   }
 
   private calculateProgress(steps: WorkflowStep[]): number {
     if (steps.length === 0) return 0;
-    
-    const completedSteps = steps.filter(step => step.status === 'completed').length;
+
+    const completedSteps = steps.filter(
+      (step) => step.status === "completed"
+    ).length;
     return Math.round((completedSteps / steps.length) * 100);
   }
 
-  private mapWorkflowStatus(status: string | null, conclusion: string | null): DeploymentStatus['status'] {
-    if (status === 'queued') return 'queued';
-    if (status === 'in_progress') return 'in_progress';
-    if (status === 'completed') {
-      if (conclusion === 'success') return 'completed';
-      if (conclusion === 'failure') return 'failed';
-      if (conclusion === 'cancelled') return 'cancelled';
+  private mapWorkflowStatus(
+    status: string | null,
+    conclusion: string | null
+  ): DeploymentStatus["status"] {
+    if (status === "queued") return "queued";
+    if (status === "in_progress") return "in_progress";
+    if (status === "completed") {
+      if (conclusion === "success") return "completed";
+      if (conclusion === "failure") return "failed";
+      if (conclusion === "cancelled") return "cancelled";
     }
-    return 'idle';
+    return "idle";
   }
 
   async getAllProjectStatuses(): Promise<Record<string, DeploymentStatus>> {

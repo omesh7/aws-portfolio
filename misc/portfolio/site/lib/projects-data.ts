@@ -27,7 +27,7 @@ export const projects: Project[] = [
       "CloudFront",
       "GitHub Actions",
     ],
-    deployable: false,
+    deployable: true,
     liveUrl: "https://portfolio.omesh.site",
     githubUrl: "https://github.com/omesh7/portfolio",
   },
@@ -46,7 +46,7 @@ export const projects: Project[] = [
       "CloudWatch",
       "Node.js 18",
     ],
-    deployable: true,
+    deployable: false,
     githubUrl: "https://github.com/omesh7/mass-email-system",
   },
   {
@@ -57,7 +57,7 @@ export const projects: Project[] = [
       "Voice-activated portfolio queries with custom intents and natural language processing capabilities.",
     achievement: "Natural language processing with voice UI design",
     techStack: ["Node.js", "Alexa Skills Kit", "Lambda", "Voice UI"],
-    deployable: true,
+    deployable: false,
     githubUrl: "https://github.com/omesh7/alexa-skill",
   },
   {
@@ -141,7 +141,7 @@ export const projects: Project[] = [
       "Lambda",
       "DynamoDB",
     ],
-    deployable: true,
+    deployable: false,
     githubUrl: "https://github.com/omesh7/rag-portfolio-chat",
   },
   {
@@ -152,7 +152,7 @@ export const projects: Project[] = [
       "Enterprise chatbot solution with intent recognition, slot filling, and multi-channel deployment support.",
     achievement: "Enterprise chatbot solution with NLP capabilities",
     techStack: ["Amazon Lex", "Lambda", "DynamoDB", "CloudWatch", "NLP"],
-    deployable: true,
+    deployable: false,
     githubUrl: "https://github.com/omesh7/lex-chatbot",
   },
   {
@@ -233,7 +233,7 @@ export const projects: Project[] = [
       "Cloudflare",
       "Route53",
     ],
-    deployable: true,
+    deployable: false,
     liveUrl: "https://weather.portfolio.omesh.site",
     githubUrl: "https://github.com/omesh7/multi-cloud-weather",
   },
