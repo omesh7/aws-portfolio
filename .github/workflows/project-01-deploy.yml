@@ -12,7 +12,7 @@ on:
 
 env:
   AWS_REGION: ap-south-1
-  PROJECT_NAME: 01-static-website-aws-portfolio-ci
+  PROJECT_NAME: 01-static-website-aws-portfolio
 
 jobs:
   build-site:
@@ -114,7 +114,7 @@ jobs:
             -var="cloudflare_api_token=${CLOUDFLARE_TOKEN:-}" \
             -var="cloudflare_zone_id=${CLOUDFLARE_ZONE:-}" \
             -var="enable_custom_domain=$ENABLE_DOMAIN" \
-            -var="subdomain=portfolio"
+            -var="subdomain=static"
       
       - name: Terraform Destroy
         if: inputs.action == 'destroy'
@@ -128,7 +128,7 @@ jobs:
             -var="cloudflare_api_token=${{ secrets.CLOUDFLARE_API_TOKEN }}" \
             -var="cloudflare_zone_id=${{ secrets.CLOUDFLARE_ZONE_ID }}" \
             -var="enable_custom_domain=true" \
-            -var="subdomain=portfolio"
+            -var="subdomain=static"
       
       - name: Capture Terraform Outputs
         id: outputs

@@ -30,9 +30,9 @@ interface ProjectMapping {
 }
 
 const PROJECT_MAPPINGS: ProjectMapping = {
-  "static-portfolio": {
+  "static-website": {
     workflowFile: "project-01-deploy.yml",
-    displayName: "Static Portfolio Website",
+    displayName: "Static Website",
   },
   "text-to-speech": {
     workflowFile: "project-04-deploy.yml",

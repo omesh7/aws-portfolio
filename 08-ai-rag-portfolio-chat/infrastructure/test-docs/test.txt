@@ -1,8 +1,8 @@
 ---
 
-## 📁 Project 01 - Static Portfolio Website on S3 with CI/CD
+## 📁 Project 01 - Static  Website on S3 with CI/CD
 
-**Overview**: Host a personal portfolio using Vite on AWS S3 with automated CI/CD via GitHub Actions.
+**Overview**: Host a personal  using Vite on AWS S3 with automated CI/CD via GitHub Actions.
 
 ### 🔧 Services Used:
 
@@ -43,9 +43,9 @@
 
 ---
 
-## 📁 Project 03 - Alexa Skill for Portfolio Projects
+## 📁 Project 03 - Alexa Skill  
 
-**Overview**: Users can ask Alexa about your portfolio projects.
+**Overview**: Users can ask Alexa about your  projects.
 
 ### 🔧 Services Used:
 

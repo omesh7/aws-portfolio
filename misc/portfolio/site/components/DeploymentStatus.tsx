@@ -66,16 +66,6 @@ export function DeploymentStatus({ project, compact = false }: DeploymentStatusP
             <StatusIcon status={status.status} />
             <span className="ml-1">{status.status.replace('_', ' ')}</span>
           </Badge>
-          {status.status === 'completed' && project.liveUrl && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => window.open(project.liveUrl, '_blank')}
-              className="h-6 px-2 text-xs"
-            >
-              <ExternalLink className="h-3 w-3" />
-            </Button>
-          )}
         </div>
 
         {status.currentStep && (
@@ -89,29 +79,14 @@ export function DeploymentStatus({ project, compact = false }: DeploymentStatusP
           </div>
         )}
 
-        <div className="flex gap-1">
-          <Button
-            onClick={() => triggerAction('deploy')}
-            disabled={!canDeploy || isLoading}
-            size="sm"
-            variant="outline"
-            className="flex-1 h-7 text-xs"
-          >
-            <Play className="h-3 w-3 mr-1" />
-            Deploy
-          </Button>
-          
-          <Button
-            onClick={() => triggerAction('destroy')}
-            disabled={!canDestroy || isLoading}
-            size="sm"
-            variant="outline"
-            className="flex-1 h-7 text-xs"
-          >
-            <Trash2 className="h-3 w-3 mr-1" />
-            Destroy
-          </Button>
-        </div>
+        <Button
+          onClick={() => window.location.href = '/deployments'}
+          size="sm"
+          variant="outline"
+          className="w-full h-7 text-xs"
+        >
+          Manage Deployment
+        </Button>
 
         {error && (
           <div className="text-xs text-red-500 truncate" title={error}>
@@ -149,28 +124,13 @@ export function DeploymentStatus({ project, compact = false }: DeploymentStatusP
         </div>
       )}
 
-      <div className="flex gap-2">
-        <Button
-          onClick={() => triggerAction('deploy')}
-          disabled={!canDeploy || isLoading}
-          size="sm"
-          className="flex-1"
-        >
-          <Play className="h-4 w-4 mr-1" />
-          {status.status === 'completed' ? 'Redeploy' : 'Deploy'}
-        </Button>
-        
-        <Button
-          onClick={() => triggerAction('destroy')}
-          disabled={!canDestroy || isLoading}
-          variant="destructive"
-          size="sm"
-          className="flex-1"
-        >
-          <Trash2 className="h-4 w-4 mr-1" />
-          Destroy
-        </Button>
-      </div>
+      <Button
+        onClick={() => window.location.href = '/deployments'}
+        size="sm"
+        className="w-full"
+      >
+        Manage Deployment
+      </Button>
 
       {status.status === 'completed' && project.liveUrl && (
         <Button
