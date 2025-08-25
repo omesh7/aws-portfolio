@@ -5,6 +5,7 @@ terraform {
     region         = "ap-south-1"
     dynamodb_table = "aws-portfolio-terraform-locks"
     encrypt        = true
+    use_lockfile   = true
   }
   required_providers {
     aws = {
@@ -18,6 +19,10 @@ terraform {
     cloudflare = {
       source  = "cloudflare/cloudflare"
       version = "~> 5.0"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.1"
     }
   }
 }

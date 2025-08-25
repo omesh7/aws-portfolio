@@ -5,12 +5,17 @@ terraform {
     region         = "ap-south-1"
     dynamodb_table = "aws-portfolio-terraform-locks"
     encrypt        = true
+    use_lockfile   = true
   }
 
   required_providers {
     aws = {
       source  = "hashicorp/aws"
       version = "~> 6.0"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.1"
     }
   }
 }
@@ -40,18 +45,23 @@ data "archive_file" "lambda_zip" {
   output_path = "${path.module}/07_lambda.zip"
 }
 
+# Random hex for unique resource naming
+resource "random_id" "resource_suffix" {
+  byte_length = 4
+}
+
 # S3 bucket for receipt uploads
 resource "aws_s3_bucket" "uploads_bucket" {
-  bucket        = var.s3_bucket_name
+  bucket        = "${var.s3_bucket_name}-${random_id.resource_suffix.hex}"
   force_destroy = true
 }
 
 # DynamoDB table for receipts
 resource "aws_dynamodb_table" "receipts_table" {
-  name           = var.dynamodb_table_name
-  billing_mode   = "PAY_PER_REQUEST"
-  hash_key       = "receipt_id"
-  range_key      = "date"
+  name         = "${var.dynamodb_table_name}-${random_id.resource_suffix.hex}"
+  billing_mode = "PAY_PER_REQUEST"
+  hash_key     = "receipt_id"
+  range_key    = "date"
 
   attribute {
     name = "receipt_id"
@@ -156,7 +166,7 @@ resource "aws_lambda_function" "process_receipt" {
     variables = {
       DYNAMODB_TABLE          = aws_dynamodb_table.receipts_table.name
       NOTIFICATION_LOG_BUCKET = aws_s3_bucket.uploads_bucket.bucket
-      SNS_TOPIC_ARN          = aws_sns_topic.receipt_notifications.arn
+      SNS_TOPIC_ARN           = aws_sns_topic.receipt_notifications.arn
     }
   }
 

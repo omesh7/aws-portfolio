@@ -4,9 +4,14 @@ data "cloudflare_zone" "zone" {
   zone_id = var.cloudflare_zone_id
 }
 
+# Random hex for unique bucket naming
+resource "random_id" "bucket_suffix" {
+  byte_length = 4
+}
+
 # S3 Bucket for static website
 resource "aws_s3_bucket" "website_bucket" {
-  bucket        = var.project_name
+  bucket        = "${var.project_name}-${random_id.bucket_suffix.hex}"
   force_destroy = true
 }
 
@@ -134,9 +139,9 @@ resource "aws_cloudfront_distribution" "website_distribution" {
   }
 
   viewer_certificate {
-    acm_certificate_arn      = var.enable_custom_domain ? aws_acm_certificate_validation.website_cert[0].certificate_arn : null
-    ssl_support_method       = var.enable_custom_domain ? "sni-only" : null
-    minimum_protocol_version = var.enable_custom_domain ? "TLSv1.2_2021" : null
+    acm_certificate_arn            = var.enable_custom_domain ? aws_acm_certificate_validation.website_cert[0].certificate_arn : null
+    ssl_support_method             = var.enable_custom_domain ? "sni-only" : null
+    minimum_protocol_version       = var.enable_custom_domain ? "TLSv1.2_2021" : null
     cloudfront_default_certificate = !var.enable_custom_domain
   }
 
@@ -158,36 +163,4 @@ resource "cloudflare_dns_record" "site_dns" {
   }
 }
 
-# Environment-based site file upload
-locals {
-  use_local_upload = var.environment == "local" && var.upload_site_files
-  site_files = local.use_local_upload ? fileset(var.site_source_dir, "**/*") : []
-}
 
-# Local file upload (conditional)
-resource "aws_s3_object" "site_files" {
-  for_each = toset(local.site_files)
-
-  bucket = aws_s3_bucket.website_bucket.id
-  key    = each.value
-  source = "${var.site_source_dir}/${each.value}"
-  etag   = filemd5("${var.site_source_dir}/${each.value}")
-  content_type = lookup({
-    ".html"  = "text/html",
-    ".css"   = "text/css",
-    ".js"    = "application/javascript",
-    ".json"  = "application/json",
-    ".png"   = "image/png",
-    ".jpg"   = "image/jpeg",
-    ".jpeg"  = "image/jpeg",
-    ".gif"   = "image/gif",
-    ".svg"   = "image/svg+xml",
-    ".ico"   = "image/x-icon",
-    ".woff"  = "font/woff",
-    ".woff2" = "font/woff2",
-    ".ttf"   = "font/ttf",
-    ".eot"   = "application/vnd.ms-fontobject"
-  }, regex("\\.[^.]+$", each.value), "application/octet-stream")
-
-  depends_on = [aws_s3_bucket_policy.website_policy]
-}

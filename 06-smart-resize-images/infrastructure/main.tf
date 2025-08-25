@@ -1,7 +1,12 @@
 
 
+# Random hex for unique bucket naming
+resource "random_id" "bucket_suffix" {
+  byte_length = 4
+}
+
 resource "aws_s3_bucket" "resized_bucket" {
-  bucket        = var.project_name
+  bucket        = "${var.project_name}-${random_id.bucket_suffix.hex}"
   force_destroy = true
 }
 

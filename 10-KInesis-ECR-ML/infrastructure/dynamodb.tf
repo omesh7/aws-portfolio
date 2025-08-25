@@ -1,5 +1,5 @@
 resource "aws_dynamodb_table" "anomaly_data" {
-  name         = "anomaly-stream-records"
+  name         = "anomaly-stream-records-${random_id.resource_suffix.hex}"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "id"
 

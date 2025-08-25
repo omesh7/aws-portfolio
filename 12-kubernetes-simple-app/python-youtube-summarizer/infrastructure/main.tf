@@ -1,8 +1,13 @@
 
 
+# Random hex for unique resource naming
+resource "random_id" "resource_suffix" {
+  byte_length = 4
+}
+
 # ECR Repository
 resource "aws_ecr_repository" "app" {
-  name                 = var.app_name
+  name                 = "${var.app_name}-${random_id.resource_suffix.hex}"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
@@ -41,7 +46,7 @@ resource "aws_vpc" "main" {
   enable_dns_support   = true
 
   tags = {
-    Name = "${var.app_name}-vpc"
+    Name = "${var.app_name}-vpc-${random_id.resource_suffix.hex}"
   }
 }
 
@@ -159,7 +164,7 @@ resource "aws_ecs_cluster" "main" {
 
 # ECS Task Execution Role
 resource "aws_iam_role" "ecs_task_execution_role" {
-  name = "${var.app_name}-ecs-task-execution-role"
+  name = "${var.app_name}-ecs-task-execution-role-${random_id.resource_suffix.hex}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
@@ -204,7 +209,7 @@ resource "aws_iam_role_policy" "ecs_task_execution_role_ssm_policy" {
 
 # ECS Task Role (for Bedrock access)
 resource "aws_iam_role" "ecs_task_role" {
-  name = "${var.app_name}-ecs-task-role"
+  name = "${var.app_name}-ecs-task-role-${random_id.resource_suffix.hex}"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17"
