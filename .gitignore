@@ -109,4 +109,4 @@ delete-tfstate.bat
 **/other
 
 .github/own
-
+**/*.local.hcl
