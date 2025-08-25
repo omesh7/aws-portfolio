@@ -1,3 +1,0 @@
-Bucket: s3://aws-portfolio-terraform-state
-Table: aws-portfolio-terraform-locks
-Region: ap-south-1

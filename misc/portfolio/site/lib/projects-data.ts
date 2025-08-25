@@ -13,7 +13,7 @@ export interface Project {
 export const projects: Project[] = [
   {
     id: "static-portfolio",
-    title: "Static Portfolio Website",
+    title: "Static  Website",
     category: "Frontend & Static Hosting",
     description:
       "React 19 portfolio with Three.js animations, global CDN distribution, and automated CI/CD deployment pipeline.",
@@ -28,7 +28,7 @@ export const projects: Project[] = [
       "GitHub Actions",
     ],
     deployable: true,
-    liveUrl: "https://portfolio.omesh.site",
+    liveUrl: "https://static.omesh.site",
     githubUrl: "https://github.com/omesh7/portfolio",
   },
   {
