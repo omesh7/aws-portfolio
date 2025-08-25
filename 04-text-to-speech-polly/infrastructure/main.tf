@@ -5,12 +5,17 @@ terraform {
     region         = "ap-south-1"
     dynamodb_table = "aws-portfolio-terraform-locks"
     encrypt        = true
+    use_lockfile   = true
   }
 
   required_providers {
     aws = {
       source  = "hashicorp/aws"
       version = "~> 6.0"
+    }
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.1"
     }
   }
 }
@@ -42,9 +47,14 @@ data "archive_file" "lambda_zip" {
   output_path = "${path.module}/04_lambda.zip"
 }
 
+# Random hex for unique bucket naming
+resource "random_id" "bucket_suffix" {
+  byte_length = 4
+}
+
 # S3 bucket for audio files
 resource "aws_s3_bucket" "polly_audio" {
-  bucket        = var.s3_bucket_name
+  bucket        = "${var.s3_bucket_name}-${random_id.bucket_suffix.hex}"
   force_destroy = true
 }
 
