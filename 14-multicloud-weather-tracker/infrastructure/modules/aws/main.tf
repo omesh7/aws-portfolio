@@ -1,6 +1,11 @@
+# Random hex for unique bucket naming
+resource "random_id" "bucket_suffix" {
+  byte_length = 4
+}
+
 # S3 Bucket for static website hosting
 resource "aws_s3_bucket" "website" {
-  bucket        = "${replace(var.domain_name, ".", "-")}-aws-primary"
+  bucket        = "${replace(var.domain_name, ".", "-")}-aws-primary-${random_id.bucket_suffix.hex}"
   force_destroy = true
 }
 

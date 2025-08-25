@@ -8,7 +8,3 @@ environment             = "local"
 # Cloudflare Configuration
 cloudflare_api_token = "your_cloudflare_api_token"
 cloudflare_zone_id   = "your_cloudflare_zone_id"
-
-# Local file upload
-upload_site_files = true
-site_source_dir   = "../site/dist"
