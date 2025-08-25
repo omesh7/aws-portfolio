@@ -5,8 +5,8 @@ terraform {
     key            = "13-2048-game-aws-codepipeline/terraform.tfstate"
     region         = "ap-south-1"
     dynamodb_table = "aws-portfolio-terraform-locks"
-    use_lockfile   = true
-    encrypt        = true
+
+    encrypt = true
   }
 
   required_providers {
