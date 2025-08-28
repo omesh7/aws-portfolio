@@ -85,18 +85,18 @@ const Hero = () => {
         <div ref={textRef} className="space-y-6 max-w-4xl mx-auto">
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight">
             <span className="bg-gradient-to-r from-primary via-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Omeshwar V
+              Omeshwar
             </span>
           </h1>
 
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-semibold text-muted-foreground">
-            Cloud Engineer & DevOps Enthusiast
+            Aspiring DevOps Engineer
           </h2>
 
           <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
             Passionate fresher with{" "}
             <span className="font-semibold text-foreground">
-              14+ enterprise-grade AWS projects
+              AWS projects
             </span>{" "}
             showcasing production-ready solutions, Infrastructure as Code, and
             modern cloud architectures.

@@ -9,14 +9,14 @@ const Footer = () => {
         <div className="flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-center md:text-left">
             <h3 className="font-bold text-lg mb-1">Omeshwar V</h3>
-            <p className="text-sm text-muted-foreground">Cloud Engineer & DevOps Enthusiast</p>
+            <p className="text-sm text-muted-foreground">Aspiring DevOps Engineer</p>
           </div>
 
           <div className="flex items-center gap-4">
             <Badge variant="secondary" className="px-3 py-1">
               🚀 Available for Opportunities
             </Badge>
-            <p className="text-sm text-muted-foreground">© 2024 Omeshwar V. All rights reserved.</p>
+            <p className="text-sm text-muted-foreground">© 2025 Omeshwar V. All rights reserved.</p>
           </div>
         </div>
 

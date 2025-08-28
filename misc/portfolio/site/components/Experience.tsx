@@ -10,7 +10,7 @@ const achievements = [
   {
     icon: TrendingUp,
     title: "14+ Production Projects",
-    description: "Enterprise-grade AWS solutions deployed and maintained",
+    description: " AWS solutions deployed and maintained",
     metric: "100% Uptime",
   },
   {
@@ -28,7 +28,7 @@ const achievements = [
   {
     icon: Target,
     title: "Zero Security Incidents",
-    description: "Enterprise-grade security implementations",
+    description: " security implementations",
     metric: "99.9% Reliability",
   },
 ]

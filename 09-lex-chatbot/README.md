@@ -1,6 +1,6 @@
 # AWS Lex Chatbot - Conversational AI Assistant
 
-**Enterprise-Grade Conversational AI with Natural Language Understanding**
+** Conversational AI with Natural Language Understanding**
 
 A sophisticated chatbot built with AWS Lex featuring advanced natural language processing, multi-intent recognition, and seamless integration with backend services - demonstrating professional conversational AI development and cloud-native architecture.
 
