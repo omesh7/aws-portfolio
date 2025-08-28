@@ -227,14 +227,14 @@ export const projects: Project[] = [
     title: "Multi-Cloud Weather Tracker",
     category: "Disaster Recovery",
     description:
-      "Multi-cloud architecture with automated failover, health monitoring, and zero-downtime disaster recovery across AWS and Azure.",
+      "Multi-cloud architecture with automated failover, health monitoring, and zero-downtime disaster recovery across AWS and GCP.",
     achievement: "Enterprise disaster recovery with multi-cloud architecture",
     techStack: [
       "JavaScript",
       "Node.js",
       "Terraform",
       "AWS",
-      "Azure",
+      "GCP",
       "Cloudflare",
       "Route53",
     ],

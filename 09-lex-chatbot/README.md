@@ -2,7 +2,7 @@
 
 ** Conversational AI with Natural Language Understanding**
 
-A sophisticated chatbot built with AWS Lex featuring advanced natural language processing, multi-intent recognition, and seamless integration with backend services - demonstrating professional conversational AI development and cloud-native architecture.
+A chatbot built with AWS Lex featuring advanced natural language processing, multi-intent recognition, and seamless integration with backend services - demonstrating conversational AI development and cloud-native architecture.
 
 ## 🎯 Quick Overview for Recruiters
 
