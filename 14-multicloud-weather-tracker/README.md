@@ -2,7 +2,7 @@
 
 **Resilient Weather Application with Multi-Cloud Disaster Recovery**
 
-A production-ready serverless weather application demonstrating enterprise-grade multi-cloud architecture using AWS and Google Cloud, with automated failover capabilities and zero-downtime disaster recovery.
+A production-ready serverless weather application demonstrating  multi-cloud architecture using AWS and Google Cloud, with automated failover capabilities and zero-downtime disaster recovery.
 
 ## 🎯 Quick Overview for Recruiters
 

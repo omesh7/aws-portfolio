@@ -106,7 +106,7 @@ const TechStack = () => {
           </h2>
           <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
             Comprehensive cloud engineering skills across AWS services, modern development frameworks, and
-            enterprise-grade infrastructure solutions.
+             infrastructure solutions.
           </p>
         </div>
 

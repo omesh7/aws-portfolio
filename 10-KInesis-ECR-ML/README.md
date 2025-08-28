@@ -1,6 +1,6 @@
 # Real-Time Data Streaming - Kinesis ECR ML Pipeline
 
-**Enterprise-Grade Streaming Analytics with Containerized ML**
+** Streaming Analytics with Containerized ML**
 
 A sophisticated real-time data processing pipeline using AWS Kinesis for stream processing, ECR for containerized microservices, and Lambda for serverless analytics - demonstrating modern data engineering and MLOps practices.
 
