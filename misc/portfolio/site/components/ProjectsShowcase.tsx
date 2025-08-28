@@ -53,7 +53,7 @@ const ProjectsShowcase = () => {
       <div className="container mx-auto px-4">
         <div ref={titleRef} className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4">
-            Enterprise-Grade <span className="text-primary">Cloud Projects</span>
+             <span className="text-primary">Cloud Projects</span>
           </h2>
           <p className="text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto">
             14+ production-ready AWS solutions demonstrating scalable architectures, Infrastructure as Code, and modern

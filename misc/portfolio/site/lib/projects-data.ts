@@ -8,6 +8,7 @@ export interface Project {
   deployable: boolean;
   liveUrl?: string;
   githubUrl?: string;
+  architectureDiagram?: string;
 }
 
 export const projects: Project[] = [
@@ -30,6 +31,7 @@ export const projects: Project[] = [
     deployable: true,
     liveUrl: "https://static.omesh.site",
     githubUrl: "https://github.com/omesh7/portfolio",
+    architectureDiagram: "/architecture-diagrams/01.png",
   },
   {
     id: "mass-email-system",
@@ -48,6 +50,7 @@ export const projects: Project[] = [
     ],
     deployable: false,
     githubUrl: "https://github.com/omesh7/mass-email-system",
+    architectureDiagram: "/architecture-diagrams/02.png",
   },
   {
     id: "alexa-skill",
@@ -59,6 +62,7 @@ export const projects: Project[] = [
     techStack: ["Node.js", "Alexa Skills Kit", "Lambda", "Voice UI"],
     deployable: false,
     githubUrl: "https://github.com/omesh7/alexa-skill",
+    architectureDiagram: "/architecture-diagrams/03.png",
   },
   {
     id: "text-to-speech",
@@ -70,6 +74,7 @@ export const projects: Project[] = [
     techStack: ["Node.js", "Amazon Polly", "Lambda", "S3", "API Gateway"],
     deployable: true,
     githubUrl: "https://github.com/omesh7/text-to-speech",
+    architectureDiagram: "/architecture-diagrams/04.png",
   },
   {
     id: "recommendation-engine",

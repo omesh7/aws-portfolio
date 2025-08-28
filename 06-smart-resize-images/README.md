@@ -2,7 +2,7 @@
 
 **Professional Image Processing with Modern Full-Stack Architecture**
 
-A production-ready image resizing service combining Next.js frontend with AWS Lambda backend, featuring real-time image processing, multiple format support, and enterprise-grade file handling through a seamless user experience.
+A production-ready image resizing service combining Next.js frontend with AWS Lambda backend, featuring real-time image processing, multiple format support, and  file handling through a seamless user experience.
 
 ## 🎯 Quick Overview for Recruiters
 

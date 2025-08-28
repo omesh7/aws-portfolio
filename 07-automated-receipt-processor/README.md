@@ -1,6 +1,6 @@
 # Automated Receipt Processor - AI Document Intelligence
 
-**Enterprise-Grade OCR & Data Extraction Pipeline**
+** OCR & Data Extraction Pipeline**
 
 A sophisticated document processing system using AWS Textract for intelligent receipt analysis, featuring automated data extraction, structured storage, and real-time notifications - demonstrating advanced AI/ML integration and event-driven architecture.
 
