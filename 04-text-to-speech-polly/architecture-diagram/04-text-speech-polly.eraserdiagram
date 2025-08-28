@@ -3,7 +3,7 @@ cloud-architecture-diagram
 title Text-to-Speech Generator - Amazon Polly + S3 - PROJECT 04
 
 // Infrastructure Provisioning
-Terraform [icon: terraform, label: "Terraform (IaC)"]
+GitHub actions[icon: github-actions, label: "Github Actions"]
 
 // AWS Infrastructure
 AWS Infrastructure [icon: aws-cloud] {
@@ -16,10 +16,10 @@ AWS Infrastructure [icon: aws-cloud] {
 }
 
 // User Interface
-User [icon: user, label: "User"]
+User [icon: users, label: "User"]
 
 // Terraform Deployment
-Terraform -> AWS Infrastructure: terraform apply
+GitHub actions -> AWS Infrastructure: terraform apply
 
 // Text-to-Speech Flow
 User -> Lambda Function URL: 1. POST {"text": "Hello World"}
@@ -32,3 +32,4 @@ Lambda Function -> User: 7. JSON response with download link
 
 // Monitoring
 Lambda Function -> CloudWatch: Log processing & errors
+ 

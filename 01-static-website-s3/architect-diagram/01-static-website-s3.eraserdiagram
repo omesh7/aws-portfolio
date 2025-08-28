@@ -2,8 +2,6 @@ cloud-architecture-diagram
 
 title AWS Static Website Architecture with CI/CD and DNS
 
-// Infrastructure Provisioning
-Terraform Cloud [icon: hashicorp, label: "Terraform Cloud (HCP)"]
 
 // CI/CD Automation
 GitHub Actions [icon: githubactions, label: "GitHub Actions"]
@@ -21,13 +19,10 @@ TERRAFORM BUILD [icon: terraform] {
   Cloudflare DNS [icon: cloudflare, label: "Cloudflare DNS"]
 }
 
-// Terraform Flow
-Terraform Cloud -> TERRAFORM BUILD: terraform apply
-
-// Direct CI/CD Webhook
+GitHub Actions -> TERRAFORM BUILD: 1. Build Infrastrucutre
 
 // GitHub Actions CI/CD
-GitHub Actions -> S3 Static Website: build & upload Vite site
+GitHub Actions -> S3 Static Website: 2. build & upload Vite site
 
 // Static Content Hosting
 S3 Static Website -> CloudFront Distribution: serve static content via OAC

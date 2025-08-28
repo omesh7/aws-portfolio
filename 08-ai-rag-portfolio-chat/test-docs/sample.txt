@@ -16,4 +16,4 @@ Technical Stack:
 - Python with LangChain framework
 - Docker containerization for deployment
 
-This system demonstrates enterprise-grade cloud architecture patterns and modern AI integration techniques.
+This system demonstrates  cloud architecture patterns and modern AI integration techniques.

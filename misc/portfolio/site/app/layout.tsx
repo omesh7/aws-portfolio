@@ -7,14 +7,14 @@ import { ThemeProvider } from "@/components/theme-provider"
 import "./globals.css"
 
 export const metadata: Metadata = {
-  title: "Omeshwar V - Cloud Engineer Portfolio",
+  title: "Omeshwar - Cloud Engineer Portfolio",
   description:
-    "Passionate Cloud Engineer & DevOps Enthusiast showcasing 14+ enterprise-grade AWS projects with production-ready solutions.",
-  keywords: "Cloud Engineer, DevOps, AWS, Terraform, React, Portfolio, Omeshwar V",
-  authors: [{ name: "Omeshwar V" }],
+    "Passionate Aspiring DevOps Engineer showcasing 14+  AWS projects with production-ready solutions.",
+  keywords: "Cloud Engineer, DevOps, AWS, Terraform, React, Portfolio, Omeshwar",
+  authors: [{ name: "Omeshwar" }],
   openGraph: {
-    title: "Omeshwar V - Cloud Engineer Portfolio",
-    description: "14+ enterprise-grade AWS projects showcasing production-ready cloud solutions",
+    title: "Omeshwar - Cloud Engineer Portfolio",
+    description: "14+  AWS projects showcasing production-ready cloud solutions",
     type: "website",
   },
 }

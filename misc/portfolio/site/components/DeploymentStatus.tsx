@@ -61,12 +61,12 @@ export function DeploymentStatus({ project, compact = false }: DeploymentStatusP
   if (compact) {
     return (
       <div className="space-y-2">
-        <div className="flex items-center justify-between">
+        {/* <div className="flex items-center justify-between">
           <Badge variant="outline" className="text-xs">
             <StatusIcon status={status.status} />
             <span className="ml-1">{status.status.replace('_', ' ')}</span>
           </Badge>
-        </div>
+        </div> */}
 
         {status.currentStep && (
           <div className="space-y-1">
