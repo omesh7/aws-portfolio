@@ -140,3 +140,6 @@ delete-tfstate.bat
 
 .github/own
 **/*.local.hcl
+bfg.jar
+download_bfg.bat
+README_CLEANUP.md
