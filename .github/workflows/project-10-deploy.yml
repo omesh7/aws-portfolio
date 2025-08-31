@@ -1,5 +1,9 @@
 name: Project 10 - Kinesis ECR ML Pipeline
 
+permissions:
+  contents: read
+  id-token: write
+
 on:
   workflow_dispatch:
     inputs:

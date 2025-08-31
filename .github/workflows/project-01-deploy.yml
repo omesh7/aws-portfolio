@@ -1,5 +1,9 @@
 name: Project 01 - Static Website
 
+permissions:
+  contents: read
+  id-token: write
+
 on:
   workflow_dispatch:
     inputs:

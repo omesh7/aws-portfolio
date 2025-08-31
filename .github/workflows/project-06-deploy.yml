@@ -1,5 +1,9 @@
 name: Project 06 - Smart Image Resizer
 
+permissions:
+  contents: read
+  id-token: write
+
 on:
   workflow_dispatch:
     inputs:

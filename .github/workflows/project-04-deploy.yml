@@ -1,5 +1,9 @@
 name: Project 04 - Text-to-Speech Polly
 
+permissions:
+  contents: read
+  id-token: write
+
 on:
   workflow_dispatch:
     inputs:
