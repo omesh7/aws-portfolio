@@ -83,7 +83,7 @@ gh auth token
 #### Verify Token Permissions
 ```bash
 # Test API access with your token
-curl -H "Authorization: token YOUR_TOKEN_HERE" https://api.github.com/user
+curl -H "Authorization: token YOUR_GITHUB_TOKEN" https://api.github.com/user
 
 # Test workflow access
 gh api repos/omesh7/aws-portfolio/actions/workflows

@@ -276,7 +276,7 @@ ALB_DNS_NAME=<load-balancer-dns>
 #### 1. GitHub Token Issues
 ```bash
 # Test token permissions
-curl -H "Authorization: token YOUR_TOKEN" https://api.github.com/user
+curl -H "Authorization: token YOUR_GITHUB_TOKEN" https://api.github.com/user
 
 # Refresh token scopes
 gh auth refresh -h github.com -s repo,workflow,actions:read
