@@ -7,6 +7,36 @@
 !**/.env.example
 !**/.env.template
 
+# AWS Credentials and Config (CRITICAL SECURITY)
+**/.aws/
+**/credentials
+**/config
+**/*credentials*
+**/*config*
+!**/config.js
+!**/config.json
+!**/config.yml
+!**/config.yaml
+
+# Private Keys and Certificates (CRITICAL SECURITY)
+**/*.pem
+**/*.key
+**/*.p12
+**/*.pfx
+**/*.crt
+**/*.cer
+**/*.der
+**/*.jks
+**/*.keystore
+
+# API Keys and Tokens (CRITICAL SECURITY)
+**/*secret*
+**/*token*
+**/*api-key*
+**/*apikey*
+!**/*secret*.example
+!**/*token*.example
+
 # Logs
 logs
 *.log
