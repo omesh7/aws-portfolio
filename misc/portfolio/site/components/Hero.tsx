@@ -8,6 +8,10 @@ import { ArrowDown, Github, Linkedin, Mail, Mic, MicOff } from "lucide-react";
 import { Meteors } from "@/components/magicui/Meteors";
 
 const Hero = () => {
+  // Social Media URLs - Update these with your actual URLs
+  const linkedinUrl = "https://www.linkedin.com/in/omesh7";
+  const githubUrl = "https://www.github.com/omesh7";
+  
   const heroRef = useRef<HTMLElement>(null);
   const textRef = useRef<HTMLDivElement>(null);
   const badgeRef = useRef<HTMLDivElement>(null);
@@ -57,13 +61,17 @@ const Hero = () => {
   };
 
   const handleAITalk = () => {
-    setIsListening(!isListening);
-    // Placeholder for LiveKit agent integration
-    console.log(
-      isListening
-        ? "Stopping AI conversation..."
-        : "Starting AI conversation..."
-    );
+    // AI Talk feature disabled
+    console.log("AI Talk feature is currently disabled");
+    return;
+
+    // Disabled code below - keep for future use
+    // setIsListening(!isListening);
+    // console.log(
+    //   isListening
+    //     ? "Stopping AI conversation..."
+    //     : "Starting AI conversation..."
+    // );
   };
 
   return (
@@ -114,13 +122,13 @@ const Hero = () => {
               <Button
                 size="lg"
                 variant="outline"
+                disabled
                 onClick={handleAITalk}
                 className={`px-6 py-3 text-lg font-medium transition-all duration-300
-    ${
-      isListening
-        ? "bg-primary border-primary text-primary-foreground animate-pulse dark:bg-slate-900 dark:border-slate-700 dark:text-white"
-        : "bg-primary/10 hover:bg-primary/20 dark:bg-primary/20 dark:hover:bg-primary/30 text-black dark:text-white hover:text-white dark:hover:text-white"
-    }
+    ${isListening
+                    ? "bg-primary border-primary text-primary-foreground animate-pulse dark:bg-slate-900 dark:border-slate-700 dark:text-white"
+                    : "bg-primary/10 hover:bg-primary/20 dark:bg-primary/20 dark:hover:bg-primary/30 text-black dark:text-white hover:text-white dark:hover:text-white"
+                  }
     focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-0
     active:scale-95 active:text-white dark:active:text-white`}
               >
@@ -136,7 +144,7 @@ const Hero = () => {
             <div className="flex gap-4">
               <Button variant="outline" size="icon" asChild>
                 <a
-                  href="https://github.com/omesh7"
+                  href={githubUrl || "#"}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
@@ -145,7 +153,7 @@ const Hero = () => {
               </Button>
               <Button variant="outline" size="icon" asChild>
                 <a
-                  href="https://linkedin.com/in/omesh7"
+                  href={linkedinUrl || "#"}
                   target="_blank"
                   rel="noopener noreferrer"
                 >
