@@ -3,11 +3,12 @@ import type { Metadata } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { ThemeProvider } from "@/components/theme-provider"
-
+import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
+import { SpeedInsights } from "@vercel/speed-insights/next"
 
 export const metadata: Metadata = {
-  title: "Omeshwar - Cloud Engineer Portfolio",
+  title: "Omeshwar - Devops Engineer Portfolio",
   description:
     "Passionate Aspiring DevOps Engineer showcasing 14+  AWS projects with production-ready solutions.",
   keywords: "Cloud Engineer, DevOps, AWS, Terraform, React, Portfolio, Omeshwar",
@@ -41,6 +42,8 @@ html {
 
           {children}
         </ThemeProvider>
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   )

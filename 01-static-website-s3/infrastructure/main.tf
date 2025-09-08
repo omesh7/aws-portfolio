@@ -155,7 +155,7 @@ resource "cloudflare_dns_record" "site_dns" {
   name    = var.subdomain
   type    = "CNAME"
   content = aws_cloudfront_distribution.website_distribution.domain_name
-  ttl     = 60
+  ttl     = 1
   proxied = false
 
   lifecycle {
