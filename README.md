@@ -1,4 +1,4 @@
-# AWS Portfolio - 14 Production Projects
+# AWS Portfolio - 15 Production Projects
 
 A collection of AWS projects demonstrating cloud architecture, full-stack development, and DevOps practices.
 
@@ -25,6 +25,7 @@ A collection of AWS projects demonstrating cloud architecture, full-stack develo
 ### DevOps & Containers
 - **10-KInesis-ECR-ML** - Stream processing with Kinesis
 - **12-kubernetes-simple-app** - Microservices with Kubernetes
+- **15-cross-cloud-k8s-gitops** - Cross-cloud Kubernetes with GitOps CI/CD
 
 ## Tech Stack
 - **Frontend:** React, Next.js, Vanilla JS
