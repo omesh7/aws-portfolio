@@ -1,0 +1,10 @@
+# Example configuration - copy to terraform.tfvars and fill in your values
+aws_region = "us-east-1"
+prefix = "n8n-portfolio"
+
+# Your custom domain for n8n
+n8n_hostname = "n8n.yourdomain.com"
+
+# Cloudflare credentials (get from Cloudflare dashboard)
+cloudflare_zone_id = "your-cloudflare-zone-id"
+cloudflare_api_token = "your-cloudflare-api-token"

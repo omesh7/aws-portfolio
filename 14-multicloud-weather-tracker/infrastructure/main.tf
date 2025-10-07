@@ -51,20 +51,20 @@ data "cloudflare_zone" "zone" {
 # Uncomment this entire section when ready to deploy multicloud setup
 # ============================================================================
 
-module "gcp_infrastructure" {
-  source = "./modules/gcp"
+# module "gcp_infrastructure" {
+#   source = "./modules/gcp"
 
-  domain_name         = "${var.subdomain}-backup.${data.cloudflare_zone.zone.name}"
-  gcp_region          = var.gcp_region
-  gcp_project_id      = var.gcp_project_id
-  lambda_function_url = aws_lambda_function_url.weather_tracker_url.function_url
-}
+#   domain_name         = "${var.subdomain}-backup.${data.cloudflare_zone.zone.name}"
+#   gcp_region          = var.gcp_region
+#   gcp_project_id      = var.gcp_project_id
+#   lambda_function_url = aws_lambda_function_url.weather_tracker_url.function_url
+# }
 
-resource "cloudflare_dns_record" "secondary" {
-  zone_id = var.cloudflare_zone_id
-  name    = "${var.subdomain}-backup"
-  type    = "A"
-  content = module.gcp_infrastructure.load_balancer_ip
-  ttl     = 60
-  proxied = false
-}
+# resource "cloudflare_dns_record" "secondary" {
+#   zone_id = var.cloudflare_zone_id
+#   name    = "${var.subdomain}-backup"
+#   type    = "A"
+#   content = module.gcp_infrastructure.load_balancer_ip
+#   ttl     = 60
+#   proxied = false
+# }
