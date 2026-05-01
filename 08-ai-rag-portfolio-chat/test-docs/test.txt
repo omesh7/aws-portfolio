@@ -1,3 +1,0 @@
-This is a test document for RAG processing. 
-It contains sample content about AWS portfolio projects. 
-The system should process this and create vector embeddings. 

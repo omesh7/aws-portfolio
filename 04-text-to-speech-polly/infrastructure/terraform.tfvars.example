@@ -1,3 +1,0 @@
-aws_region      = "us-east-1"
-s3_bucket_name  = "polly-audio-storage-unique-12345"
-project_name    = "polly-tts"

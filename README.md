@@ -1,56 +1,87 @@
-# AWS Portfolio - 15 Production Projects
+# AWS DevOps Portfolio
 
-A collection of AWS projects demonstrating cloud architecture, full-stack development, and DevOps practices.
+10 production-grade projects demonstrating end-to-end DevOps, cloud infrastructure, and platform engineering skills on AWS (with multi-cloud where relevant).
+
+Every project is deployable, uses Infrastructure as Code, and follows real-world operational patterns.
+
+---
 
 ## Projects
 
-### Frontend Applications
-- **01-static-website-s3** - React portfolio with S3/CloudFront hosting
-- **06-smart-resize-images** - Next.js image resizer with Lambda backend
-- **13-2048-game-aws-codepipeline** - React game with CI/CD pipeline
-- **14-multicloud-weather-tracker** - Weather app with multi-cloud failover
+| # | Project | Key Skills | Tools |
+|---|---|---|---|
+| 01 | [**Static Site — S3 + CloudFront**](01-static-site-s3-cloudfront/) | IaC, CDN, CI/CD | Terraform, S3, CloudFront, GitHub Actions |
+| 02 | [**CI/CD Pipeline — CodePipeline**](02-cicd-pipeline-codepipeline/) | CI/CD, Containers, ECS | CodePipeline, Docker, ECR, ECS Fargate, Terraform |
+| 03 | [**Kinesis Streaming Pipeline**](03-kinesis-streaming-pipeline/) | Stream Processing, Containers | Kinesis, ECR, Lambda, Terraform |
+| 04 | [**Kubernetes Microservices**](04-kubernetes-microservices/) | Container Orchestration | Docker, K8s Deployments & Services |
+| 05 | [**Multi-Cloud Disaster Recovery**](05-multicloud-disaster-recovery/) | DR, Multi-Cloud, Failover | AWS + GCP, Terraform, Cloudflare |
+| 06 | [**Cross-Cloud K8s GitOps**](06-cross-cloud-k8s-gitops/) | GitOps, Multi-Cloud K8s | Terraform, Kubespray, Argo CD |
+| 07 | [**DevSecOps Pipeline**](07-devsecops-pipeline/) | Shift-Left Security, CI/CD | Trivy, Checkov, OWASP, OIDC, ECS Fargate |
+| 08 | [**EKS Observability Stack**](08-eks-observability-stack/) | Monitoring, Alerting, HPA | EKS, Prometheus, Grafana, Helm, Terraform |
+| 09 | [**Ansible EC2 Hardening**](09-ansible-ec2-hardening/) | Config Management, Security | Ansible, Vault, Molecule, Terraform |
+| 10 | [**Vault Secrets on ECS**](10-vault-secrets-ecs/) | Secrets Management, Dynamic Creds | HashiCorp Vault, KMS, ECS Fargate, Terraform |
 
-### AI/ML Projects
-- **05-content-recommendation** - ML recommendation system with Spotify data
-- **07-automated-receipt-processor** - OCR processing with Textract
-- **08-ai-rag-portfolio-chat** - RAG chatbot with Bedrock
-- **11-serverless-image-recog-poem-engine** - Image recognition with poetry generation
+---
 
-### Serverless & Communication
-- **02-mass-email-lambda** - Bulk email system with SES
-- **03-custom-alexa-skill** - Voice interface for portfolio
-- **04-text-to-speech-polly** - TTS service with Polly
-- **09-lex-chatbot** - NLP chatbot with Lex
+## Skills Demonstrated
 
-### DevOps & Containers
-- **10-KInesis-ECR-ML** - Stream processing with Kinesis
-- **12-kubernetes-simple-app** - Microservices with Kubernetes
-- **15-cross-cloud-k8s-gitops** - Cross-cloud Kubernetes with GitOps CI/CD
+```
+Infrastructure as Code     Terraform (modules, remote state, multi-provider)
+CI/CD                      GitHub Actions, AWS CodePipeline, Argo CD (GitOps)
+Containers                 Docker, ECR, ECS Fargate, Kubernetes
+Security                   DevSecOps (Trivy, Checkov, OWASP), Ansible hardening, Vault
+Monitoring                 Prometheus, Grafana, Alertmanager, CloudWatch
+Configuration Management   Ansible (roles, vault, molecule, dynamic inventory)
+Multi-Cloud                AWS + GCP, Cloudflare DNS failover
+Streaming                  Kinesis Data Streams, Lambda consumers
+```
 
-## Tech Stack
-- **Frontend:** React, Next.js, Vanilla JS
-- **Backend:** Node.js, Python, TypeScript
-- **AWS Services:** Lambda, S3, API Gateway, DynamoDB, ECS, etc.
-- **Infrastructure:** Terraform
-- **CI/CD:** GitHub Actions, AWS CodePipeline
+---
+
+## Repository Structure
+
+```
+├── 01-static-site-s3-cloudfront/
+├── 02-cicd-pipeline-codepipeline/
+├── 03-kinesis-streaming-pipeline/
+├── 04-kubernetes-microservices/
+├── 05-multicloud-disaster-recovery/
+├── 06-cross-cloud-k8s-gitops/
+├── 07-devsecops-pipeline/
+├── 08-eks-observability-stack/
+├── 09-ansible-ec2-hardening/
+├── 10-vault-secrets-ecs/
+├── .github/workflows/           # CI/CD pipelines
+├── Makefile                     # Repo-level commands
+└── README.md
+```
+
+---
+
+## Prerequisites
+
+- AWS CLI configured with valid credentials
+- Terraform >= 1.0
+- Docker
+- kubectl (for K8s projects)
+- Ansible >= 2.12 (for config management projects)
+- Node.js 18+ (for frontend projects)
 
 ## Quick Start
 
-1. Clone repository
-2. Choose a project directory
-3. Follow the project's README for setup
-4. Most projects use Terraform for infrastructure
-
 ```bash
 git clone https://github.com/omesh7/aws-portfolio.git
-cd aws-portfolio/01-static-website-s3
-# Follow project README
+cd aws-portfolio
+
+# Pick a project
+cd 07-devsecops-pipeline
+
+# Each project has its own README with setup instructions
+cat README.md
 ```
 
-## Prerequisites
-- AWS CLI configured
-- Terraform >= 1.0
-- Node.js 18+
-- Docker (for container projects)
+---
 
-Each project has detailed setup instructions in its README file.
+## License
+
+MIT — see [LICENSE](LICENSE) for details.

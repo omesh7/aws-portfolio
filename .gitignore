@@ -127,23 +127,15 @@ venv/
 *.pyc
 
 **/other.txt
-**/**/other.txt
 **/*.zip
-10-KInesis-ECR-ML/other.txt
 
 # Terraform utility scripts
 setup-terraform-cloud.sh
-terraform-init-all.bat
-delete-tfstate.bat
 
 **/infrastructure-local
-
 **/other
 
 .github/own
 **/*.local.hcl
-bfg.jar
-download_bfg.bat
-README_CLEANUP.md
 
 resume
