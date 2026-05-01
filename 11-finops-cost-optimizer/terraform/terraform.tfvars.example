@@ -1,0 +1,22 @@
+# ─────────────────────────────────────────────
+# Example: terraform.tfvars
+# Copy this file and fill in your values.
+# DO NOT commit real values to git.
+# ─────────────────────────────────────────────
+
+aws_region   = "ap-south-1"
+environment  = "dev"
+project_name = "finops-cost-optimizer"
+
+# Email to receive cost alerts and scheduler notifications
+alert_email = "[EMAIL_ADDRESS]"
+
+# Alert threshold in USD — anomalies above this trigger an email
+cost_anomaly_threshold = 10
+
+# Scheduler runs every 5 minutes (UTC)
+# Instances are stopped/started based on their AutoSchedule tag
+scheduler_cron = "cron(0/5 * * * ? *)"
+
+# Set to true to test without actually stopping/starting instances
+dry_run = false

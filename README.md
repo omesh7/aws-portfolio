@@ -20,6 +20,7 @@ Every project is deployable, uses Infrastructure as Code, and follows real-world
 | 08 | [**EKS Observability Stack**](08-eks-observability-stack/) | Monitoring, Alerting, HPA | EKS, Prometheus, Grafana, Helm, Terraform |
 | 09 | [**Ansible EC2 Hardening**](09-ansible-ec2-hardening/) | Config Management, Security | Ansible, Vault, Molecule, Terraform |
 | 10 | [**Vault Secrets on ECS**](10-vault-secrets-ecs/) | Secrets Management, Dynamic Creds | HashiCorp Vault, KMS, ECS Fargate, Terraform |
+| 11 | [**FinOps Cost Optimizer**](11-finops-cost-optimizer/) | Cost Automation, FinOps, Anomaly Detection | Lambda, EventBridge, Cost Anomaly Detection, SNS, Terraform |
 
 ---
 
