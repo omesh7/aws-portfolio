@@ -1,0 +1,7 @@
+# non-secret variables
+app_port: 8000
+timezone: Asia/Kolkata
+sysctl_settings:
+  - { name: 'fs.file-max', value: '2097152' }
+  - { name: 'net.ipv4.ip_local_port_range', value: '10000 65000' }
+  - { name: 'net.core.somaxconn', value: '65535' }

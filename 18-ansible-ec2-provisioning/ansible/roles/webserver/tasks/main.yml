@@ -1,0 +1,43 @@
+- name: Create app directory
+  file:
+    path: /opt/app
+    state: directory
+    owner: ec2-user
+    group: ec2-user
+
+- name: Deploy docker-compose file
+  copy:
+    dest: /opt/app/docker-compose.yml
+    content: |
+      version: '3.8'
+      services:
+        app:
+          image: python:3.9-slim
+          command: python -m http.server 8000
+          ports:
+            - "8000:8000"
+          environment:
+            - DB_PASSWORD={{ db_password }}
+            - SECRET_KEY={{ app_secret_key }}
+
+- name: Start app with docker-compose
+  shell: docker-compose up -d
+  args:
+    chdir: /opt/app
+
+- name: Install Nginx
+  dnf:
+    name: nginx
+    state: present
+
+- name: Configure Nginx as reverse proxy
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+  notify: restart nginx
+
+- name: Enable and start Nginx
+  service:
+    name: nginx
+    state: started
+    enabled: yes

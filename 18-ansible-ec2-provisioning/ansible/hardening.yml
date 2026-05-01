@@ -1,0 +1,5 @@
+- name: Security Hardening Only
+  hosts: webservers
+  become: yes
+  roles:
+    - security_hardening

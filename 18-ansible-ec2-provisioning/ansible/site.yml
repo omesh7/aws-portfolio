@@ -1,0 +1,8 @@
+- name: Master Playbook - Provision All Roles
+  hosts: webservers
+  become: yes
+  roles:
+    - common
+    - security_hardening
+    - docker
+    - webserver

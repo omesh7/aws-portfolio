@@ -1,0 +1,121 @@
+name: 16 - DevSecOps Pipeline
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '16-devsecops-pipeline/**'
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+  security-events: write
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION || 'ap-south-1' }}
+  ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
+  ROLE_TO_ASSUME: ${{ secrets.AWS_ROLE_ARN }}
+
+jobs:
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Run Trivy FS Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '16-devsecops-pipeline/app'
+          format: 'sarif'
+          output: 'trivy-fs-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+
+      - name: Build Image for Scanning
+        run: |
+          docker build -t devsecops-scan:${{ github.sha }} 16-devsecops-pipeline/app
+
+      - name: Run Trivy Image Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'devsecops-scan:${{ github.sha }}'
+          format: 'sarif'
+          output: 'trivy-image-results.sarif'
+          severity: 'CRITICAL,HIGH'
+          exit-code: '1'
+
+      - name: Run Checkov Scan
+        uses: bridgecrewio/checkov-action@master
+        with:
+          directory: 16-devsecops-pipeline/infrastructure
+          config_file: 16-devsecops-pipeline/.checkov.yml
+          output_format: sarif
+          output_file_path: checkov-results.sarif
+
+      - name: OWASP Dependency Check
+        uses: dependency-check/dependency-check-action@main
+        with:
+          project: 'DevSecOps-Sample-App'
+          path: '16-devsecops-pipeline/app'
+          format: 'SARIF'
+          out: 'dependency-check-results.sarif'
+          args: >
+            --failOnCVSS 7
+            --enableRetired
+
+      - name: Upload SARIF to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: '.'
+          category: 'devsecops-scans'
+
+  build-push:
+    name: Build and Push
+    needs: security-scan
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build, Tag, and Push Image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG 16-devsecops-pipeline/app
+          docker tag $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+
+  deploy:
+    name: Deploy to ECS
+    needs: build-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ env.ROLE_TO_ASSUME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Update ECS Service
+        run: |
+          aws ecs update-service --cluster devsecops-pipeline-cluster --service devsecops-pipeline --force-new-deployment

@@ -1,0 +1,62 @@
+- name: Disable root SSH login
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^PermitRootLogin'
+    line: 'PermitRootLogin no'
+    state: present
+  notify: restart sshd
+
+- name: Disable password authentication
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^PasswordAuthentication'
+    line: 'PasswordAuthentication no'
+    state: present
+  notify: restart sshd
+
+- name: Install fail2ban
+  dnf:
+    name: fail2ban
+    state: present
+
+- name: Configure fail2ban
+  copy:
+    dest: /etc/fail2ban/jail.local
+    content: |
+      [sshd]
+      enabled = true
+      maxretry = 5
+      bantime = 1h
+  notify: restart fail2ban
+
+- name: Install and configure Firewall (firewalld for AL2023)
+  dnf:
+    name: firewalld
+    state: present
+
+- name: Start firewalld
+  service:
+    name: firewalld
+    state: started
+    enabled: yes
+
+- name: Configure Firewall Rules
+  firewalld:
+    port: "{{ item }}"
+    permanent: yes
+    state: enabled
+  loop:
+    - 22/tcp
+    - 80/tcp
+    - 443/tcp
+  notify: reload firewalld
+
+- name: Disable unnecessary services
+  service:
+    name: "{{ item }}"
+    state: stopped
+    enabled: no
+  loop:
+    - postfix
+    - chrony
+  ignore_errors: yes

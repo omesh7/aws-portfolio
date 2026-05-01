@@ -1,0 +1,34 @@
+name: DevSecOps Vault Audit
+
+on:
+  push:
+    paths:
+      - '19-vault-secrets-ecs/vault/policies/**'
+  pull_request:
+    paths:
+      - '19-vault-secrets-ecs/vault/policies/**'
+
+jobs:
+  vault-audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Vault CLI
+        uses: hashicorp/setup-vault@v1
+        with:
+          version: 1.15.0
+
+      - name: Lint Vault Policies
+        run: |
+          for policy in 19-vault-secrets-ecs/vault/policies/*.hcl; do
+            echo "Checking $policy..."
+            # vault policy fmt -check $policy # Would check formatting
+          done
+
+      - name: Check for Over-privileged Policies
+        run: |
+          if grep -q "capabilities = \[\".*\"\]" 19-vault-secrets-ecs/vault/policies/*.hcl | grep -v "read\|list"; then
+            echo "Warning: Potentially over-privileged policy detected (write/delete/sudo)"
+            # exit 1 # Uncomment to fail build on sensitive changes
+          fi

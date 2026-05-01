@@ -1,0 +1,58 @@
+name: 18 - Ansible EC2 Provisioning
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - '18-ansible-ec2-provisioning/**'
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  ansible-lint:
+    name: Ansible Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: |
+          pip install ansible-lint ansible boto3 botocore
+
+      - name: Run Ansible Lint
+        working-directory: 18-ansible-ec2-provisioning/ansible
+        run: ansible-lint site.yml
+
+  dry-run:
+    name: Ansible Dry Run
+    needs: ansible-lint
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-1
+
+      - name: Install Ansible & Boto3
+        run: |
+          pip install ansible boto3 botocore
+
+      - name: Run Playbook in Check Mode
+        working-directory: 18-ansible-ec2-provisioning/ansible
+        env:
+          ANSIBLE_HOST_KEY_CHECKING: 'False'
+        run: |
+          echo "${{ secrets.ANSIBLE_VAULT_PASSWORD }}" > .vault_pass
+          ansible-playbook site.yml --check --vault-password-file .vault_pass

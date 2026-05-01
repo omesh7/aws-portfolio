@@ -1,0 +1,14 @@
+---
+check:
+  - "MEDIUM"
+  - "HIGH"
+  - "CRITICAL"
+skip-check:
+  - "LOW"
+soft-fail: false
+download-external-modules: true
+quiet: true
+compact: true
+framework:
+  - "terraform"
+  - "dockerfile"

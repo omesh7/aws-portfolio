@@ -1,0 +1,4 @@
+# $ANSIBLE_VAULT;1.1;AES256
+# Use 'ansible-vault encrypt' to secure this file
+db_password: "supersecretpassword123"
+app_secret_key: "django-insecure-dummy-key"
