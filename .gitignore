@@ -36,6 +36,8 @@
 **/*apikey*
 !**/*secret*.example
 !**/*token*.example
+!19-vault-secrets-ecs/
+!19-vault-secrets-ecs/**
 
 # Logs
 logs
