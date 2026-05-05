@@ -9,6 +9,31 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Missing image URL" }, { status: 400 })
     }
 
+    // SSRF mitigation: Only allow URLs from specific S3 bucket(s)
+    let s3Url: URL;
+    try {
+      s3Url = new URL(imageUrl);
+    } catch {
+      return NextResponse.json({ error: "Invalid image URL" }, { status: 400 });
+    }
+
+    // Replace with your actual allowed S3 buckets
+    const allowedHostnames = [
+      "your-bucket.s3.amazonaws.com",    // Example allowed bucket (change to yours)
+      "your-bucket.s3.us-east-1.amazonaws.com", // S3 regional endpoints (if needed)
+    ];
+    if (
+      s3Url.protocol !== "https:" ||
+      !allowedHostnames.includes(s3Url.hostname)
+    ) {
+      return NextResponse.json({ error: "Invalid image host" }, { status: 400 });
+    }
+
+    // Optionally, validate the pathname or filetype:
+    // if (!s3Url.pathname.startsWith("/images/") || !/\.(jpg|jpeg|png|webp|gif)$/i.test(s3Url.pathname)) {
+    //   return NextResponse.json({ error: "Invalid image path" }, { status: 400 });
+    // }
+
     // Fetch the image from S3
     const response = await fetch(imageUrl)
 
